@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CookOnCall — Login or Sign Up</title>
+    <meta name="description" content="Login or create your CookOnCall account. Book home chefs in Ahmedabad.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="display:flex; min-height:100vh;">
+
+<!-- ═══ LEFT PANEL ═══ -->
+<div class="auth-left">
+    <a href="index.html" class="logo">COOK<span>ONCALL</span></a>
+    <div class="auth-left-content">
+        <h2>Fresh Meals,<br><span class="accent">Real Chefs.</span></h2>
+        <p>Join thousands of Ahmedabad families who trust CookOnCall for fresh, home-cooked meals every day.</p>
+        <div class="auth-features">
+            <div class="auth-feature">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                100% verified, FSSAI-compliant chefs
+            </div>
+            <div class="auth-feature">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                30+ cuisines — Gujarati to Continental
+            </div>
+            <div class="auth-feature">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                Starting at just ₹200 per visit
+            </div>
+            <div class="auth-feature">
+                <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"/></svg>
+                Cancel anytime — no commitment
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══ RIGHT PANEL ═══ -->
+<div class="auth-right">
+    <div class="auth-card">
+        <div class="auth-tabs">
+            <button class="auth-tab active">Login</button>
+            <button class="auth-tab">Sign Up</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <div class="auth-form active" id="loginForm">
+            <div class="form-group">
+                <label class="form-label">Email or Phone</label>
+                <input type="text" class="form-input" placeholder="you@example.com or 98XXXXXXXX">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" placeholder="Enter your password">
+            </div>
+            <a href="#" class="forgot-link">Forgot password?</a>
+            <button class="btn-submit">Login</button>
+            <div class="divider"><span>or</span></div>
+            <button class="social-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20"><path d="M19.6 10.23c0-.68-.06-1.36-.17-2.02H10v3.84h5.4a4.63 4.63 0 01-2 3.04v2.5h3.24c1.9-1.74 2.96-4.31 2.96-7.36z" fill="#4285F4"/><path d="M10 20c2.7 0 4.96-.89 6.62-2.41l-3.24-2.5c-.89.6-2.04.96-3.38.96-2.6 0-4.8-1.75-5.59-4.1H1.07v2.58A9.99 9.99 0 0010 20z" fill="#34A853"/><path d="M4.41 12.04a6 6 0 010-3.82V5.64H1.07a9.99 9.99 0 000 8.98l3.34-2.58z" fill="#FBBC05"/><path d="M10 3.96a5.42 5.42 0 013.84 1.5l2.87-2.87A9.64 9.64 0 0010 0 9.99 9.99 0 001.07 5.64l3.34 2.58c.79-2.36 2.99-4.26 5.59-4.26z" fill="#EA4335"/></svg>
+                Continue with Google
+            </button>
+            <div class="auth-footer">
+                Don't have an account? <a href="#" onclick="switchTab('signup'); return false;">Sign up</a>
+            </div>
+        </div>
+
+        <!-- SIGNUP FORM -->
+        <div class="auth-form" id="signupForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">First Name</label>
+                    <input type="text" class="form-input" placeholder="Aryan">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Last Name</label>
+                    <input type="text" class="form-input" placeholder="Patel">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">Phone Number</label>
+                <input type="tel" class="form-input" placeholder="+91 98XXXXXXXX">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Email</label>
+                <input type="email" class="form-input" placeholder="you@example.com">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Password</label>
+                <input type="password" class="form-input" placeholder="Min 8 characters">
+            </div>
+            <div class="form-check">
+                <input type="checkbox" id="terms">
+                <label for="terms">I agree to the <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a></label>
+            </div>
+            <button class="btn-submit">Create Account</button>
+            <div class="divider"><span>or</span></div>
+            <button class="social-btn">
+                <svg width="20" height="20" viewBox="0 0 20 20"><path d="M19.6 10.23c0-.68-.06-1.36-.17-2.02H10v3.84h5.4a4.63 4.63 0 01-2 3.04v2.5h3.24c1.9-1.74 2.96-4.31 2.96-7.36z" fill="#4285F4"/><path d="M10 20c2.7 0 4.96-.89 6.62-2.41l-3.24-2.5c-.89.6-2.04.96-3.38.96-2.6 0-4.8-1.75-5.59-4.1H1.07v2.58A9.99 9.99 0 0010 20z" fill="#34A853"/><path d="M4.41 12.04a6 6 0 010-3.82V5.64H1.07a9.99 9.99 0 000 8.98l3.34-2.58z" fill="#FBBC05"/><path d="M10 3.96a5.42 5.42 0 013.84 1.5l2.87-2.87A9.64 9.64 0 0010 0 9.99 9.99 0 001.07 5.64l3.34 2.58c.79-2.36 2.99-4.26 5.59-4.26z" fill="#EA4335"/></svg>
+                Sign up with Google
+            </button>
+            <div class="auth-footer">
+                Already have an account? <a href="#" onclick="switchTab('login'); return false;">Login</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="main.js"></script>
+</body>
+</html>
