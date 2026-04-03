@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CookOnCall — Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="background:var(--cream-100)">
+
+<div class="dash-sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
+<div class="dash-layout">
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="dash-sidebar" id="sidebar">
+    <div class="dash-sb-header">
+        <div class="dash-sb-logo">COOK<span>ONCALL</span></div>
+        <div class="dash-sb-user">
+            <div class="dash-sb-ava" id="sb-ava">G</div>
+            <div>
+                <div class="dash-sb-name" id="sb-name">Guest</div>
+                <div class="dash-sb-role">Customer</div>
+            </div>
+        </div>
+    </div>
+    <nav class="dash-sb-nav">
+        <div class="dash-sb-section">Main Menu</div>
+        <button class="dash-sb-link active" data-panel="home" onclick="showPanel('home')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Home
+        </button>
+        <button class="dash-sb-link" data-panel="book-chef" onclick="showPanel('book-chef')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Book a Chef
+        </button>
+        <button class="dash-sb-link" data-panel="orders" onclick="showPanel('orders')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            My Orders
+        </button>
+        <div class="dash-sb-section" style="margin-top:12px">Account</div>
+        <button class="dash-sb-link" data-panel="profile" onclick="showPanel('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            My Profile
+        </button>
+    </nav>
+    <div class="dash-sb-footer">
+        <button class="dash-sb-logout" onclick="doLogout()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Log Out
+        </button>
+    </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="dash-main">
+    <header class="dash-header">
+        <div class="dash-h-left">
+            <button class="dash-h-menu" onclick="toggleSidebar()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <div class="dash-h-title" id="h-title">Dashboard</div>
+        </div>
+        <div class="dash-h-right">
+            <div class="dash-h-ava" id="h-ava">G</div>
+        </div>
+    </header>
+
+    <div class="dash-content">
+
+        <!-- ═══ HOME ═══ -->
+        <div class="dash-panel active" id="panel-home">
+            <div class="dash-welcome">
+                <div class="dw-greeting" id="dw-greeting">Good Morning</div>
+                <div class="dw-name"><span class="accent" id="dw-name">Guest</span>, hungry today?</div>
+                <div class="dw-sub">Book a personal chef to cook at your home, or browse available chefs in Ahmedabad.</div>
+                <div class="dw-actions">
+                    <button class="dw-btn dw-btn-primary" onclick="showPanel('book-chef')">👨‍🍳 Book a Chef</button>
+                    <button class="dw-btn dw-btn-secondary" onclick="showPanel('orders')">📋 My Orders</button>
+                </div>
+            </div>
+            <div class="dash-stats">
+                <div class="dash-stat">
+                    <div class="dash-stat-icon dsi-orange"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
+                    <div class="dash-stat-val" id="stat-bookings">0</div>
+                    <div class="dash-stat-label">Chef Bookings</div>
+                </div>
+                <div class="dash-stat">
+                    <div class="dash-stat-icon dsi-green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+                    <div class="dash-stat-val" id="stat-completed">0</div>
+                    <div class="dash-stat-label">Completed</div>
+                </div>
+                <div class="dash-stat">
+                    <div class="dash-stat-icon dsi-blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+                    <div class="dash-stat-val" id="stat-spent">₹0</div>
+                    <div class="dash-stat-label">Total Spent</div>
+                </div>
+            </div>
+            <div class="dash-sec-head"><div class="dash-sec-title">Quick Actions</div></div>
+            <div class="dash-qa-grid">
+                <div class="dash-qa-card" onclick="showPanel('book-chef')">
+                    <span class="dash-qa-emoji">👨‍🍳</span>
+                    <div class="dash-qa-title">Book a Home Chef</div>
+                    <div class="dash-qa-desc">Browse verified chefs, pick date & time, and book.</div>
+                </div>
+                <div class="dash-qa-card" onclick="showPanel('orders')">
+                    <span class="dash-qa-emoji">📋</span>
+                    <div class="dash-qa-title">Track My Orders</div>
+                    <div class="dash-qa-desc">View your booking history and active orders.</div>
+                </div>
+                <div class="dash-qa-card" onclick="showPanel('profile')">
+                    <span class="dash-qa-emoji">👤</span>
+                    <div class="dash-qa-title">My Profile</div>
+                    <div class="dash-qa-desc">Update your details and account settings.</div>
+                </div>
+            </div>
+            <div class="dash-sec-head"><div class="dash-sec-title">Recent Orders</div><button class="dash-sec-link" onclick="showPanel('orders')">View All</button></div>
+            <div id="recent-orders">
+                <div class="dash-empty">
+                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+                    <p>No orders yet. Book a chef to get started!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ BOOK A CHEF ═══ -->
+        <div class="dash-panel" id="panel-book-chef">
+            <div class="dash-sec-head" style="margin-bottom:6px"><div class="dash-sec-title">Available Chefs</div></div>
+            <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:20px;line-height:1.6">All chefs are verified and FSSAI-compliant. Each chef sets their own menu and prices.</p>
+            <div class="dash-chefs-grid" id="chefs-grid">
+                <div class="dash-empty" style="grid-column:1/-1">
+                    <p>No chefs available yet. Check back soon!</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ MY ORDERS ═══ -->
+        <div class="dash-panel" id="panel-orders">
+            <div class="dash-filters" id="order-filters">
+                <button class="dash-filter-btn active" onclick="filterOrders('All',this)">All</button>
+                <button class="dash-filter-btn" onclick="filterOrders('Confirmed',this)">Confirmed</button>
+                <button class="dash-filter-btn" onclick="filterOrders('Pending',this)">Pending</button>
+                <button class="dash-filter-btn" onclick="filterOrders('Completed',this)">Completed</button>
+                <button class="dash-filter-btn" onclick="filterOrders('Cancelled',this)">Cancelled</button>
+            </div>
+            <div id="orders-list">
+                <div class="dash-empty">
+                    <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <p>No orders yet. Your booking history will appear here.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ═══ PROFILE ═══ -->
+        <div class="dash-panel" id="panel-profile">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px" id="profile-grid">
+                <div>
+                    <div class="dash-profile-card">
+                        <div class="dash-pc-cover"><div class="dash-pc-ava" id="pc-ava">G</div></div>
+                        <div class="dash-pc-info">
+                            <div class="dash-pc-name" id="pc-name">Guest</div>
+                            <div class="dash-pc-email" id="pc-email">—</div>
+                            <div style="font-size:0.82rem;color:var(--text-muted);margin-top:2px" id="pc-phone"></div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="dash-settings">
+                        <div class="dash-settings-title">Account Settings</div>
+                        <div class="dash-setting-item">
+                            <div><div class="dash-si-text">Push Notifications</div><div class="dash-si-sub">Booking updates</div></div>
+                            <label class="dash-toggle"><input type="checkbox" checked><span class="dash-toggle-slider"></span></label>
+                        </div>
+                        <div class="dash-setting-item">
+                            <div><div class="dash-si-text">Email Notifications</div><div class="dash-si-sub">Confirmations & receipts</div></div>
+                            <label class="dash-toggle"><input type="checkbox" checked><span class="dash-toggle-slider"></span></label>
+                        </div>
+                        <div class="dash-setting-item">
+                            <div><div class="dash-si-text">SMS Alerts</div><div class="dash-si-sub">OTP and reminders</div></div>
+                            <label class="dash-toggle"><input type="checkbox"><span class="dash-toggle-slider"></span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+
+<!-- ═══ BOOKING MODAL ═══ -->
+<div class="dash-modal" id="booking-modal">
+    <div class="dash-modal-box">
+        <div class="dash-modal-head">
+            <h3>Book a Chef</h3>
+            <button class="dash-modal-close" onclick="closeModal()">✕</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;padding:14px;background:var(--cream-100);border-radius:12px">
+            <div style="width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#FFE4B5,#FFB347);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-size:1.1rem;font-weight:800;color:rgba(0,0,0,0.3)" id="bm-ava"></div>
+            <div style="flex:1"><div style="font-weight:700" id="bm-name"></div><div style="font-size:0.8rem;color:var(--text-muted)" id="bm-spec"></div></div>
+            <div style="font-family:var(--font-display);font-size:1.3rem;font-weight:800;color:var(--orange-500)" id="bm-price"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">Date</label><input class="form-input" type="date" id="bm-date"></div>
+            <div class="form-group"><label class="form-label">Time</label><input class="form-input" type="time" id="bm-time" value="12:00"></div>
+        </div>
+        <div class="form-row">
+            <div class="form-group"><label class="form-label">Duration</label><select class="form-input" id="bm-duration"><option>2 Hours</option><option>3 Hours</option><option>4 Hours</option><option>Full Day (8hr)</option></select></div>
+            <div class="form-group"><label class="form-label">Guests</label><select class="form-input" id="bm-guests"><option>1-2 People</option><option>3-5 People</option><option>6-10 People</option><option>10+ People</option></select></div>
+        </div>
+        <div class="form-group"><label class="form-label">Special Requests</label><textarea class="form-input" rows="3" placeholder="Allergies, dietary needs, preferred dishes..." id="bm-notes" style="resize:vertical;font-family:var(--font-body)"></textarea></div>
+        <div id="bm-menu" style="display:none;margin-bottom:14px;padding:14px;background:var(--cream-100);border-radius:12px;max-height:200px;overflow-y:auto"></div>
+        <button class="btn-submit" onclick="confirmBooking()" style="margin-top:8px">Confirm Booking</button>
+    </div>
+</div>
+
+<!-- ═══ REVIEW MODAL ═══ -->
+<div class="dash-modal" id="review-modal">
+    <div class="dash-modal-box" style="max-width:420px">
+        <div class="dash-modal-head">
+            <h3>Rate Your Experience</h3>
+            <button class="dash-modal-close" onclick="closeReviewModal()">✕</button>
+        </div>
+        <div style="text-align:center;margin-bottom:20px">
+            <div style="font-size:0.9rem;color:var(--text-muted);margin-bottom:8px">How was your experience with</div>
+            <div style="font-weight:700;font-size:1.1rem" id="rv-chef">Chef</div>
+        </div>
+        <div style="display:flex;justify-content:center;gap:8px;margin-bottom:20px" id="rv-stars">
+            <button onclick="setRating(1)" class="rv-star" style="background:none;border:none;font-size:2rem;cursor:pointer;color:var(--cream-300);transition:color 0.15s">★</button>
+            <button onclick="setRating(2)" class="rv-star" style="background:none;border:none;font-size:2rem;cursor:pointer;color:var(--cream-300);transition:color 0.15s">★</button>
+            <button onclick="setRating(3)" class="rv-star" style="background:none;border:none;font-size:2rem;cursor:pointer;color:var(--cream-300);transition:color 0.15s">★</button>
+            <button onclick="setRating(4)" class="rv-star" style="background:none;border:none;font-size:2rem;cursor:pointer;color:var(--cream-300);transition:color 0.15s">★</button>
+            <button onclick="setRating(5)" class="rv-star" style="background:none;border:none;font-size:2rem;cursor:pointer;color:var(--cream-300);transition:color 0.15s">★</button>
+        </div>
+        <div style="text-align:center;font-size:0.85rem;color:var(--text-muted);margin-bottom:16px" id="rv-label">Tap a star to rate</div>
+        <div class="form-group"><label class="form-label">Write a review (optional)</label><textarea class="form-input" rows="3" placeholder="Tell us about your experience..." id="rv-text" style="resize:vertical;font-family:var(--font-body)"></textarea></div>
+        <button class="btn-submit" onclick="submitReview()">Submit Review</button>
+    </div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+// ═══ PROTECT PAGE ═══
+var user = requireAuth();
+if (!user) throw new Error('Not authenticated');
+
+// ═══ APPLY USER ═══
+function setText(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+var initials = user.initials || (user.name || 'G').charAt(0);
+var fullName = ((user.name || '') + ' ' + (user.lastName || '')).trim() || 'Guest';
+
+setText('sb-ava', initials); setText('sb-name', fullName);
+setText('h-ava', initials); setText('pc-ava', initials);
+setText('pc-name', fullName);
+setText('pc-email', user.email || '—');
+setText('pc-phone', user.phone ? '📱 ' + user.phone : '');
+setText('dw-name', user.name || 'Guest');
+
+var h = new Date().getHours();
+setText('dw-greeting', h < 12 ? 'Good Morning' : h < 17 ? 'Good Afternoon' : 'Good Evening');
+
+// ═══ NAVIGATION ═══
+var titles = { 'home': 'Dashboard', 'book-chef': 'Book a Chef', 'orders': 'My Orders', 'profile': 'My Profile' };
+
+function showPanel(id) {
+    document.querySelectorAll('.dash-panel').forEach(function(p) { p.classList.remove('active'); });
+    var target = document.getElementById('panel-' + id);
+    if (target) target.classList.add('active');
+    setText('h-title', titles[id] || 'Dashboard');
+    document.querySelectorAll('.dash-sb-link').forEach(function(l) {
+        l.classList.remove('active');
+        if (l.getAttribute('data-panel') === id) l.classList.add('active');
+    });
+    if (window.innerWidth <= 900) closeSidebar();
+    if (id === 'book-chef') loadChefs();
+    if (id === 'orders') renderOrders();
+}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sbOverlay').classList.toggle('open'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sbOverlay').classList.remove('open'); }
+
+// ═══ LOAD REGISTERED CHEFS (from localStorage — real data, no demos) ═══
+function getChefMenu(email) {
+    try { return JSON.parse(localStorage.getItem('coc_menu_' + email) || '[]'); } catch(e) { return []; }
+}
+
+function loadChefs() {
+    var grid = document.getElementById('chefs-grid');
+    var allUsers = getUsers();
+    var chefs = allUsers.filter(function(u) { return u.role === 'Chef'; });
+
+    if (!chefs.length) {
+        grid.innerHTML = '<div class="dash-empty" style="grid-column:1/-1"><p>No chefs registered yet. Check back soon as chefs join the platform!</p></div>';
+        return;
+    }
+
+    var banners = ['dash-cc-b1', 'dash-cc-b2', 'dash-cc-b3', 'dash-cc-b4'];
+    grid.innerHTML = chefs.map(function(c, i) {
+        var ini = ((c.fname || '?').charAt(0) + (c.lname || '?').charAt(0)).toUpperCase();
+        var name = (c.fname || '') + ' ' + (c.lname || '');
+        var specs = c.specialties || 'Home Cooking';
+        var rate = c.rate || 400;
+        var exp = c.experience || '1+ yr';
+        var menu = getChefMenu(c.email);
+        var menuCount = menu.length;
+        return '<div class="dash-chef-card">' +
+            '<div class="dash-cc-banner ' + banners[i % 4] + '">' +
+            '<div class="dash-cc-initials">' + ini + '</div>' +
+            '<div class="dash-cc-verified">✓ Verified</div></div>' +
+            '<div class="dash-cc-body">' +
+            '<div class="dash-cc-name">' + name + '</div>' +
+            '<div class="dash-cc-spec">' + specs + '</div>' +
+            '<div class="dash-cc-meta"><div class="dash-cc-rating"><span style="color:#F5A623">★</span> New</div>' +
+            '<div class="dash-cc-exp">' + exp + '</div></div>' +
+            (menuCount ? '<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px">🍽️ ' + menuCount + ' dishes on menu</div>' : '<div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:10px;opacity:0.5">No menu added yet</div>') +
+            '<div class="dash-cc-price-row"><div class="dash-cc-price">₹' + rate + '<small>/hr</small></div>' +
+            '<button class="btn-book" onclick=\'openBooking(' + JSON.stringify(c).replace(/'/g, "\\'") + ')\'>Book Now</button></div>' +
+            '</div></div>';
+    }).join('');
+}
+
+// ═══ BOOKING ═══
+var selectedChef = null;
+
+function openBooking(chef) {
+    selectedChef = chef;
+    var ini = ((chef.fname || '?').charAt(0) + (chef.lname || '?').charAt(0)).toUpperCase();
+    setText('bm-ava', ini);
+    setText('bm-name', (chef.fname || '') + ' ' + (chef.lname || ''));
+    setText('bm-spec', chef.specialties || 'Home Cooking');
+    setText('bm-price', '₹' + (chef.rate || 400) + '/hr');
+    var bd = document.getElementById('bm-date');
+    if (bd) bd.value = new Date().toISOString().split('T')[0];
+
+    // Show chef's menu in modal
+    var menu = getChefMenu(chef.email);
+    var menuEl = document.getElementById('bm-menu');
+    if (menuEl) {
+        if (menu.length) {
+            menuEl.innerHTML = '<div style="font-weight:600;font-size:0.88rem;margin-bottom:8px">Chef\'s Menu (' + menu.length + ' dishes)</div>' +
+                menu.map(function(m) {
+                    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(0,0,0,0.04);font-size:0.85rem">' +
+                        '<span style="width:8px;height:8px;border-radius:50%;background:' + (m.type === 'nonveg' ? 'var(--red-err)' : 'var(--green-ok)') + ';flex-shrink:0"></span>' +
+                        '<span style="flex:1">' + m.name + '</span>' +
+                        '<span style="font-weight:600;color:var(--orange-500)">₹' + m.price + '</span></div>';
+                }).join('');
+            menuEl.style.display = 'block';
+        } else {
+            menuEl.innerHTML = '<div style="font-size:0.82rem;color:var(--text-muted);font-style:italic">This chef hasn\'t added their menu yet. You can discuss dishes during booking.</div>';
+            menuEl.style.display = 'block';
+        }
+    }
+
+    document.getElementById('booking-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('booking-modal').classList.remove('open'); }
+
+function confirmBooking() {
+    if (!selectedChef) return;
+    var dur = document.getElementById('bm-duration').value || '2 Hours';
+    var hrs = dur.includes('Full') ? 8 : (parseInt(dur) || 2);
+    var rate = selectedChef.rate || 400;
+    var amount = rate * hrs;
+
+    var order = {
+        id: 'COC-' + Date.now().toString(36).toUpperCase(),
+        type: 'booking',
+        chef: (selectedChef.fname || '') + ' ' + (selectedChef.lname || ''),
+        chefEmail: selectedChef.email,
+        customerName: fullName,
+        customerEmail: user.email,
+        duration: dur,
+        guests: document.getElementById('bm-guests').value || '1-2',
+        notes: document.getElementById('bm-notes').value || '',
+        amount: amount,
+        status: 'Pending',
+        date: document.getElementById('bm-date').value || new Date().toLocaleDateString('en-IN'),
+        time: document.getElementById('bm-time').value || '12:00',
+        created: new Date().toISOString()
+    };
+
+    var orders = getOrders();
+    orders.unshift(order);
+    saveOrders(orders);
+
+    closeModal();
+    showToast('✅ Booking sent to ' + order.chef + '!');
+    updateStats();
+    selectedChef = null;
+}
+
+// ═══ ORDERS ═══
+function getOrders() { try { return JSON.parse(localStorage.getItem('coc_orders') || '[]'); } catch (e) { return []; } }
+function saveOrders(o) { localStorage.setItem('coc_orders', JSON.stringify(o)); }
+
+function renderOrders(filter) {
+    filter = filter || 'All';
+    var container = document.getElementById('orders-list');
+    var orders = getOrders().filter(function(o) { return o.customerEmail === user.email; });
+    if (filter !== 'All') orders = orders.filter(function(o) { return o.status === filter; });
+
+    if (!orders.length) {
+        container.innerHTML = '<div class="dash-empty"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg><p>No orders found.</p></div>';
+        return;
+    }
+
+    container.innerHTML = orders.map(function(o) {
+        var d = o.date || '—';
+        return '<div class="dash-order-card">' +
+            '<div class="dash-oc-top"><div><div class="dash-oc-id">' + o.id + '</div><div class="dash-oc-date">' + d + ' · ' + (o.time || '') + '</div></div>' +
+            '<span class="dash-status dash-status-' + o.status.toLowerCase() + '">' + o.status + '</span></div>' +
+            '<div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:14px;font-size:0.85rem">' +
+            '<div><div style="font-size:0.72rem;color:var(--text-muted)">Chef</div>' + (o.chef || '—') + '</div>' +
+            '<div><div style="font-size:0.72rem;color:var(--text-muted)">Duration</div>' + (o.duration || '—') + '</div>' +
+            '<div><div style="font-size:0.72rem;color:var(--text-muted)">Guests</div>' + (o.guests || '—') + '</div></div>' +
+            (o.rating ? '<div style="font-size:0.85rem;margin-bottom:10px">Your rating: <span style="color:#F5A623">' + '★'.repeat(o.rating) + '</span><span style="color:var(--cream-300)">' + '★'.repeat(5 - o.rating) + '</span>' + (o.review ? ' — "' + o.review + '"' : '') + '</div>' : '') +
+            '<div class="dash-oc-bottom"><div class="dash-oc-total">₹' + o.amount + '</div>' +
+            ((o.status === 'Completed' || o.status === 'Confirmed') && !o.rating ? '<button onclick="openReview(\'' + o.id + '\',\'' + (o.chef || '').replace(/'/g, "\\'") + '\')" style="padding:7px 16px;border-radius:50px;font-size:0.78rem;font-weight:600;border:1.5px solid var(--orange-500);background:rgba(212,114,26,0.06);color:var(--orange-500);cursor:pointer;font-family:var(--font-body)">★ Rate Chef</button>' : '') +
+            '</div></div>';
+    }).join('');
+}
+
+function filterOrders(f, el) {
+    document.querySelectorAll('.dash-filter-btn').forEach(function(b) { b.classList.remove('active'); });
+    el.classList.add('active');
+    renderOrders(f);
+}
+
+function renderRecentOrders() {
+    var container = document.getElementById('recent-orders');
+    var orders = getOrders().filter(function(o) { return o.customerEmail === user.email; }).slice(0, 3);
+    if (!orders.length) {
+        container.innerHTML = '<div class="dash-empty"><svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg><p>No orders yet. Book a chef to get started!</p></div>';
+        return;
+    }
+    container.innerHTML = orders.map(function(o) {
+        return '<div class="dash-order-card" style="margin-bottom:10px"><div class="dash-oc-top"><div><div class="dash-oc-id">' + o.id + '</div><div class="dash-oc-date">' + (o.date || '') + '</div></div><span class="dash-status dash-status-' + o.status.toLowerCase() + '">' + o.status + '</span></div><div class="dash-oc-bottom"><div>👨‍🍳 ' + (o.chef || '—') + '</div><div class="dash-oc-total">₹' + o.amount + '</div></div></div>';
+    }).join('');
+}
+
+// ═══ REVIEWS ═══
+var reviewOrderId = '';
+var reviewRating = 0;
+
+function openReview(orderId, chefName) {
+    reviewOrderId = orderId;
+    reviewRating = 0;
+    document.getElementById('rv-chef').textContent = chefName;
+    document.getElementById('rv-text').value = '';
+    document.getElementById('rv-label').textContent = 'Tap a star to rate';
+    document.querySelectorAll('.rv-star').forEach(function(s) { s.style.color = 'var(--cream-300)'; });
+    document.getElementById('review-modal').classList.add('open');
+}
+
+function closeReviewModal() { document.getElementById('review-modal').classList.remove('open'); }
+
+function setRating(n) {
+    reviewRating = n;
+    var labels = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent!'];
+    document.getElementById('rv-label').textContent = labels[n] || '';
+    document.querySelectorAll('.rv-star').forEach(function(s, i) {
+        s.style.color = i < n ? '#F5A623' : 'var(--cream-300)';
+    });
+}
+
+function submitReview() {
+    if (!reviewRating) { showToast('Please select a star rating.'); return; }
+    var orders = getOrders();
+    var idx = orders.findIndex(function(o) { return o.id === reviewOrderId; });
+    if (idx > -1) {
+        orders[idx].rating = reviewRating;
+        orders[idx].review = document.getElementById('rv-text').value.trim();
+        saveOrders(orders);
+    }
+    closeReviewModal();
+    showToast('Thanks for your review! ★' + reviewRating);
+    renderOrders();
+    renderRecentOrders();
+}
+
+// ═══ STATS ═══
+function updateStats() {
+    var orders = getOrders().filter(function(o) { return o.customerEmail === user.email; });
+    var total = orders.length;
+    var completed = orders.filter(function(o) { return o.status === 'Completed'; }).length;
+    var spent = orders.filter(function(o) { return o.status !== 'Cancelled'; }).reduce(function(s, o) { return s + (o.amount || 0); }, 0);
+    setText('stat-bookings', total);
+    setText('stat-completed', completed);
+    setText('stat-spent', '₹' + spent.toLocaleString('en-IN'));
+    renderRecentOrders();
+}
+
+// ═══ INIT ═══
+updateStats();
+
+// Responsive profile grid
+if (window.innerWidth <= 768) {
+    var pg = document.getElementById('profile-grid');
+    if (pg) pg.style.gridTemplateColumns = '1fr';
+}
+</script>
+</body>
+</html>

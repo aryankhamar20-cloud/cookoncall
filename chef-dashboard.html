@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CookOnCall — Chef Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="background:var(--cream-100)">
+
+<div class="dash-sb-overlay" id="sbOverlay" onclick="closeSidebar()"></div>
+
+<div class="dash-layout">
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="dash-sidebar" id="sidebar">
+    <div class="dash-sb-header">
+        <div class="dash-sb-logo">COOK<span>ONCALL</span></div>
+        <div class="dash-sb-user">
+            <div class="dash-sb-ava" id="sb-ava">C</div>
+            <div>
+                <div class="dash-sb-name" id="sb-name">Chef</div>
+                <div class="dash-sb-role">Chef Partner</div>
+            </div>
+        </div>
+    </div>
+    <nav class="dash-sb-nav">
+        <div class="dash-sb-section">Dashboard</div>
+        <button class="dash-sb-link active" data-panel="overview" onclick="showPanel('overview')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            Overview
+        </button>
+        <button class="dash-sb-link" data-panel="requests" onclick="showPanel('requests')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            Booking Requests
+            <span class="dash-sb-badge" id="req-badge" style="display:none">0</span>
+        </button>
+        <button class="dash-sb-link" data-panel="earnings" onclick="showPanel('earnings')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+            My Earnings
+        </button>
+        <div class="dash-sb-section" style="margin-top:12px">Manage</div>
+        <button class="dash-sb-link" data-panel="menu" onclick="showPanel('menu')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+            My Menu
+        </button>
+        <button class="dash-sb-link" data-panel="profile" onclick="showPanel('profile')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            My Profile
+        </button>
+    </nav>
+    <div class="dash-sb-footer">
+        <button class="dash-sb-logout" onclick="doLogout()">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+            Log Out
+        </button>
+    </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<div class="dash-main">
+    <header class="dash-header">
+        <div class="dash-h-left">
+            <button class="dash-h-menu" onclick="toggleSidebar()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <div class="dash-h-title" id="h-title">Overview</div>
+        </div>
+        <div class="dash-h-right">
+            <div class="dash-avail-toggle">
+                <span class="dash-avail-label" id="avail-label">Available</span>
+                <label class="dash-toggle"><input type="checkbox" checked onchange="toggleAvail(this)"><span class="dash-toggle-slider"></span></label>
+            </div>
+            <div class="dash-h-ava" id="h-ava">C</div>
+        </div>
+    </header>
+
+    <div class="dash-content">
+
+        <!-- ═══ OVERVIEW ═══ -->
+        <div class="dash-panel active" id="panel-overview">
+            <div class="dash-welcome">
+                <div class="dw-greeting" id="dw-greeting">Good Morning</div>
+                <div class="dw-name">Chef <span class="accent" id="dw-name">—</span>, ready to cook?</div>
+                <div class="dw-sub">You have <strong id="dw-pending">0</strong> pending booking requests.</div>
+                <div class="dw-actions">
+                    <button class="dw-btn dw-btn-primary" onclick="showPanel('requests')">📋 View Requests</button>
+                    <button class="dw-btn dw-btn-secondary" onclick="showPanel('earnings')">💰 My Earnings</button>
+                </div>
+            </div>
+            <div class="dash-stats">
+                <div class="dash-stat">
+                    <div class="dash-stat-icon dsi-orange"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg></div>
+                    <div class="dash-stat-val" id="stat-pending">0</div>
+                    <div class="dash-stat-label">Pending Requests</div>
+                </div>
+                <div class="dash-stat">
+                    <div class="dash-stat-icon dsi-green"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>
+                    <div class="dash-stat-val" id="stat-completed">0</div>
+                    <div class="dash-stat-label">Jobs Done</div>
+                </div>
+                <div class="dash-stat">
+                    <div class="dash-stat-icon dsi-blue"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+                    <div class="dash-stat-val" id="stat-earned">₹0</div>
+                    <div class="dash-stat-label">Total Earned</div>
+                </div>
+                <div class="dash-stat">
+                    <div class="dash-stat-icon dsi-purple"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+                    <div class="dash-stat-val" id="stat-rating">New</div>
+                    <div class="dash-stat-label">Rating</div>
+                </div>
+            </div>
+            <div class="dash-sec-head"><div class="dash-sec-title">Recent Requests</div><button class="dash-sec-link" onclick="showPanel('requests')">View All</button></div>
+            <div id="recent-req">
+                <div class="dash-empty"><p>No booking requests yet. Customers will find you soon!</p></div>
+            </div>
+        </div>
+
+        <!-- ═══ REQUESTS ═══ -->
+        <div class="dash-panel" id="panel-requests">
+            <div class="dash-sec-head" style="margin-bottom:6px"><div class="dash-sec-title">Booking Requests</div></div>
+            <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:22px;line-height:1.6">Accept or decline customer bookings. You earn 80% of every booking amount.</p>
+            <div id="all-requests">
+                <div class="dash-empty"><p>No booking requests yet.</p></div>
+            </div>
+        </div>
+
+        <!-- ═══ EARNINGS ═══ -->
+        <div class="dash-panel" id="panel-earnings">
+            <div class="dash-earn-grid">
+                <div class="dash-earn-card"><div class="dash-earn-val" id="earn-total">₹0</div><div class="dash-earn-label">Total Earned</div></div>
+                <div class="dash-earn-card"><div class="dash-earn-val" id="earn-month">₹0</div><div class="dash-earn-label">This Month</div></div>
+                <div class="dash-earn-card"><div class="dash-earn-val" id="earn-week">₹0</div><div class="dash-earn-label">This Week</div></div>
+            </div>
+            <div class="dash-sec-head"><div class="dash-sec-title">Completed Jobs</div></div>
+            <div id="earn-list">
+                <div class="dash-empty"><p>No completed jobs yet. Accept a booking to get started!</p></div>
+            </div>
+        </div>
+
+        <!-- ═══ MY MENU ═══ -->
+        <div class="dash-panel" id="panel-menu">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:10px">
+                <div class="dash-sec-title" style="margin:0">My Menu</div>
+                <button class="menu-add-btn" onclick="openMenuForm()">+ Add Item</button>
+            </div>
+            <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:20px;line-height:1.6">Build your menu — customers will see these items when they view your profile. Add your best dishes with prices.</p>
+
+            <!-- Add/Edit form (hidden by default) -->
+            <div id="menu-form" style="display:none;background:var(--white);border:1px solid rgba(212,114,26,0.08);border-radius:var(--radius-md);padding:20px;margin-bottom:20px">
+                <div style="font-weight:700;font-size:0.95rem;margin-bottom:14px" id="menu-form-title">Add Menu Item</div>
+                <div class="menu-form-row">
+                    <div class="form-group"><label class="form-label">Dish Name</label><input class="form-input" id="mf-name" placeholder="e.g. Gujarati Thali"></div>
+                    <div class="form-group"><label class="form-label">Price (₹)</label><input class="form-input" type="number" id="mf-price" placeholder="200"></div>
+                </div>
+                <div class="menu-form-row">
+                    <div class="form-group">
+                        <label class="form-label">Type</label>
+                        <select class="form-input" id="mf-type"><option value="veg">🟢 Veg</option><option value="nonveg">🔴 Non-Veg</option></select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Category</label>
+                        <select class="form-input" id="mf-cat"><option>Gujarati</option><option>North Indian</option><option>South Indian</option><option>Chinese</option><option>Continental</option><option>Punjabi</option><option>Desserts</option><option>Snacks</option><option>Breakfast</option><option>Other</option></select>
+                    </div>
+                </div>
+                <div class="form-group"><label class="form-label">Description (optional)</label><input class="form-input" id="mf-desc" placeholder="Short description of the dish"></div>
+                <div style="display:flex;gap:10px;margin-top:4px">
+                    <button class="btn-submit" onclick="saveMenuItem()" style="flex:1">Save Item</button>
+                    <button class="btn-ghost" onclick="closeMenuForm()" style="padding:14px 24px">Cancel</button>
+                </div>
+            </div>
+
+            <div class="menu-builder" id="menu-list">
+                <div class="dash-empty"><p>No menu items yet. Add your signature dishes!</p></div>
+            </div>
+        </div>
+
+        <!-- ═══ PROFILE ═══ -->
+        <div class="dash-panel" id="panel-profile">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:22px" id="profile-grid">
+                <div>
+                    <div class="dash-profile-card">
+                        <div class="dash-pc-cover"><div class="dash-pc-ava" id="pc-ava">C</div></div>
+                        <div class="dash-pc-info">
+                            <div class="dash-pc-name" id="pc-name">Chef</div>
+                            <div class="dash-pc-email" id="pc-email">—</div>
+                            <div style="font-size:0.82rem;color:var(--text-muted);margin-top:2px" id="pc-phone"></div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <div class="dash-settings">
+                        <div class="dash-settings-title">Chef Settings</div>
+                        <div class="dash-setting-item">
+                            <div><div class="dash-si-text">Accepting Bookings</div><div class="dash-si-sub">Toggle availability</div></div>
+                            <label class="dash-toggle"><input type="checkbox" checked><span class="dash-toggle-slider"></span></label>
+                        </div>
+                        <div class="dash-setting-item">
+                            <div><div class="dash-si-text">Email Notifications</div><div class="dash-si-sub">New booking alerts</div></div>
+                            <label class="dash-toggle"><input type="checkbox" checked><span class="dash-toggle-slider"></span></label>
+                        </div>
+                        <div class="dash-setting-item">
+                            <div><div class="dash-si-text">SMS Alerts</div><div class="dash-si-sub">Booking reminders</div></div>
+                            <label class="dash-toggle"><input type="checkbox"><span class="dash-toggle-slider"></span></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+</div>
+
+<script src="auth.js"></script>
+<script>
+// ═══ PROTECT PAGE ═══
+var user = requireAuth();
+if (!user) throw new Error('Not authenticated');
+if (user.role !== 'Chef') { window.location.href = 'customer-dashboard.html'; throw new Error('Not a chef'); }
+
+// ═══ APPLY USER ═══
+function setText(id, val) { var el = document.getElementById(id); if (el) el.textContent = val; }
+var initials = user.initials || (user.name || 'C').charAt(0);
+var fullName = ((user.name || '') + ' ' + (user.lastName || '')).trim() || 'Chef';
+
+setText('sb-ava', initials); setText('sb-name', fullName);
+setText('h-ava', initials); setText('pc-ava', initials);
+setText('pc-name', fullName);
+setText('pc-email', user.email || '—');
+setText('pc-phone', user.phone ? '📱 ' + user.phone : '');
+setText('dw-name', user.name || 'Chef');
+
+var h = new Date().getHours();
+setText('dw-greeting', h < 12 ? 'Good Morning' : h < 17 ? 'Good Afternoon' : 'Good Evening');
+
+// ═══ NAVIGATION ═══
+var titles = { 'overview': 'Overview', 'requests': 'Booking Requests', 'earnings': 'My Earnings', 'menu': 'My Menu', 'profile': 'My Profile' };
+
+function showPanel(id) {
+    document.querySelectorAll('.dash-panel').forEach(function(p) { p.classList.remove('active'); });
+    var target = document.getElementById('panel-' + id);
+    if (target) target.classList.add('active');
+    setText('h-title', titles[id] || 'Overview');
+    document.querySelectorAll('.dash-sb-link').forEach(function(l) {
+        l.classList.remove('active');
+        if (l.getAttribute('data-panel') === id) l.classList.add('active');
+    });
+    if (window.innerWidth <= 900) closeSidebar();
+    if (id === 'requests') renderAllRequests();
+    if (id === 'earnings') renderEarnings();
+    if (id === 'menu') renderMenu();
+}
+
+function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sbOverlay').classList.toggle('open'); }
+function closeSidebar() { document.getElementById('sidebar').classList.remove('open'); document.getElementById('sbOverlay').classList.remove('open'); }
+function toggleAvail(el) {
+    var label = document.getElementById('avail-label');
+    if (label) { label.textContent = el.checked ? 'Available' : 'Offline'; label.className = 'dash-avail-label' + (el.checked ? '' : ' offline'); }
+    showToast(el.checked ? 'You are now available for bookings.' : 'You are now offline.');
+}
+
+// ═══ ORDERS (shared localStorage with customer) ═══
+function getOrders() { try { return JSON.parse(localStorage.getItem('coc_orders') || '[]'); } catch (e) { return []; } }
+function saveOrders(o) { localStorage.setItem('coc_orders', JSON.stringify(o)); }
+
+function getMyRequests() {
+    return getOrders().filter(function(o) { return o.chefEmail === user.email; });
+}
+
+// ═══ RENDER REQUESTS ═══
+function renderRequestCard(o, showActions) {
+    var cInit = (o.customerName || 'C').charAt(0);
+    return '<div class="dash-req-card">' +
+        '<div class="dash-req-top"><div class="dash-req-ava">' + cInit + '</div>' +
+        '<div class="dash-req-info"><div class="dash-req-name">' + (o.customerName || 'Customer') + '</div>' +
+        '<div class="dash-req-detail">' + (o.date || '') + ' · ' + (o.time || '') + '</div></div>' +
+        '<div class="dash-req-amount">₹' + (o.amount || 0).toLocaleString('en-IN') + '</div></div>' +
+        '<div class="dash-req-meta">' +
+        '<div class="dash-req-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' + (o.duration || '2hr') + '</div>' +
+        '<div class="dash-req-meta-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>' + (o.guests || '1-2') + '</div></div>' +
+        (o.notes ? '<div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:12px;padding:8px 12px;background:var(--cream-100);border-radius:8px">💬 ' + o.notes + '</div>' : '') +
+        '<div style="display:flex;align-items:center;justify-content:space-between">' +
+        '<span class="dash-status dash-status-' + o.status.toLowerCase() + '">' + o.status + '</span>' +
+        (showActions && o.status === 'Pending' ? '<div class="dash-req-actions"><button class="btn-accept" onclick="respond(\'' + o.id + '\',\'Confirmed\')">✓ Accept</button><button class="btn-decline" onclick="respond(\'' + o.id + '\',\'Cancelled\')">✕ Decline</button></div>' : '') +
+        '</div></div>';
+}
+
+function renderRecentRequests() {
+    var container = document.getElementById('recent-req');
+    var pending = getMyRequests().filter(function(o) { return o.status === 'Pending'; }).slice(0, 3);
+    if (!pending.length) { container.innerHTML = '<div class="dash-empty"><p>No pending requests right now.</p></div>'; return; }
+    container.innerHTML = pending.map(function(o) { return renderRequestCard(o, true); }).join('');
+}
+
+function renderAllRequests() {
+    var container = document.getElementById('all-requests');
+    var reqs = getMyRequests();
+    if (!reqs.length) { container.innerHTML = '<div class="dash-empty"><p>No booking requests yet.</p></div>'; return; }
+    container.innerHTML = reqs.map(function(o) { return renderRequestCard(o, true); }).join('');
+}
+
+function respond(orderId, status) {
+    var orders = getOrders();
+    var idx = orders.findIndex(function(o) { return o.id === orderId; });
+    if (idx > -1) { orders[idx].status = status; saveOrders(orders); }
+    updateStats();
+    renderRecentRequests();
+    renderAllRequests();
+    showToast(status === 'Confirmed' ? '✅ Booking accepted!' : '❌ Booking declined.');
+}
+
+// ═══ EARNINGS ═══
+function renderEarnings() {
+    var jobs = getMyRequests().filter(function(o) { return o.status === 'Confirmed' || o.status === 'Completed'; });
+    var total = jobs.reduce(function(s, o) { return s + Math.round((o.amount || 0) * 0.8); }, 0);
+    setText('earn-total', '₹' + total.toLocaleString('en-IN'));
+    setText('earn-month', '₹' + Math.round(total * 0.4).toLocaleString('en-IN'));
+    setText('earn-week', '₹' + Math.round(total * 0.15).toLocaleString('en-IN'));
+
+    var container = document.getElementById('earn-list');
+    if (!jobs.length) { container.innerHTML = '<div class="dash-empty"><p>No completed jobs yet.</p></div>'; return; }
+    container.innerHTML = jobs.map(function(o) {
+        return '<div class="dash-order-card"><div class="dash-oc-top"><div><div class="dash-oc-id">' + (o.customerName || 'Customer') + '</div><div class="dash-oc-date">' + (o.date || '') + ' · ' + (o.duration || '') + '</div></div><span class="dash-status dash-status-' + o.status.toLowerCase() + '">' + o.status + '</span></div><div class="dash-oc-bottom"><div class="dash-oc-total" style="color:var(--green-ok)">₹' + Math.round((o.amount || 0) * 0.8).toLocaleString('en-IN') + '</div></div></div>';
+    }).join('');
+}
+
+// ═══ STATS ═══
+function updateStats() {
+    var reqs = getMyRequests();
+    var pending = reqs.filter(function(o) { return o.status === 'Pending'; }).length;
+    var completed = reqs.filter(function(o) { return o.status === 'Confirmed' || o.status === 'Completed'; }).length;
+    var earned = reqs.filter(function(o) { return o.status === 'Confirmed' || o.status === 'Completed'; }).reduce(function(s, o) { return s + Math.round((o.amount || 0) * 0.8); }, 0);
+
+    setText('stat-pending', pending);
+    setText('stat-completed', completed);
+    setText('stat-earned', '₹' + earned.toLocaleString('en-IN'));
+    setText('dw-pending', pending);
+
+    // Calculate average rating from customer reviews
+    var ratedOrders = reqs.filter(function(o) { return o.rating; });
+    if (ratedOrders.length) {
+        var avgRating = ratedOrders.reduce(function(s, o) { return s + o.rating; }, 0) / ratedOrders.length;
+        setText('stat-rating', avgRating.toFixed(1) + ' ★');
+    } else {
+        setText('stat-rating', 'New');
+    }
+
+    var badge = document.getElementById('req-badge');
+    if (badge) { badge.textContent = pending; badge.style.display = pending ? 'inline' : 'none'; }
+
+    renderRecentRequests();
+}
+
+// ═══ MENU BUILDER ═══
+function getMyMenu() {
+    try { return JSON.parse(localStorage.getItem('coc_menu_' + user.email) || '[]'); }
+    catch (e) { return []; }
+}
+function saveMyMenu(items) { localStorage.setItem('coc_menu_' + user.email, JSON.stringify(items)); }
+
+var editingMenuIdx = -1;
+
+function openMenuForm(idx) {
+    editingMenuIdx = (typeof idx === 'number') ? idx : -1;
+    var form = document.getElementById('menu-form');
+    form.style.display = 'block';
+    document.getElementById('menu-form-title').textContent = editingMenuIdx >= 0 ? 'Edit Menu Item' : 'Add Menu Item';
+
+    if (editingMenuIdx >= 0) {
+        var item = getMyMenu()[editingMenuIdx];
+        if (item) {
+            document.getElementById('mf-name').value = item.name || '';
+            document.getElementById('mf-price').value = item.price || '';
+            document.getElementById('mf-type').value = item.type || 'veg';
+            document.getElementById('mf-cat').value = item.category || 'Gujarati';
+            document.getElementById('mf-desc').value = item.desc || '';
+        }
+    } else {
+        document.getElementById('mf-name').value = '';
+        document.getElementById('mf-price').value = '';
+        document.getElementById('mf-type').value = 'veg';
+        document.getElementById('mf-desc').value = '';
+    }
+}
+
+function closeMenuForm() {
+    document.getElementById('menu-form').style.display = 'none';
+    editingMenuIdx = -1;
+}
+
+function saveMenuItem() {
+    var name = document.getElementById('mf-name').value.trim();
+    var price = parseInt(document.getElementById('mf-price').value) || 0;
+    var type = document.getElementById('mf-type').value;
+    var cat = document.getElementById('mf-cat').value;
+    var desc = document.getElementById('mf-desc').value.trim();
+
+    if (!name) { showToast('Please enter the dish name.'); return; }
+    if (!price) { showToast('Please enter a price.'); return; }
+
+    var items = getMyMenu();
+    var item = { name: name, price: price, type: type, category: cat, desc: desc };
+
+    if (editingMenuIdx >= 0 && editingMenuIdx < items.length) {
+        items[editingMenuIdx] = item;
+        showToast('Menu item updated!');
+    } else {
+        items.push(item);
+        showToast('Menu item added!');
+    }
+
+    saveMyMenu(items);
+    closeMenuForm();
+    renderMenu();
+}
+
+function deleteMenuItem(idx) {
+    if (!confirm('Remove this item from your menu?')) return;
+    var items = getMyMenu();
+    items.splice(idx, 1);
+    saveMyMenu(items);
+    renderMenu();
+    showToast('Item removed.');
+}
+
+function renderMenu() {
+    var container = document.getElementById('menu-list');
+    var items = getMyMenu();
+    if (!items.length) {
+        container.innerHTML = '<div class="dash-empty"><p>No menu items yet. Add your signature dishes!</p></div>';
+        return;
+    }
+    container.innerHTML = items.map(function(item, i) {
+        return '<div class="menu-item-card">' +
+            '<div class="mi-type-dot mi-type-' + (item.type || 'veg') + '"></div>' +
+            '<div class="mi-details"><div class="mi-name">' + item.name + '</div>' +
+            '<div class="mi-desc">' + (item.desc || item.category || '') + '</div></div>' +
+            '<div class="mi-price">₹' + item.price + '</div>' +
+            '<div class="mi-actions">' +
+            '<button class="mi-action-btn" onclick="openMenuForm(' + i + ')" title="Edit">✎</button>' +
+            '<button class="mi-action-btn delete" onclick="deleteMenuItem(' + i + ')" title="Delete">✕</button>' +
+            '</div></div>';
+    }).join('');
+}
+
+// ═══ INIT ═══
+updateStats();
+renderMenu();
+
+if (window.innerWidth <= 768) {
+    var pg = document.getElementById('profile-grid');
+    if (pg) pg.style.gridTemplateColumns = '1fr';
+}
+</script>
+</body>
+</html>
