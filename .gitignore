@@ -1,0 +1,9 @@
+node_modules/
+.next/
+out/
+.env.local
+.env
+tsconfig.tsbuildinfo
+.vscode/
+# Claude Code working directories (local only)
+.claude/

@@ -1,0 +1,42 @@
+{
+  "name": "cookoncall-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "npx @opennextjs/cloudflare build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^3.9.0",
+    "axios": "^1.7.2",
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "framer-motion": "^11.3.8",
+    "js-cookie": "^3.0.5",
+    "lucide-react": "^0.411.0",
+    "next": "^14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-hook-form": "^7.52.1",
+    "react-hot-toast": "^2.4.1",
+    "socket.io-client": "^4.7.5",
+    "tailwind-merge": "^2.4.0",
+    "zod": "^3.23.8",
+    "zustand": "^4.5.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/forms": "^0.5.11",
+    "@types/js-cookie": "^3.0.6",
+    "@types/node": "^20.19.39",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "autoprefixer": "^10.4.27",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.5",
+    "postcss": "^8",
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5"
+  }
+}

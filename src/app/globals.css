@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* ═══ Google Fonts ═══ */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap");
+
+/* ═══ Design Tokens ═══ */
+:root {
+  --brown-900: #1a0f0a;
+  --brown-800: #2c1810;
+  --brown-700: #3d2215;
+  --brown-600: #5c3420;
+  --orange-500: #d4721a;
+  --orange-400: #e8862e;
+  --orange-300: #f0a050;
+  --cream-100: #fff8f0;
+  --cream-200: #f5ebdd;
+  --cream-300: #ead9c4;
+  --white: #ffffff;
+  --text-dark: #1a0f0a;
+  --text-muted: #6b5b50;
+  --green-ok: #2e8b57;
+  --red-err: #d93025;
+  --whatsapp: #25d366;
+  --font-display: "Playfair Display", serif;
+  --font-body: "DM Sans", sans-serif;
+  --nav-height: 72px;
+}
+
+/* ═══ Base ═══ */
+body {
+  font-family: var(--font-body);
+  background: var(--cream-100);
+  color: var(--text-dark);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+::selection {
+  background: rgba(212, 114, 26, 0.15);
+  color: var(--text-dark);
+}
+
+/* ═══ Scrollbar ═══ */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(26, 15, 10, 0.15);
+  border-radius: 3px;
+}
+
+/* ═══ Animations ═══ */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes spinSlow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.6s ease both;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease both;
+}
+
+.animate-float {
+  animation: float 4s ease-in-out infinite;
+}
+
+.animate-spin-slow {
+  animation: spinSlow 30s linear infinite;
+}
+
+/* Staggered delays */
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+.delay-500 { animation-delay: 0.5s; }
+.delay-1500 { animation-delay: 1.5s; }
+.delay-3000 { animation-delay: 3s; }
+
+/* ═══ Mobile Utilities ═══ */
+
+/* Minimum 44px touch targets (Apple HIG / WCAG) */
+@media (max-width: 640px) {
+  button, a, [role="button"] {
+    min-height: 44px;
+  }
+}
+
+/* Horizontal scroll container for filter pills */
+.scroll-pills {
+  display: flex;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  gap: 0.5rem;
+  padding-bottom: 2px;
+}
+.scroll-pills::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe area for phones with notch */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
