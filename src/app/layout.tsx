@@ -97,11 +97,42 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "LocalBusiness",
+              name: "CookOnCall",
+              description:
+                "Ahmedabad's first home chef booking platform. Restaurant-quality meals cooked in your kitchen.",
+              url: "https://thecookoncall.com",
+              telephone: "+91 9081444326",
+              address: {
+                "@type": "PostalAddress",
+                addressLocality: "Ahmedabad",
+                addressRegion: "Gujarat",
+                addressCountry: "IN",
+              },
+              geo: {
+                "@type": "GeoCoordinates",
+                latitude: 23.0225,
+                longitude: 72.5714,
+              },
+              priceRange: "₹₹",
+              servesCuisine: [
+                "Gujarati",
+                "Punjabi",
+                "South Indian",
+                "Continental",
+              ],
+              areaServed: "Ahmedabad",
+            }),
+          }}
+        />
       </head>
       <body>
-        <Providers>
-          {children}
-        </Providers>
+        <Providers>{children}</Providers>
         <Toaster
           position="bottom-center"
           toastOptions={{
