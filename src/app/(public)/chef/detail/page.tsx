@@ -1,4 +1,5 @@
 "use client";
+export const dynamic = 'force-static';
 
 /**
  * Chef Detail Page — P1.5c update
