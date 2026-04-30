@@ -34,13 +34,14 @@ async function getChef(slug: string): Promise<Cook | null> {
   } catch { return null; }
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  const chef = await getChef(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const chef = await getChef(slug);
   if (!chef) return { title: "Chef Not Found | CookOnCall" };
   const name = chef.user?.name ?? "Home Chef";
   const title = name + " - Home Chef in Ahmedabad | CookOnCall";
   const description = chef.bio ?? "Book " + name + ", a verified home chef in Ahmedabad.";
-  const canonical = "https://thecookoncall.com/chef/" + params.slug;
+  const canonical = "https://thecookoncall.com/chef/" + slug;
   const ogImage = chef.user?.profile_photo ?? "/og-default.png";
   return {
     title, description,
@@ -50,8 +51,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function ChefDetailPage({ params }: { params: { slug: string } }) {
-  const chef = await getChef(params.slug);
+export default async function ChefDetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  const chef = await getChef(slug);
   if (!chef) return <div>Chef not found</div>;
   const name = chef.user?.name ?? "Chef";
   const cuisines = chef.cuisines ?? [];
@@ -69,7 +71,7 @@ export default async function ChefDetailPage({ params }: { params: { slug: strin
     itemListElement: [
       { "@type": "ListItem", position: 1, name: "Home", item: "https://thecookoncall.com" },
       { "@type": "ListItem", position: 2, name: "Chefs", item: "https://thecookoncall.com/chef" },
-      { "@type": "ListItem", position: 3, name, item: "https://thecookoncall.com/chef/" + params.slug },
+      { "@type": "ListItem", position: 3, name, item: "https://thecookoncall.com/chef/" + slug },
     ],
   };
   return (
