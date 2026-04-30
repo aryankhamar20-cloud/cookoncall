@@ -1,10 +1,11 @@
+/* THIS must be line 1 — before everything */
+@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-
-/* ═══ Google Fonts ═══ */
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap");
+/* rest of your file stays exactly as-is below this line */
 
 /* ═══ Design Tokens ═══ */
 :root {
