@@ -45,6 +45,12 @@ export default function HeroSection() {
           >
             How it works
           </Link>
+          <Link
+            href="/chefs/ahmedabad"
+            className="text-[0.9rem] text-[var(--text-muted)] no-underline hover:text-[var(--orange-500)] transition-colors underline-offset-2 hover:underline"
+          >
+            Browse chefs in Ahmedabad →
+          </Link>
         </div>
 
         {/* Trust Badges */}
