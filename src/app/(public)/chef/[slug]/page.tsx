@@ -16,7 +16,7 @@ interface Cook {
   is_available?: boolean;
   city?: string;
 }
-export const dynamicParams = false;
+
 export async function generateStaticParams() {
   try {
     const res = await fetch(API_BASE + "/cooks?limit=500&page=1", { cache: "force-cache" });
