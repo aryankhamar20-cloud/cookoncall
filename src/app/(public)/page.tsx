@@ -1,3 +1,11 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Book a Home Chef in Ahmedabad | CookOnCall",
+  description:
+    "Ahmedabad's first home chef booking platform. Restaurant-quality meals cooked in your kitchen. Starting at ₹49. Book a verified chef in minutes.",
+  alternates: { canonical: "https://thecookoncall.com" },
+};
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
