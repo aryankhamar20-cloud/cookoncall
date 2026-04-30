@@ -10,7 +10,7 @@ const API_BASE =
 async function getChefIds(): Promise<string[]> {
   try {
     const res = await fetch(
-      `${API_BASE}/cooks?limit=500&page=1`,
+      `${API_BASE}/cooks?limit=50&page=1`,
       { cache: "force-cache" }
     );
     if (!res.ok) return [];
@@ -31,6 +31,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "daily",
       priority: 1.0,
+    },
+     {
+      url: `${BASE_URL}/chefs/ahmedabad`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.9,
     },
     {
       url: `${BASE_URL}/chef`,
