@@ -73,42 +73,11 @@ export default async function ChefsAhmedabadPage() {
     },
   };
 
-  const faqSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: [
-      {
-        "@type": "Question",
-        name: "How much does a home chef cost in Ahmedabad?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Home chefs on CookOnCall start at ₹600 per session in Ahmedabad. Pricing is fixed and transparent — no negotiation needed.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "What cuisines are available?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Our chefs in Ahmedabad specialise in Gujarati, Punjabi, South Indian, Jain, and continental cuisines.",
-        },
-      },
-      {
-        "@type": "Question",
-        name: "How do I book a home chef in Ahmedabad?",
-        acceptedAnswer: {
-          "@type": "Answer",
-          text: "Browse chefs on this page, click a profile to see their menu, then book directly through the platform. Payment is processed securely via Razorpay.",
-        },
-      },
-    ],
-  };
 
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceSchema) }} />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }} />
       <Navbar />
 
       {/* Hero */}
