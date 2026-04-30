@@ -6,7 +6,9 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL!;
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://cookoncall-backend-production-7c6d.up.railway.app/api/v1";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

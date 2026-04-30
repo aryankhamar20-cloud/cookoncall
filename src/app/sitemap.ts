@@ -1,7 +1,9 @@
 import type { MetadataRoute } from "next";
 
 const BASE_URL = "https://thecookoncall.com";
-const API_BASE = process.env.NEXT_PUBLIC_API_URL!;
+const API_BASE =
+  process.env.NEXT_PUBLIC_API_URL ||
+  "https://cookoncall-backend-production-7c6d.up.railway.app/api/v1";
 
 // Fetch all chef IDs at build time
 async function getChefIds(): Promise<string[]> {
