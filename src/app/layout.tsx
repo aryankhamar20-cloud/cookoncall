@@ -41,10 +41,10 @@ export const metadata: Metadata = {
   },
 
   alternates: {
-    canonical: "https://thecookoncall.com",
+    canonical: "https://thecookoncall.com/",
     languages: {
-      "en-IN": "https://thecookoncall.com",
-      "x-default": "https://thecookoncall.com",
+      "en-IN": "https://thecookoncall.com/",
+      "x-default": "https://thecookoncall.com/",
     },
   },
 
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     title: "Book a Home Chef in Ahmedabad | CookOnCall",
     description:
       "Hire verified home chefs in Ahmedabad for daily cooking, parties & events. 50+ chefs. Book in minutes. Starting ₹600/session.",
-    url: "https://thecookoncall.com",
+    url: "https://thecookoncall.com/",
     type: "website",
     locale: "en_IN",
     images: [
@@ -139,7 +139,7 @@ const localBusinessSchema = {
       closes: "22:00",
     },
   ],
-  sameAs: ["https://cookoncall.pages.dev"],
+  sameAs: [],
   aggregateRating: {
     "@type": "AggregateRating",
     ratingValue: "4.8",
