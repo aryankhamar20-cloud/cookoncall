@@ -64,8 +64,8 @@ export default function OrderFoodPanel() {
     return items.find((i) => i.name === itemName)?.qty || 0;
   }
 
-  function handleAddToCart(item: any, chefEmail: string, chefName: string) {
-    addItem(item.name, Number(item.price), chefEmail, chefName);
+  function handleAddToCart(item: any, chefEmail: string, chefName: string, chefId: string) {
+    addItem(item.id, item.name, Number(item.price), chefEmail, chefName, chefId);
   }
 
   return (
@@ -182,7 +182,7 @@ export default function OrderFoodPanel() {
                                 {formatCurrency(Number(item.price))}
                               </div>
                               {qty === 0 ? (
-                                <button onClick={() => handleAddToCart(item, chefEmail, chefName)}
+                                <button onClick={() => handleAddToCart(item, chefEmail, chefName, chef.id)}
                                   className="flex items-center gap-1 px-3.5 py-1.5 rounded-full text-[0.78rem] font-semibold text-[var(--orange-500)] bg-[rgba(212,114,26,0.08)] border border-[rgba(212,114,26,0.15)] cursor-pointer transition-all hover:bg-[var(--orange-500)] hover:text-white hover:border-[var(--orange-500)]"
                                   style={{ fontFamily: "var(--font-body)" }}>
                                   <Plus className="w-3.5 h-3.5" /> Add
@@ -194,7 +194,7 @@ export default function OrderFoodPanel() {
                                     <Minus className="w-3.5 h-3.5" />
                                   </button>
                                   <span className="font-bold text-[0.85rem] min-w-[18px] text-center">{qty}</span>
-                                  <button onClick={() => handleAddToCart(item, chefEmail, chefName)}
+                                  <button onClick={() => handleAddToCart(item, chefEmail, chefName, chef.id)}
                                     className="w-7 h-7 rounded-full border border-[rgba(212,114,26,0.15)] bg-transparent flex items-center justify-center cursor-pointer transition-all hover:bg-[var(--orange-500)] hover:text-white hover:border-[var(--orange-500)]">
                                     <Plus className="w-3.5 h-3.5" />
                                   </button>

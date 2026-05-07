@@ -236,6 +236,7 @@ export interface Notification {
 // ═══ Cart Types ═══
 
 export interface CartItem {
+  menuItemId: string; // UUID — required for order_items payload to backend
   name: string;
   price: number;
   qty: number;
