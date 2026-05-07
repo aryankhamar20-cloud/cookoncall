@@ -595,7 +595,7 @@ export default function BookChefPanel() {
                                    )}
                                   />
                                 </div>
-                                {item.image && <img src={item.image} alt="" className="w-7 h-7 rounded object-cover shrink-0" />}
+                                {item.image && <img src={item.image} alt={item.name} className="w-7 h-7 rounded object-cover shrink-0" />}
                                 <span className="flex-1 truncate">{item.name}</span>
                                 <span className="font-semibold text-[var(--orange-500)]">
                                  {formatCurrency(Number(item.price))}

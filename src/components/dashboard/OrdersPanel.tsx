@@ -9,7 +9,7 @@ import PaymentModal from "@/components/modals/PaymentModal";
 import {
   AlertCircle, MapPin, Clock, ChefHat, XCircle, Calendar,
   Users, IndianRupee, Star, Edit3, CreditCard, RotateCcw,
-  BadgeCheck, Hourglass, ChevronDown, ChevronUp, Leaf, Award, Search,
+  BadgeCheck, Hourglass, ChevronDown, ChevronUp, Leaf, Award, Search, Truck,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Cook } from "@/types";
@@ -377,6 +377,11 @@ export default function OrdersPanel() {
                       <div className="text-[0.78rem] text-[var(--text-muted)] truncate">
                         {b.cook?.cuisines?.join(", ") || "Home Cooking"}
                       </div>
+                      {b.booking_type === "food_delivery" && (
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.66rem] font-semibold bg-blue-50 text-blue-700 border border-blue-200 mt-1">
+                          <Truck className="w-2.5 h-2.5" /> Delivery Order
+                        </span>
+                      )}
                     </div>
                   </div>
                   <span className={cn(
@@ -813,7 +818,7 @@ function RebookModal({
               <div className="flex items-center gap-3 bg-[var(--cream-100)] rounded-[12px] p-3">
                 <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#FFE4B5] to-[#FFB347] flex items-center justify-center font-display font-[800] text-[0.85rem] text-[rgba(0,0,0,0.3)] shrink-0">
                   {selectedChef.user?.avatar ? (
-                    <img src={selectedChef.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                    <img src={selectedChef.user.avatar} alt={selectedChef.user?.name || "Chef"} className="w-full h-full rounded-full object-cover" />
                   ) : getInitials(`${selectedChef.user?.name || ""} ${selectedChef.user?.lastName || ""}`.trim())}
                 </div>
                 <div className="flex-1 min-w-0">
@@ -866,7 +871,7 @@ function RebookModal({
                             className="w-4 h-4 accent-[var(--orange-500)] cursor-pointer"
                           />
                           {item.image && (
-                            <img src={item.image} alt="" className="w-10 h-10 rounded object-cover shrink-0" />
+                            <img src={item.image} alt={item.name} className="w-10 h-10 rounded object-cover shrink-0" />
                           )}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">

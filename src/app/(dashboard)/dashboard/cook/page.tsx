@@ -6,8 +6,7 @@ import {
   MapPin, Clock, Users, IndianRupee, ChefHat, AlertCircle, Plus, Pencil,
   Trash2, Loader2, Save, Leaf, X, ShieldCheck, ShieldAlert, Upload,
   Phone, FileCheck, Camera, BadgeCheck, KeyRound, Utensils, Star, MessageSquare,
-  CalendarClock,
-  Package,
+  CalendarClock, Package, Truck,
 } from "lucide-react";
 import DashboardLayout, { type SidebarSection } from "@/components/layout/DashboardLayout";
 import AvailabilityPanel from "@/components/dashboard/AvailabilityPanel";
@@ -738,6 +737,11 @@ export default function CookDashboardPage() {
           <div>
             <div className="font-bold text-[0.95rem]">{customerName}</div>
             <div className="text-[0.78rem] text-[var(--text-muted)]">{customer?.email || ""}</div>
+            {b.booking_type === "food_delivery" && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.66rem] font-semibold bg-blue-50 text-blue-700 border border-blue-200 mt-1">
+                <Truck className="w-2.5 h-2.5" /> Delivery Order
+              </span>
+            )}
           </div>
           <span className={cn("px-3 py-1 rounded-full text-[0.72rem] font-semibold border", statusStyles[status] || "bg-gray-50 text-gray-500")}>{statusLabels[status] || status}</span>
         </div>
