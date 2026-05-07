@@ -26,6 +26,49 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("[CookOnCall] Unexpected error:", error, errorInfo);
+
+    // POST to backend — best-effort, never throws (we're already in error state)
+    try {
+      const API_BASE =
+        process.env.NEXT_PUBLIC_API_URL ||
+        "https://cookoncall-backend-production-7c6d.up.railway.app/api/v1";
+
+      // Decode JWT payload from cookie (base64url, no secret needed) to get user_id
+      let userId: string | null = null;
+      try {
+        const entry = document.cookie
+          .split("; ")
+          .find((r) => r.startsWith("coc_token="));
+        // Use substring — NOT split("=")[1] — because JWT values may contain "=" padding
+        const token = entry ? entry.substring("coc_token=".length) : null;
+        if (token) {
+          // JWT uses base64url: replace - → + and _ → / before standard atob()
+          const b64 = token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/");
+          const payload = JSON.parse(atob(b64));
+          userId = payload?.sub || null;
+        }
+      } catch {
+        // Token decode failed — proceed without user_id
+      }
+
+      fetch(`${API_BASE}/errors`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: error.message || "Unknown error",
+          stack: error.stack || null,
+          component_stack: errorInfo.componentStack || null,
+          url: typeof window !== "undefined" ? window.location.href : null,
+          user_agent:
+            typeof navigator !== "undefined" ? navigator.userAgent : null,
+          ...(userId ? { user_id: userId } : {}),
+        }),
+      }).catch(() => {
+        // Swallow network errors — don't cause an error inside an error handler
+      });
+    } catch {
+      // Swallow any synchronous errors
+    }
   }
 
   handleReset = () => {

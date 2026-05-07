@@ -149,6 +149,8 @@ export default function BookChefPanel() {
       if (vegOnly) params.veg_only = true;
       if (minRating > 0) params.min_rating = minRating;
       if (sortBy) params.sort = sortBy;
+      // service_role filter — sent to backend so pagination works correctly
+      if (serviceFilter !== "all") params.service_role = serviceFilter;
       // P1.6 — area filter (chef must serve this area or be all-city)
       if (areaFilter) params.area = areaFilter;
 
@@ -161,7 +163,7 @@ export default function BookChefPanel() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, cuisineFilter, vegOnly, minRating, sortBy, areaFilter]);
+  }, [debouncedSearch, cuisineFilter, vegOnly, minRating, sortBy, serviceFilter, areaFilter]);
 
   useEffect(() => { fetchChefs(); }, [fetchChefs]);
 
@@ -511,11 +513,6 @@ export default function BookChefPanel() {
       {!loading && !error && chefs.length > 0 && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {chefs
-            .filter((chef) => {
-              if (serviceFilter === "all") return true;
-              const roles = chef.service_roles || ["home_cook"]; // legacy chefs default to home_cook
-              return roles.includes(serviceFilter) || roles.includes("both");
-            })
             .map((chef) => {
               const name = `${chef.user?.name || ""} ${chef.user?.lastName || ""}`.trim() || "Chef";
               const ini = getInitials(name);
