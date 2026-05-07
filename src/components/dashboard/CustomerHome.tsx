@@ -57,7 +57,9 @@ function findUpcoming(bookings: Booking[]): Booking | null {
       b.status === "pending",
   );
   active.sort(
-    (a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime(),
+    (a, b) =>
+      new Date((a as any).scheduled_at ?? a.scheduledAt).getTime() -
+      new Date((b as any).scheduled_at ?? b.scheduledAt).getTime(),
   );
   return active[0] || null;
 }
@@ -70,8 +72,8 @@ function findRebookChefs(bookings: Booking[]): Cook[] {
     .filter((b) => b.status === "completed" && b.cook)
     .sort(
       (a, b) =>
-        new Date(b.completed_at || b.createdAt).getTime() -
-        new Date(a.completed_at || a.createdAt).getTime(),
+        new Date((b as any).completed_at || (b as any).created_at || b.createdAt).getTime() -
+        new Date((a as any).completed_at || (a as any).created_at || a.createdAt).getTime(),
     );
   for (const b of completed) {
     if (b.cook?.id && !seen.has(b.cook.id)) {
@@ -214,7 +216,7 @@ export default function CustomerHome() {
               </div>
               <div className="text-white font-bold text-[0.95rem] truncate">
                 {chefName(upcoming.cook)} ·{" "}
-                {new Date(upcoming.scheduledAt).toLocaleString("en-IN", {
+                {new Date((upcoming as any).scheduled_at ?? upcoming.scheduledAt).toLocaleString("en-IN", {
                   day: "numeric",
                   month: "short",
                   hour: "numeric",
