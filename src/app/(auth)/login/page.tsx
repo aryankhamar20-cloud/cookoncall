@@ -10,6 +10,7 @@ import { authApi } from "@/lib/api";
 import { Eye, EyeOff, ArrowLeft, UtensilsCrossed, ChefHat, Mail, ShieldCheck, KeyRound } from "lucide-react";
 import toast from "react-hot-toast";
 import PasswordStrength, { evaluatePassword } from "@/components/ui/PasswordStrength";
+import GoogleSignInButton from "@/components/auth/GoogleSignInButton";
 
 type Role = "Customer" | "Chef" | "";
 type AuthTab = "login" | "signup";
@@ -120,6 +121,44 @@ function LoginPage() {
     setRole(selectedRole);
     // Auto-advance to auth screen immediately
     setStep("auth");
+  }
+
+  /**
+   * Round 4 — Google Sign-In handler.
+   *
+   * Called by GoogleSignInButton with the raw ID token. We forward it
+   * to /auth/google along with the role the user picked on the role-
+   * selection screen. The backend honors the role only when this is
+   * a brand-new account; existing accounts keep their role so a Chef
+   * who taps "Sign in with Google" on the Customer screen never gets
+   * silently downgraded.
+   */
+  async function handleGoogleSignIn(idToken: string) {
+    setLoading(true);
+    try {
+      const { data } = await authApi.googleAuth({
+        token: idToken,
+        role: role === "Chef" ? "cook" : "user",
+      });
+      const responseData = data.data || data;
+      saveAuth({
+        accessToken: responseData.accessToken || responseData.access_token,
+        refreshToken: responseData.refreshToken || responseData.refresh_token,
+        user: responseData.user,
+      });
+      toast.success(`Welcome, ${responseData.user?.name || "back"}!`);
+      const userRole = responseData.user?.role;
+      if (userRole === "cook") router.push("/dashboard/cook");
+      else router.push("/dashboard/customer");
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err.message ||
+        "Google sign-in failed. Please try email instead.";
+      toast.error(typeof msg === "string" ? msg : "Google sign-in failed.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleLogin() {
@@ -606,6 +645,24 @@ function LoginPage() {
                     style={{ fontFamily: "var(--font-body)" }}>
                     {loading ? "Logging in..." : "Login"}
                   </button>
+
+                  {/* ── Google sign-in ───────────────────────────
+                       Round 4: rendered below the email/password CTA so
+                       returning users default to the muscle-memory path
+                       and Google is a one-tap shortcut. */}
+                  <div className="flex items-center gap-3 my-5">
+                    <div className="flex-1 h-px bg-[var(--cream-300)]" />
+                    <span className="text-[0.78rem] text-[var(--text-muted)]" style={{ fontFamily: "var(--font-body)" }}>
+                      or
+                    </span>
+                    <div className="flex-1 h-px bg-[var(--cream-300)]" />
+                  </div>
+                  <GoogleSignInButton
+                    context="signin"
+                    onSuccess={handleGoogleSignIn}
+                    onError={(msg) => toast.error(msg)}
+                    disabled={loading}
+                  />
                 </>
               ) : (
                 /* ═══ FORGOT PASSWORD FLOW — Round A Fix #6: Three-step ═══ */
@@ -842,6 +899,21 @@ function LoginPage() {
                 style={{ fontFamily: "var(--font-body)" }}>
                 {loading ? "Creating account..." : "Create Account"}
               </button>
+
+              {/* ── Google sign-up (skips email OTP entirely) ──── */}
+              <div className="flex items-center gap-3 my-5">
+                <div className="flex-1 h-px bg-[var(--cream-300)]" />
+                <span className="text-[0.78rem] text-[var(--text-muted)]" style={{ fontFamily: "var(--font-body)" }}>
+                  or
+                </span>
+                <div className="flex-1 h-px bg-[var(--cream-300)]" />
+              </div>
+              <GoogleSignInButton
+                context="signup"
+                onSuccess={handleGoogleSignIn}
+                onError={(msg) => toast.error(msg)}
+                disabled={loading}
+              />
 
               <div className="mt-7 text-center text-[0.88rem] text-[var(--text-muted)]">
                 Already have an account?{" "}
