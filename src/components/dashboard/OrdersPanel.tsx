@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import type { Cook } from "@/types";
 import { getInitials, formatCurrency } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useSocket } from "@/hooks/useSocket";
 
 // ─── Filter options (lowercase to match backend status values) ──
 const filters = [
@@ -146,6 +147,11 @@ export default function OrdersPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const PAGE_SIZE = 20;
+  const { on, off } = useSocket();
 
   // Review modal
   const [reviewModal, setReviewModal] = useState<{
@@ -177,21 +183,21 @@ export default function OrdersPanel() {
     try {
       setLoading(true);
       setError(null);
-      const params: any = {};
+      setPage(1);
+      setHasMore(true);
+      const params: any = { page: 1, limit: PAGE_SIZE };
       if (activeFilter) params.status = activeFilter;
       const res = await api.get("/bookings", { params });
       const data = res.data?.data ?? res.data;
       const list = Array.isArray(data) ? data : data?.bookings ?? data?.data ?? [];
       const safeList = Array.isArray(list) ? list : [];
       setBookings(safeList);
+      setHasMore(safeList.length === PAGE_SIZE);
 
       const map: Record<string, { rating: number; comment: string } | null> = {};
       safeList.forEach((b: any) => {
         if (b.review && typeof b.review === "object") {
-          map[b.id] = {
-            rating: Number(b.review.rating) || 0,
-            comment: b.review.comment || "",
-          };
+          map[b.id] = { rating: Number(b.review.rating) || 0, comment: b.review.comment || "" };
         } else if (b.has_review) {
           map[b.id] = { rating: 0, comment: "" };
         }
@@ -204,6 +210,27 @@ export default function OrdersPanel() {
     }
   }, [activeFilter]);
 
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const params: any = { page: nextPage, limit: PAGE_SIZE };
+      if (activeFilter) params.status = activeFilter;
+      const res = await api.get("/bookings", { params });
+      const data = res.data?.data ?? res.data;
+      const list = Array.isArray(data) ? data : data?.bookings ?? data?.data ?? [];
+      const safeList = Array.isArray(list) ? list : [];
+      setBookings((prev) => [...prev, ...safeList]);
+      setPage(nextPage);
+      setHasMore(safeList.length === PAGE_SIZE);
+    } catch {
+      // silent — user can retry by clicking Load More again
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, page, activeFilter]);
+
   useEffect(() => {
     fetchBookings();
   }, [fetchBookings]);
@@ -214,6 +241,32 @@ export default function OrdersPanel() {
     const id = setInterval(() => fetchBookings(), 60_000);
     return () => clearInterval(id);
   }, [fetchBookings]);
+
+  // ─── Real-time WebSocket booking updates ─────────────────────────
+  // When the backend emits any booking lifecycle event, immediately
+  // re-fetch so the UI reflects the new status without waiting for polling.
+  useEffect(() => {
+    const bookingEvents = [
+      "booking:accepted",
+      "booking:rejected",
+      "booking:paid",
+      "booking:started",
+      "booking:completed",
+      "booking:cancelled",
+      "booking:expired",
+    ] as const;
+
+    const handleBookingUpdate = () => {
+      // Small delay so the backend has committed the status change
+      setTimeout(() => fetchBookings(), 500);
+    };
+
+    bookingEvents.forEach((event) => on(event, handleBookingUpdate));
+
+    return () => {
+      bookingEvents.forEach((event) => off(event, handleBookingUpdate));
+    };
+  }, [fetchBookings, on, off]);
 
   async function handleCancel(bookingId: string) {
     if (!confirm("Are you sure you want to cancel this booking?")) return;
@@ -328,8 +381,7 @@ export default function OrdersPanel() {
 
       {!loading && !error && bookings.length > 0 && (
         <div className="space-y-4">
-          {bookings.map((b) => {
-            const cookUser = b.cook?.user;
+          {bookings.map((b) => {            const cookUser = b.cook?.user;
             const chefName = cookUser
               ? `${cookUser.name || ""} ${cookUser.lastName || cookUser.last_name || ""}`.trim() || "Chef"
               : "Chef";
@@ -533,6 +585,20 @@ export default function OrdersPanel() {
               </div>
             );
           })}
+
+          {/* Load More button — shown when more pages exist */}
+          {hasMore && (
+            <div className="flex justify-center pt-2 pb-4">
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="px-6 py-2.5 rounded-full text-[0.85rem] font-semibold text-[var(--orange-500)] bg-white border border-[rgba(212,114,26,0.2)] cursor-pointer hover:bg-[rgba(212,114,26,0.04)] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                style={{ fontFamily: "var(--font-body)" }}
+              >
+                {loadingMore ? "Loading..." : "Load More"}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
