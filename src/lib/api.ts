@@ -417,6 +417,57 @@ export const adminApi = {
   /** Last N broadcasts for the history panel (newest first). */
   getBroadcasts: (params?: { page?: number; limit?: number }) =>
     api.get("/admin/notifications/broadcasts", { params }),
+
+  // ─── ROUND 4: PROMO CODE MANAGER ────────────────────────────
+  // Backend mounts these under /promo-codes (admin-only via @Roles).
+  promos: {
+    /** List promos. status filter: active|inactive|expired|exhausted. */
+    list: (status?: "active" | "inactive" | "expired" | "exhausted") =>
+      api.get("/promo-codes", { params: status ? { status } : {} }),
+
+    get: (id: string) => api.get(`/promo-codes/${id}`),
+
+    create: (data: {
+      code: string;
+      type: "percentage" | "flat" | "free_visit";
+      value: number;
+      max_discount?: number;
+      min_order_amount?: number;
+      single_use?: boolean;
+      max_uses?: number;
+      expires_at?: string; // ISO date
+      description?: string;
+      is_active?: boolean;
+    }) => api.post("/promo-codes", data),
+
+    /** Edit any field except `code`; backend rejects updates to code. */
+    update: (
+      id: string,
+      data: Partial<{
+        type: "percentage" | "flat" | "free_visit";
+        value: number;
+        max_discount: number | null;
+        min_order_amount: number;
+        single_use: boolean;
+        max_uses: number | null;
+        expires_at: string | null;
+        description: string;
+        is_active: boolean;
+      }>,
+    ) => api.patch(`/promo-codes/${id}`, data),
+
+    toggle: (id: string) => api.patch(`/promo-codes/${id}/toggle`),
+
+    /**
+     * Backend returns 409 with a friendly message when the promo has
+     * already been used. Caller surfaces the message verbatim.
+     */
+    remove: (id: string) => api.delete(`/promo-codes/${id}`),
+
+    /** Paginated redemption history with hydrated user names/emails. */
+    usages: (id: string, params?: { page?: number; limit?: number }) =>
+      api.get(`/promo-codes/${id}/usages`, { params }),
+  },
 };
 
 export type AnalyticsRange = "24h" | "7d" | "30d" | "90d" | "custom";
