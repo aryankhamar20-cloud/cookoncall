@@ -13,14 +13,16 @@ import {
   ScrollText,
   BarChart3,
   Bell,
+  Ticket,
 } from "lucide-react";
 import AuditLogPanel from "@/components/dashboard/AuditLogPanel";
 import AnalyticsPanel from "@/components/dashboard/AnalyticsPanel";
 import BroadcastPanel from "@/components/dashboard/BroadcastPanel";
+import PromosPanel from "@/components/dashboard/PromosPanel";
 
 /* ═══ TYPES ═══ */
 
-type AdminPanel = "overview" | "users" | "cooks" | "bookings" | "areas" | "audit" | "analytics" | "broadcast";
+type AdminPanel = "overview" | "users" | "cooks" | "bookings" | "areas" | "audit" | "analytics" | "broadcast" | "promos";
 type CookFilter = "all" | "verified" | "pending_review" | "unverified";
 
 interface AdminStatsData {
@@ -74,6 +76,7 @@ const sidebarLinks: { id: AdminPanel; label: string; icon: React.ReactNode }[] =
   { id: "cooks", label: "Cooks", icon: <ChefHat className="w-5 h-5" /> },
   { id: "bookings", label: "Bookings", icon: <FileText className="w-5 h-5" /> },
   { id: "areas", label: "Areas", icon: <MapPin className="w-5 h-5" /> },
+  { id: "promos", label: "Promos", icon: <Ticket className="w-5 h-5" /> },
   { id: "broadcast", label: "Broadcast", icon: <Bell className="w-5 h-5" /> },
   { id: "audit", label: "Audit Log", icon: <ScrollText className="w-5 h-5" /> },
 ];
@@ -1299,6 +1302,9 @@ export default function AdminDashboardPage() {
 
           {/* Admin → Broadcast Push (Round 3) */}
           {activePanel === "broadcast" && <BroadcastPanel />}
+
+          {/* Admin → Promo Manager (Round 4) */}
+          {activePanel === "promos" && <PromosPanel />}
         </div>
       </div>
 
