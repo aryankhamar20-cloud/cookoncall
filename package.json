@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:cf": "next build && npx wrangler pages deploy out --project-name=cookoncall",
     "start": "next start",
     "lint": "next lint"
   },
