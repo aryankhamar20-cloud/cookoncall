@@ -21,6 +21,7 @@ import {
 import {
   BarChart3,
   Download,
+  FileText,
   Loader2,
   RefreshCw,
   TrendingUp,
@@ -218,6 +219,39 @@ export default function AnalyticsPanel() {
     }
   };
 
+  /**
+   * Phase 3 — Download the analytics overview as a PDF report.
+   * The backend reuses the same query layer as the live dashboard,
+   * so the numbers in the PDF match what's on screen exactly.
+   */
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const handleExportPdf = async () => {
+    if (pdfLoading) return;
+    setPdfLoading(true);
+    try {
+      const res = await adminApi.exportAnalyticsPdf("overview", { range });
+      const blob =
+        res.data instanceof Blob
+          ? res.data
+          : new Blob([res.data], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `cookoncall-analytics-${range}-${new Date()
+        .toISOString()
+        .slice(0, 10)}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("PDF export failed", err);
+      alert("PDF export failed. Try again in a moment.");
+    } finally {
+      setPdfLoading(false);
+    }
+  };
+
   // KPI cards data (memoized so we don't recompute on every render)
   const kpis = useMemo(() => {
     if (!overview) return null;
@@ -335,6 +369,23 @@ export default function AnalyticsPanel() {
           >
             <Download className="w-3.5 h-3.5" />
             Export
+          </button>
+          {/*
+            Phase 3 — overview report as PDF. Same range as the visible
+            charts. Disabled while in flight so a slow network can't
+            queue up multiple downloads.
+          */}
+          <button
+            onClick={handleExportPdf}
+            disabled={pdfLoading}
+            className="px-3 py-1.5 rounded-[8px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-[rgba(255,255,255,0.85)] hover:text-white text-[0.8rem] font-semibold flex items-center gap-1.5 disabled:opacity-50"
+          >
+            {pdfLoading ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <FileText className="w-3.5 h-3.5" />
+            )}
+            {pdfLoading ? "Building…" : "PDF"}
           </button>
         </div>
       </div>
