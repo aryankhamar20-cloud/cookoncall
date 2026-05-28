@@ -144,7 +144,12 @@ export const authApi = {
   login: (data: { email: string; password: string }) =>
     api.post("/auth/login", data),
 
-  googleAuth: (data: { idToken: string; role?: string }) =>
+  // Round 4: Sign in (or sign up) with a Google ID token from GIS.
+  // Sends `token` (matches the backend GoogleAuthDto field name) plus
+  // an optional `role` honored only when the email is brand-new — the
+  // backend ignores the role for existing accounts so a Chef can't be
+  // silently downgraded by clicking the wrong button.
+  googleAuth: (data: { token: string; role?: "user" | "cook" }) =>
     api.post("/auth/google", data),
 
   sendOtp: (data: { phone: string }) =>

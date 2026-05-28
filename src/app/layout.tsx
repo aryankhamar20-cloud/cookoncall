@@ -257,6 +257,18 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>{children}</Providers>
+        {/*
+          Google Identity Services (~5 KB) — loaded once for the whole
+          app so the GoogleSignInButton on the login screen can render
+          immediately. Async/defer is fine: the button polls for
+          window.google and shows a height-stable placeholder until
+          GIS is ready.
+        */}
+        <script
+          src="https://accounts.google.com/gsi/client"
+          async
+          defer
+        />
         <Toaster
           position="bottom-center"
           toastOptions={{
