@@ -30,6 +30,7 @@ const titles: Record<string, string> = {
   verification: "Verification",
   reviews: "My Reviews",
   availability: "Availability",
+  bank: "Bank Details",
 };
 
 const requestFilters = [
@@ -190,7 +191,7 @@ export default function CookDashboardPage() {
   const [otpState, setOtpState] = useState<Record<string, { step: string; otp: string; loading: boolean }>>({});
 
   useEffect(() => {
-    const valid = ["overview", "requests", "earnings", "menu", "packages", "profile", "verification", "reviews", "availability"];
+    const valid = ["overview", "requests", "earnings", "menu", "packages", "profile", "verification", "reviews", "availability", "bank"];
     if (!valid.includes(activePanel)) setPanel("overview");
   }, []); // eslint-disable-line
 
@@ -695,6 +696,7 @@ export default function CookDashboardPage() {
       { id: "profile", label: "My Profile", icon: <User className="w-5 h-5" /> },
       { id: "verification", label: "Verification", icon: <ShieldCheck className="w-5 h-5" />,
         badge: verStatus === "pending" ? undefined : verStatus === "not_submitted" || verStatus === "rejected" ? 1 : undefined },
+      { id: "bank", label: "Bank Details", icon: <IndianRupee className="w-5 h-5" /> },
     ]},
   ];
 
@@ -1456,6 +1458,11 @@ export default function CookDashboardPage() {
         </div>
       )}
 
+      {/* ═══ BANK DETAILS ═══ */}
+      {activePanel === "bank" && (
+        <BankDetailsPanel />
+      )}
+
       {/* ═══ MY REVIEWS (chef-side — reviews RECEIVED) ═══ */}
       {activePanel === "reviews" && (
         <div>
@@ -1667,5 +1674,170 @@ export default function CookDashboardPage() {
         </div>
       )}
     </DashboardLayout>
+  );
+}
+
+
+// ─── Bank Details Panel ─────────────────────────────────────────────────────
+// Separate client component for cleanliness.
+function BankDetailsPanel() {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState({
+    account_holder_name: "",
+    account_number: "",
+    confirm_account_number: "",
+    ifsc_code: "",
+    bank_name: "",
+    upi_id: "",
+  });
+
+  useEffect(() => {
+    api.get("/cooks/me/profile")
+      .then((res: any) => {
+        const p = res?.data?.data ?? res?.data ?? {};
+        const b = p?.bank_details ?? {};
+        setForm((f) => ({
+          ...f,
+          account_holder_name: b.account_holder_name ?? "",
+          account_number: b.account_number ?? "",
+          confirm_account_number: b.account_number ?? "",
+          ifsc_code: b.ifsc_code ?? "",
+          bank_name: b.bank_name ?? "",
+          upi_id: b.upi_id ?? "",
+        }));
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault();
+
+    const hasBankDetails =
+      form.account_holder_name.trim() &&
+      form.account_number.trim() &&
+      form.ifsc_code.trim();
+    const hasUpi = form.upi_id.trim();
+
+    if (!hasBankDetails && !hasUpi) {
+      toast.error("Please enter bank account details or a UPI ID.");
+      return;
+    }
+    if (form.account_number && form.account_number !== form.confirm_account_number) {
+      toast.error("Account numbers do not match.");
+      return;
+    }
+    const ifsc = form.ifsc_code.trim().toUpperCase();
+    if (ifsc && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(ifsc)) {
+      toast.error("Enter a valid 11-character IFSC code (e.g. SBIN0001234).");
+      return;
+    }
+    if (form.upi_id.trim() && !form.upi_id.includes("@")) {
+      toast.error("Enter a valid UPI ID (e.g. name@upi).");
+      return;
+    }
+
+    try {
+      setSaving(true);
+      const payload: Record<string, string> = {};
+      if (form.account_holder_name.trim()) payload.account_holder_name = form.account_holder_name.trim();
+      if (form.account_number.trim()) payload.account_number = form.account_number.trim();
+      if (ifsc) payload.ifsc_code = ifsc;
+      if (form.bank_name.trim()) payload.bank_name = form.bank_name.trim();
+      if (form.upi_id.trim()) payload.upi_id = form.upi_id.trim();
+      await api.patch("/cooks/me", { bank_details: payload });
+      toast.success("Bank details saved!");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Could not save bank details.");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const inputCls = "w-full px-4 py-3 rounded-[10px] border border-[var(--cream-300)] bg-[var(--cream-100)] text-[0.9rem] focus:outline-none focus:border-[var(--orange-500)] focus:ring-1 focus:ring-[rgba(212,114,26,0.25)]";
+  const labelCls = "block text-[0.8rem] font-semibold text-[var(--brown-800)] mb-1.5";
+
+  if (loading) {
+    return (
+      <div className="flex justify-center py-16">
+        <div className="w-7 h-7 border-3 border-[var(--orange-500)] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return (
+    <form onSubmit={handleSave} className="max-w-[580px]">
+      {/* Info notice */}
+      <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-[12px] p-4 mb-6">
+        <IndianRupee className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
+        <p className="text-[0.85rem] text-amber-800 leading-relaxed">
+          Earnings are transferred to your bank or UPI within <strong>24 hours</strong> after each session is completed.
+          Your payout is <strong>97.5%</strong> of dish revenue.
+        </p>
+      </div>
+
+      <div className="bg-white rounded-[16px] p-6 border border-[rgba(212,114,26,0.06)] mb-5">
+        <h3 className="font-bold text-[0.95rem] text-[var(--brown-800)] mb-5">Bank Account</h3>
+        <div className="grid gap-4">
+          <div>
+            <label className={labelCls}>Account Holder Name</label>
+            <input className={inputCls} placeholder="e.g. Aryan Khamar"
+              value={form.account_holder_name}
+              onChange={(e) => setForm((f) => ({ ...f, account_holder_name: e.target.value }))} />
+          </div>
+          <div>
+            <label className={labelCls}>Account Number</label>
+            <input className={inputCls} type="password" placeholder="Enter account number"
+              value={form.account_number}
+              onChange={(e) => setForm((f) => ({ ...f, account_number: e.target.value }))} />
+          </div>
+          <div>
+            <label className={labelCls}>Confirm Account Number</label>
+            <input className={inputCls} placeholder="Re-enter account number"
+              value={form.confirm_account_number}
+              onChange={(e) => setForm((f) => ({ ...f, confirm_account_number: e.target.value }))} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>IFSC Code</label>
+              <input className={inputCls} placeholder="e.g. SBIN0001234"
+                value={form.ifsc_code}
+                onChange={(e) => setForm((f) => ({ ...f, ifsc_code: e.target.value.toUpperCase() }))} />
+            </div>
+            <div>
+              <label className={labelCls}>Bank Name <span className="font-normal text-[var(--text-muted)]">(optional)</span></label>
+              <input className={inputCls} placeholder="e.g. State Bank of India"
+                value={form.bank_name}
+                onChange={(e) => setForm((f) => ({ ...f, bank_name: e.target.value }))} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* OR divider */}
+      <div className="flex items-center gap-3 mb-5">
+        <div className="flex-1 h-px bg-[var(--cream-300)]" />
+        <span className="text-[0.8rem] font-bold text-[var(--text-muted)]">OR</span>
+        <div className="flex-1 h-px bg-[var(--cream-300)]" />
+      </div>
+
+      <div className="bg-white rounded-[16px] p-6 border border-[rgba(212,114,26,0.06)] mb-6">
+        <h3 className="font-bold text-[0.95rem] text-[var(--brown-800)] mb-4">UPI ID</h3>
+        <div>
+          <label className={labelCls}>UPI ID</label>
+          <input className={inputCls} placeholder="e.g. aryan@upi or 9081444326@upi"
+            value={form.upi_id}
+            onChange={(e) => setForm((f) => ({ ...f, upi_id: e.target.value }))} />
+        </div>
+      </div>
+
+      <button type="submit" disabled={saving}
+        className="w-full py-3.5 rounded-[12px] bg-[var(--orange-500)] text-white font-bold text-[0.95rem] border-none cursor-pointer hover:bg-[var(--orange-400)] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        style={{ fontFamily: "var(--font-body)" }}>
+        {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <IndianRupee className="w-4 h-4" />}
+        {saving ? "Saving..." : "Save Bank Details"}
+      </button>
+    </form>
   );
 }

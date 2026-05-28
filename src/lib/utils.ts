@@ -48,5 +48,5 @@ export const APP_CONFIG = {
   whatsappUrl: `https://wa.me/${process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919081444326"}`,
   founders: "Aryan Khamar & Aayushi Patel",
   year: 2025,
-  platformFeePercent: 15,
+  platformFeePercent: 2.5,  // 2.5% convenience fee charged to customer (matches backend calculation)
 } as const;
