@@ -373,6 +373,23 @@ export const notificationsApi = {
     api.get("/notifications", { params }),
   markRead: (id: string) => api.patch(`/notifications/${id}/read`),
   markAllRead: () => api.patch("/notifications/read-all"),
+  // Round 4 / Analytics Phase 2 — first-click is recorded for CTR.
+  // Re-clicks are server-side no-ops so we don't double-count.
+  recordClick: (id: string) => api.post(`/notifications/${id}/click`),
+};
+
+// Events / Page Tracking API
+// Phase 3 prep — used by the global page-view tracker hook to fire
+// `event_type: 'page_view'` on every route change. The endpoint is
+// public (auth optional) so anonymous funnels are still measurable.
+export const eventsApi = {
+  track: (data: {
+    event_type: string;
+    page_path?: string;
+    referrer?: string;
+    session_id?: string;
+    metadata?: Record<string, unknown>;
+  }) => api.post("/events", data),
 };
 
 // â•â•â• Admin API â•â•â•

@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import { Toaster } from "react-hot-toast";
 import "./globals.css";
 import Providers from "@/components/Providers";
+import PageViewTracker from "@/components/PageViewTracker";
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -257,6 +259,15 @@ export default function RootLayout({
       </head>
       <body>
         <Providers>{children}</Providers>
+        {/*
+          Round 4 / Analytics Phase 3 — global page-view tracker.
+          Wrapped in Suspense because it consumes useSearchParams,
+          which Next.js requires to live inside a Suspense boundary
+          inside a server-rendered layout. Renders nothing.
+        */}
+        <Suspense fallback={null}>
+          <PageViewTracker />
+        </Suspense>
         {/*
           Google Identity Services (~5 KB) — loaded once for the whole
           app so the GoogleSignInButton on the login screen can render
