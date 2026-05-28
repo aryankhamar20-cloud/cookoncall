@@ -10,11 +10,13 @@ import {
   Shield, ShieldX, UserCheck, BadgeCheck,
   AlertCircle, Loader2, RefreshCw, Ban, Trash2, Pencil, X, Save,
   Eye, ExternalLink, CheckCircle2, XCircle, Phone, MapPin, CreditCard, Landmark,
+  BarChart3,
 } from "lucide-react";
+import AnalyticsPanel from "@/components/dashboard/AnalyticsPanel";
 
 /* ═══ TYPES ═══ */
 
-type AdminPanel = "overview" | "users" | "cooks" | "bookings" | "areas";
+type AdminPanel = "overview" | "users" | "cooks" | "bookings" | "areas" | "analytics";
 type CookFilter = "all" | "verified" | "pending_review" | "unverified";
 
 interface AdminStatsData {
@@ -63,6 +65,7 @@ interface Pagination { page: number; limit: number; total: number; total_pages: 
 
 const sidebarLinks: { id: AdminPanel; label: string; icon: React.ReactNode }[] = [
   { id: "overview", label: "Overview", icon: <LayoutGrid className="w-5 h-5" /> },
+  { id: "analytics", label: "Analytics", icon: <BarChart3 className="w-5 h-5" /> },
   { id: "users", label: "Users", icon: <Users className="w-5 h-5" /> },
   { id: "cooks", label: "Cooks", icon: <ChefHat className="w-5 h-5" /> },
   { id: "bookings", label: "Bookings", icon: <FileText className="w-5 h-5" /> },
@@ -1281,6 +1284,9 @@ export default function AdminDashboardPage() {
               </div>
             </div>
           )}
+
+          {/* Admin → Analytics (Phase 1) */}
+          {activePanel === "analytics" && <AnalyticsPanel />}
         </div>
       </div>
 
