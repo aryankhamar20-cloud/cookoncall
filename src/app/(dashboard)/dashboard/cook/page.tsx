@@ -11,6 +11,7 @@ import {
 import DashboardLayout, { type SidebarSection } from "@/components/layout/DashboardLayout";
 import AvailabilityPanel from "@/components/dashboard/AvailabilityPanel";
 import MealPackagesPanel from "@/components/dashboard/MealPackagesPanel";
+import EarningsHistoryPanel from "@/components/dashboard/EarningsHistoryPanel";
 import { useUIStore } from "@/stores/uiStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useAuth } from "@/hooks/useAuth";
@@ -988,34 +989,7 @@ export default function CookDashboardPage() {
       )}
 
       {/* ═══ EARNINGS ═══ */}
-      {activePanel === "earnings" && (
-        <div>
-          <h2 className="font-bold text-[1.05rem] mb-1">My Earnings</h2>
-          <p className="text-[0.88rem] text-[var(--text-muted)] mb-5">You receive 97.5% of all dish revenue. Platform keeps the ₹49 visit fee and a 2.5% convenience fee.</p>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-            {[
-              { label: "Total Earned", value: formatCurrency(stats.totalEarned), color: "text-[var(--green-ok)]" },
-              { label: "Completed Jobs", value: stats.completed.toString(), color: "text-blue-500" },
-              {
-                label: "Avg per Booking",
-                value: stats.completed > 0 ? formatCurrency(Math.round(stats.totalEarned / stats.completed)) : "—",
-                color: "text-[var(--orange-500)]",
-              },
-            ].map((e) => (
-              <div key={e.label} className="bg-white rounded-[16px] p-6 border border-[rgba(212,114,26,0.06)] text-center">
-                <div className={cn("font-display text-[1.6rem] font-[800]", e.color)}>{e.value}</div>
-                <div className="text-[0.82rem] text-[var(--text-muted)] mt-1">{e.label}</div>
-              </div>
-            ))}
-          </div>
-          <h3 className="font-bold mb-4">Completed Jobs</h3>
-          {requests.filter((b) => b.status === "completed").length === 0 ? (
-            <div className="bg-white rounded-[16px] p-12 border border-[rgba(212,114,26,0.06)] text-center text-[var(--text-muted)]">No completed jobs yet. Accept a booking to get started!</div>
-          ) : (
-            <div className="space-y-4">{requests.filter((b) => b.status === "completed").map((b) => renderBookingCard(b, false))}</div>
-          )}
-        </div>
-      )}
+      {activePanel === "earnings" && <EarningsHistoryPanel />}
 
       {/* ═══ MENU ═══ */}
       {activePanel === "menu" && (

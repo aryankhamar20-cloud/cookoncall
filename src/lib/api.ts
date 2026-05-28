@@ -185,6 +185,17 @@ export const usersApi = {
     longitude: number;
   }>) => api.patch("/users/me", data),
   getMyStats: () => api.get("/users/me/stats"),
+
+  // ─── ROUND 4: NOTIFICATION PREFERENCES ─────────────────────
+  // Slim payload (just the three booleans) so the Settings screen
+  // doesn't pull the full user PII on every open.
+  getNotificationPreferences: () =>
+    api.get("/users/me/notification-preferences"),
+  updateNotificationPreferences: (data: {
+    push_enabled?: boolean;
+    email_enabled?: boolean;
+    sms_enabled?: boolean;
+  }) => api.patch("/users/me/notification-preferences", data),
 };
 
 // â•â•â• Cooks API â•â•â•
@@ -211,6 +222,16 @@ export const cooksApi = {
   deleteMenuItem: (id: string) => api.delete(`/cooks/me/menu/${id}`),
   getMyStats: () => api.get("/cooks/me/stats"),
   getMyEarnings: () => api.get("/cooks/me/earnings"),
+
+  // ─── ROUND 3: PAYOUT HISTORY ───────────────────────────────
+  // Paginated list of completed bookings with the per-booking payment
+  // breakdown (gross, platform commission, net, status). Used by the
+  // chef "Earnings History" panel.
+  getMyPayouts: (params?: {
+    page?: number;
+    limit?: number;
+    status?: "created" | "authorized" | "captured" | "refunded" | "failed";
+  }) => api.get("/cooks/me/payouts", { params }),
 
   // â”€â”€â”€ VERIFICATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   submitVerification: (data: {

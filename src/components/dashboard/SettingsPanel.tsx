@@ -1,12 +1,27 @@
 "use client";
 
+import { useState } from "react";
 import { useUIStore } from "@/stores/uiStore";
 import { useAuthStore } from "@/stores/authStore";
 import { MapPin, Bell, User, ArrowRight, Lock } from "lucide-react";
+import NotificationSettingsPanel from "./NotificationSettingsPanel";
+
+/**
+ * Settings index — drives the customer "Settings" tab.
+ *
+ * Round 4: the Notifications row no longer shows a "SOON" tag — it
+ * opens an inline sub-screen wired to /users/me/notification-preferences.
+ */
+type SettingsView = "index" | "notifications";
 
 export default function SettingsPanel() {
   const { setPanel } = useUIStore();
   const { user } = useAuthStore();
+  const [view, setView] = useState<SettingsView>("index");
+
+  if (view === "notifications") {
+    return <NotificationSettingsPanel onBack={() => setView("index")} />;
+  }
 
   const items = [
     {
@@ -26,9 +41,9 @@ export default function SettingsPanel() {
     {
       icon: <Bell className="w-5 h-5" />,
       title: "Notifications",
-      desc: "Email and SMS preferences",
-      action: () => {},
-      available: false,
+      desc: "Push, email and SMS preferences",
+      action: () => setView("notifications"),
+      available: true,
     },
     {
       icon: <Lock className="w-5 h-5" />,
