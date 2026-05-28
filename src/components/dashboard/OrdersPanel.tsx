@@ -10,6 +10,7 @@ import {
   AlertCircle, MapPin, Clock, ChefHat, XCircle, Calendar,
   Users, IndianRupee, Star, Edit3, CreditCard, RotateCcw,
   BadgeCheck, Hourglass, ChevronDown, ChevronUp, Leaf, Award, Search, Truck,
+  Loader2, FileDown,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Cook } from "@/types";
@@ -172,6 +173,14 @@ export default function OrdersPanel() {
     chefName: string;
   }>({ open: false, bookingId: "", amount: 0, chefName: "" });
 
+  // Round 2: which Pay Now button is currently in its "opening payment"
+  // spinner state. Lets us show feedback during the modal preflight
+  // (~1-2s for /auth/me + /payments/create-order before Razorpay opens).
+  const [paymentOpeningId, setPaymentOpeningId] = useState<string | null>(null);
+
+  // Round 2: per-booking flag for the receipt download button.
+  const [downloadingReceiptId, setDownloadingReceiptId] = useState<string | null>(null);
+
   // Apr 21 NEW FLOW — rebook modal state.
   // When chef rejects, customer can book another chef with same date/time/address/guests.
   const [rebookModal, setRebookModal] = useState<{
@@ -313,13 +322,55 @@ export default function OrdersPanel() {
     const chefName = cookUser
       ? `${cookUser.name || ""} ${cookUser.lastName || cookUser.last_name || ""}`.trim() || "Chef"
       : "Chef";
+    // Round 2: brief loading flag so the Pay Now button shows a spinner
+    // while the modal does its preflight (/auth/me + /payments/create-order).
+    // Cleared in onPaymentSuccess and onPaymentError; also cleared after
+    // a 4s safety window if neither fires (e.g. user closes Razorpay UI).
+    setPaymentOpeningId(b.id);
     setPaymentModal({ open: true, bookingId: b.id, amount, chefName });
+    setTimeout(() => {
+      // Self-clear in case the user closes the Razorpay window without
+      // triggering success/error — otherwise the spinner would stay forever.
+      setPaymentOpeningId((id) => (id === b.id ? null : id));
+    }, 4000);
   }
 
   function onPaymentSuccess() {
+    setPaymentOpeningId(null);
     setPaymentModal({ open: false, bookingId: "", amount: 0, chefName: "" });
     toast.success("Payment successful! Booking confirmed.");
     fetchBookings();
+  }
+
+  // ─── ROUND 2: PDF receipt download ────────────────────
+  /** Tracks which booking is currently downloading its receipt so we can
+   *  disable the button + show a spinner. Per-booking instead of global
+   *  to keep the rest of the list interactive. */
+  async function handleDownloadReceipt(b: any) {
+    if (downloadingReceiptId) return;
+    setDownloadingReceiptId(b.id);
+    try {
+      const res = await bookingsApi.getReceipt(b.id);
+      const blob = res.data instanceof Blob
+        ? res.data
+        : new Blob([res.data], { type: "application/pdf" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `cookoncall-receipt-${b.id.slice(0, 8)}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+      toast.success("Receipt downloaded");
+    } catch (err: any) {
+      const msg = err?.response?.data?.message
+        || err?.response?.statusText
+        || "Couldn't download receipt. Try again in a moment.";
+      toast.error(msg);
+    } finally {
+      setDownloadingReceiptId(null);
+    }
   }
 
   function openRebook(b: any) {
@@ -538,11 +589,21 @@ export default function OrdersPanel() {
                     {isAwaitingPayment && (
                       <button
                         onClick={() => openPayment(b)}
-                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-[var(--orange-500)] border-none cursor-pointer hover:bg-[var(--orange-400)] transition-all"
+                        disabled={paymentOpeningId === b.id}
+                        className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-[var(--orange-500)] border-none cursor-pointer hover:bg-[var(--orange-400)] disabled:opacity-70 disabled:cursor-wait transition-all"
                         style={{ fontFamily: "var(--font-body)" }}
                       >
-                        <CreditCard className="w-3.5 h-3.5" />
-                        Pay Now · {formatCurrency(Number(b.total_price || 0))}
+                        {paymentOpeningId === b.id ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            Opening payment…
+                          </>
+                        ) : (
+                          <>
+                            <CreditCard className="w-3.5 h-3.5" />
+                            Pay Now · {formatCurrency(Number(b.total_price || 0))}
+                          </>
+                        )}
                       </button>
                     )}
 
@@ -553,6 +614,27 @@ export default function OrdersPanel() {
                         style={{ fontFamily: "var(--font-body)" }}>
                         <Star className="w-3.5 h-3.5" />
                         Leave Review
+                      </button>
+                    )}
+
+                    {/* Round 2 — receipt download (only for paid / completed states) */}
+                    {(status === "completed" || status === "in_progress" || status === "confirmed") && (
+                      <button
+                        onClick={() => handleDownloadReceipt(b)}
+                        disabled={downloadingReceiptId === b.id}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.82rem] font-semibold text-[var(--brown-800)] bg-[rgba(0,0,0,0.03)] border border-[rgba(0,0,0,0.08)] cursor-pointer transition-all hover:bg-[rgba(0,0,0,0.06)] disabled:opacity-60 disabled:cursor-wait"
+                        style={{ fontFamily: "var(--font-body)" }}>
+                        {downloadingReceiptId === b.id ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            Downloading…
+                          </>
+                        ) : (
+                          <>
+                            <FileDown className="w-3.5 h-3.5" />
+                            Receipt
+                          </>
+                        )}
                       </button>
                     )}
                     {canEditReview && (
