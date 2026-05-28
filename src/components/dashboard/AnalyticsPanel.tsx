@@ -33,6 +33,7 @@ import {
 } from "lucide-react";
 import { adminApi } from "@/lib/api";
 import type { AnalyticsRange } from "@/lib/api";
+import LiveCountersStrip from "@/components/dashboard/LiveCountersStrip";
 
 /**
  * Admin → Analytics dashboard.
@@ -337,6 +338,10 @@ export default function AnalyticsPanel() {
           </button>
         </div>
       </div>
+
+      {/* ─── Live counters strip (Analytics Phase 2) ─────────── */}
+      {/* WebSocket-driven, ticks every 5s while an admin is connected. */}
+      <LiveCountersStrip />
 
       {/* ─── Per-endpoint error notice (non-blocking) ────────── */}
       {errors.length > 0 && (
