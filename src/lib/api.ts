@@ -372,7 +372,38 @@ export const adminApi = {
     action?: string;
     target_type?: string;
   }) => api.get("/admin/audit-log", { params }),
+
+  // ─── ANALYTICS PHASE 1 ──────────────────────────────────────
+  // Every endpoint accepts ?range=24h|7d|30d|90d|custom (+ from/to for custom).
+  getAnalyticsOverview: (params?: AnalyticsRangeParams) =>
+    api.get("/admin/analytics/overview", { params }),
+  getAnalyticsUsers: (params?: AnalyticsRangeParams) =>
+    api.get("/admin/analytics/users", { params }),
+  getAnalyticsBookings: (params?: AnalyticsRangeParams) =>
+    api.get("/admin/analytics/bookings", { params }),
+  getAnalyticsRevenue: (params?: AnalyticsRangeParams) =>
+    api.get("/admin/analytics/revenue", { params }),
+  getAnalyticsChefs: (params?: AnalyticsRangeParams) =>
+    api.get("/admin/analytics/chefs", { params }),
+  getAnalyticsLocations: (params?: AnalyticsRangeParams) =>
+    api.get("/admin/analytics/locations", { params }),
+  /** Returns CSV as a Blob — caller triggers the download. */
+  exportAnalyticsCsv: (
+    metric: "bookings" | "revenue" | "users" | "top_chefs",
+    params?: AnalyticsRangeParams,
+  ) =>
+    api.get("/admin/analytics/export.csv", {
+      params: { ...params, metric },
+      responseType: "blob",
+    }),
 };
+
+export type AnalyticsRange = "24h" | "7d" | "30d" | "90d" | "custom";
+export interface AnalyticsRangeParams {
+  range?: AnalyticsRange;
+  from?: string;
+  to?: string;
+}
 
 // â•â•â• Uploads API â•â•â•
 export const uploadsApi = {
