@@ -400,6 +400,23 @@ export const adminApi = {
       params: { ...params, metric },
       responseType: "blob",
     }),
+
+  // ─── ROUND 3: BROADCAST PUSH ────────────────────────────────
+  // POST a broadcast — title 1-65 chars, body 1-240 chars, audience
+  // ('all' | 'customers' | 'cooks' | 'area'). When audience='area',
+  // area_slug is required. deep_link is optional and opens inside the
+  // app on tap.
+  sendBroadcast: (data: {
+    title: string;
+    body: string;
+    audience: "all" | "customers" | "cooks" | "area";
+    area_slug?: string;
+    deep_link?: string;
+  }) => api.post("/admin/notifications/broadcast", data),
+
+  /** Last N broadcasts for the history panel (newest first). */
+  getBroadcasts: (params?: { page?: number; limit?: number }) =>
+    api.get("/admin/notifications/broadcasts", { params }),
 };
 
 export type AnalyticsRange = "24h" | "7d" | "30d" | "90d" | "custom";
