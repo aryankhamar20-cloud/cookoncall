@@ -23,9 +23,8 @@ import { FooterSimple } from "@/components/layout/Footer";
 import StarRating from "@/components/ui/StarRating";
 import PackageSelector from "@/components/dashboard/PackageSelector";
 import BookingModal from "@/components/modals/BookingModal";
-import PaymentModal from "@/components/modals/PaymentModal";
 import type { BookingFormData } from "@/components/modals/BookingModal";
-import type { PackageSelectionPayload, PaymentMethod } from "@/types";
+import type { PackageSelectionPayload } from "@/types";
 import { useAuthStore } from "@/stores/authStore";
 import {
   ArrowLeft, MapPin, IndianRupee, Clock, ChefHat, Star,
@@ -51,13 +50,10 @@ function ChefDetailContent() {
 
   // Booking modals
   const [bookingModalOpen, setBookingModalOpen] = useState(false);
-  const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [bookingData, setBookingData] = useState<BookingFormData | null>(null);
 
   // Package booking mode — set when user clicks "Book Package" in PackageSelector
   const [pendingPackage, setPendingPackage] = useState<PackageSelectionPayload | null>(null);
-
-  const [pendingBookingId, setPendingBookingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -109,47 +105,50 @@ function ChefDetailContent() {
     setBookingModalOpen(true);
   }
 
-  // ─── BookingModal callback ─────────────────────────────
+  // ─── BookingModal callback — NEW PENDING FLOW ─────────
+  // Creates booking → status = pending_chef_approval (no payment yet).
+  // Chef has 3 hours to accept. Customer pays only after acceptance.
   async function handleProceedToPayment(data: BookingFormData) {
-  try {
-    setBookingData(data);
-    const payload: Record<string, unknown> = {
-      cook_id: data.cookId,
-      scheduled_at: `${data.date}T${data.time}:00`,
-      address: data.address,
-      address_id: data.addressId,
-      latitude: data.latitude,
-      longitude: data.longitude,
-      duration_hours: data.durationHours,
-      guests: data.guestsCount,
-      dishes: data.dishes,
-      instructions: data.notes,
-      amount: data.amount,
-      selected_items: data.selectedItems,
-    };
-    if (data.packageId) {
-      payload.packageId = data.packageId;
-      payload.guestCount = data.guestsCount;
-      payload.selectedCategories = data.selectedCategories;
-      payload.selectedAddonIds = data.selectedAddonIds;
+    try {
+      setBookingData(data);
+      const payload: Record<string, unknown> = {
+        cook_id: data.cookId,
+        scheduled_at: `${data.date}T${data.time}:00`,
+        address: data.address,
+        address_id: data.addressId,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        duration_hours: data.durationHours,
+        guests: data.guestsCount,
+        dishes: data.dishes,
+        instructions: data.notes,
+        amount: data.amount,
+        selected_items: data.selectedItems,
+      };
+      if (data.packageId) {
+        payload.packageId = data.packageId;
+        payload.guestCount = data.guestsCount;
+        payload.selectedCategories = data.selectedCategories;
+        payload.selectedAddonIds = data.selectedAddonIds;
+      }
+      await bookingsApi.create(payload as any);
+      // Booking sent — do NOT open PaymentModal yet.
+      // Chef must accept first; customer pays via the Orders panel.
+      setBookingModalOpen(false);
+      setPendingPackage(null);
+      setBookingData(null);
+      toast.success(
+        "Booking request sent! The chef has 3 hours to accept. You'll be notified to pay after acceptance.",
+        { duration: 5000 }
+      );
+      router.push("/dashboard/customer");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to create booking. Try again.");
     }
-    const res = await bookingsApi.create(payload as any);
-    const id = res.data?.data?.id ?? res.data?.id;
-    setPendingBookingId(id);
-    setBookingModalOpen(false);
-    setPaymentModalOpen(true);
-  } catch (err: any) {
-    toast.error(err?.response?.data?.message || "Failed to create booking. Try again.");
   }
-}
 
-  function handlePaymentSuccess(_method?: PaymentMethod) {
-    setPaymentModalOpen(false);
-    setPendingPackage(null);
-    setBookingData(null);
-    toast.success("Booking sent! Chef will respond within 3 hours.");
-    router.push("/dashboard/customer");
-  }
+  // Payment no longer happens on the public page — chef must accept first.
+  // Payment is handled in the customer dashboard OrdersPanel after acceptance.
 
   if (loading) {
     return (
@@ -417,17 +416,6 @@ function ChefDetailContent() {
         onProceedToPayment={handleProceedToPayment}
         preselectedPackage={pendingPackage}
       />
-
-      {bookingData && (
-        <PaymentModal
-          isOpen={paymentModalOpen}
-          onClose={() => setPaymentModalOpen(false)}
-          bookingId={pendingBookingId ?? ""}
-          amount={bookingData.amount}
-          description={bookingData.packageName ? `Package: ${bookingData.packageName}` : "Chef Booking"}
-          onPaymentSuccess={handlePaymentSuccess}
-        />
-      )}
     </div>
   );
 }

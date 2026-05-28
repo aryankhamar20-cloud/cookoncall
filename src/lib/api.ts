@@ -285,7 +285,7 @@ export const bookingsApi = {
   accept: (id: string) => api.post(`/bookings/${id}/accept`),
   /** Chef rejects with internal reason (never shown to customer) */
   reject: (id: string, reason: string) =>
-    api.post(`/bookings/${id}/reject`, { status: 'cancelled_by_user', cancellation_reason: reason }),
+    api.post(`/bookings/${id}/reject`, { reason }),
   /** Customer rebooks with a different chef after rejection/expiry */
   rebook: (
     id: string,
@@ -539,7 +539,7 @@ export const areasApi = {
 
   // Admin â€” reject a request with a reason
   adminReject: (id: string, reason: string) =>
-    api.patch(`/areas/admin/requests/${id}/reject`, { status: 'cancelled_by_user', cancellation_reason: reason }),
+    api.patch(`/areas/admin/requests/${id}/reject`, { reject_reason: reason }),
 };
 
 // â•â•â• Pincode Lookup (India Post API â€” free, no key) â•â•â•
