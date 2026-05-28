@@ -461,6 +461,15 @@ export const adminApi = {
   getBroadcasts: (params?: { page?: number; limit?: number }) =>
     api.get("/admin/notifications/broadcasts", { params }),
 
+  /**
+   * Round 4 / Analytics Phase 2 — click-through-rate for one broadcast.
+   * Returns {broadcast, stats: {created, clicked, read, ctr_percent,
+   * read_rate_percent}, clickers: [first 100]}. Lazy-loaded by the
+   * BroadcastPanel when the admin expands a row.
+   */
+  getBroadcastCtr: (id: string) =>
+    api.get(`/admin/notifications/broadcasts/${id}/ctr`),
+
   // ─── ROUND 4: PROMO CODE MANAGER ────────────────────────────
   // Backend mounts these under /promo-codes (admin-only via @Roles).
   promos: {

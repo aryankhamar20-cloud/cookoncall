@@ -483,6 +483,42 @@ function BroadcastHistoryRow({ row }: { row: BroadcastRow }) {
         )
       : 0;
 
+  // Round 4 / Analytics Phase 2 — lazy CTR fetch.
+  // We don't pull CTR for every row eagerly because it's a separate
+  // query per row and most admins only care about the latest few.
+  // Click "View CTR" to expand and load on-demand.
+  const [ctrOpen, setCtrOpen] = useState(false);
+  const [ctrLoading, setCtrLoading] = useState(false);
+  const [ctr, setCtr] = useState<BroadcastCtr | null>(null);
+  const [ctrError, setCtrError] = useState<string | null>(null);
+
+  const loadCtr = useCallback(async () => {
+    if (ctr || ctrLoading) return;
+    setCtrLoading(true);
+    setCtrError(null);
+    try {
+      const res = await adminApi.getBroadcastCtr(row.id);
+      const body = (res.data as any)?.data ?? res.data;
+      setCtr(body as BroadcastCtr);
+    } catch (err: any) {
+      setCtrError(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Could not load CTR.",
+      );
+    } finally {
+      setCtrLoading(false);
+    }
+  }, [ctr, ctrLoading, row.id]);
+
+  const toggleCtr = () => {
+    setCtrOpen((open) => {
+      const next = !open;
+      if (next) loadCtr();
+      return next;
+    });
+  };
+
   return (
     <li className="border border-[rgba(0,0,0,0.06)] rounded-[10px] p-3.5 bg-white">
       <div className="flex items-start justify-between gap-3 flex-wrap">
@@ -533,12 +569,151 @@ function BroadcastHistoryRow({ row }: { row: BroadcastRow }) {
         />
       </div>
 
-      {row.sent_by_admin_name && (
-        <p className="text-[0.7rem] text-[var(--text-muted,#9ca3af)] mt-2">
-          by {row.sent_by_admin_name}
-        </p>
+      <div className="mt-2 flex items-center justify-between flex-wrap gap-2">
+        {row.sent_by_admin_name && (
+          <p className="text-[0.7rem] text-[var(--text-muted,#9ca3af)]">
+            by {row.sent_by_admin_name}
+          </p>
+        )}
+        <button
+          onClick={toggleCtr}
+          className="text-[0.72rem] font-semibold text-[var(--orange-500)] hover:underline"
+        >
+          {ctrOpen ? "Hide CTR" : "View CTR ›"}
+        </button>
+      </div>
+
+      {ctrOpen && (
+        <CtrPanel
+          loading={ctrLoading}
+          error={ctrError}
+          ctr={ctr}
+        />
       )}
     </li>
+  );
+}
+
+// ─── CTR drill-down ───────────────────────────────────────
+type BroadcastCtr = {
+  broadcast: {
+    id: string;
+    title: string;
+    audience: string;
+    inapp_created: number;
+  };
+  stats: {
+    created: number;
+    clicked: number;
+    read: number;
+    ctr_percent: number;
+    read_rate_percent: number;
+  };
+  clickers: Array<{
+    user_id: string;
+    name: string | null;
+    email: string | null;
+    role: string | null;
+    clicked_at: string;
+  }>;
+};
+
+function CtrPanel({
+  loading,
+  error,
+  ctr,
+}: {
+  loading: boolean;
+  error: string | null;
+  ctr: BroadcastCtr | null;
+}) {
+  if (loading) {
+    return (
+      <div className="mt-3 pt-3 border-t border-[rgba(0,0,0,0.06)] flex items-center gap-2 text-[0.78rem] text-[var(--text-muted,#6b7280)]">
+        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        Loading CTR…
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="mt-3 pt-3 border-t border-[rgba(0,0,0,0.06)] flex items-start gap-2 text-[0.78rem] text-red-700">
+        <AlertCircle className="w-3.5 h-3.5 mt-0.5" />
+        {error}
+      </div>
+    );
+  }
+  if (!ctr) return null;
+
+  const s = ctr.stats;
+  // Color the CTR pill so admins get a quick read on whether the
+  // broadcast worked. Industry baseline for transactional push is
+  // 5–10%; campaign push regularly hits 20%+.
+  const ctrTone =
+    s.ctr_percent >= 20
+      ? "bg-emerald-100 text-emerald-700"
+      : s.ctr_percent >= 5
+        ? "bg-blue-100 text-blue-700"
+        : s.ctr_percent > 0
+          ? "bg-amber-100 text-amber-800"
+          : "bg-gray-100 text-gray-600";
+
+  return (
+    <div className="mt-3 pt-3 border-t border-[rgba(0,0,0,0.06)]">
+      <div className="flex items-center gap-2 flex-wrap mb-2">
+        <span
+          className={`px-2 py-0.5 rounded-full text-[0.72rem] font-bold uppercase tracking-wide ${ctrTone}`}
+        >
+          CTR {s.ctr_percent}%
+        </span>
+        <span className="text-[0.72rem] text-[var(--text-muted,#6b7280)]">
+          {s.clicked.toLocaleString("en-IN")} of {s.created.toLocaleString("en-IN")} opened
+          · {s.read.toLocaleString("en-IN")} read ({s.read_rate_percent}%)
+        </span>
+      </div>
+
+      {ctr.clickers.length === 0 ? (
+        <p className="text-[0.72rem] text-[var(--text-muted,#9ca3af)] italic">
+          Nobody has tapped this notification yet.
+        </p>
+      ) : (
+        <div>
+          <p className="text-[0.7rem] uppercase tracking-wide font-semibold text-[var(--text-muted,#9ca3af)] mb-1.5">
+            Latest tappers
+          </p>
+          <ul className="space-y-1">
+            {ctr.clickers.slice(0, 5).map((c) => (
+              <li
+                key={c.user_id + c.clicked_at}
+                className="flex items-center justify-between gap-2 text-[0.75rem]"
+              >
+                <span className="text-[var(--brown-800,#3d2418)] truncate">
+                  {c.name || c.email || c.user_id.slice(0, 8)}
+                  {c.role && (
+                    <span className="ml-1 text-[var(--text-muted,#9ca3af)] uppercase text-[0.65rem]">
+                      · {c.role}
+                    </span>
+                  )}
+                </span>
+                <span className="text-[var(--text-muted,#9ca3af)] whitespace-nowrap">
+                  {new Date(c.clicked_at).toLocaleString("en-IN", {
+                    day: "numeric",
+                    month: "short",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </li>
+            ))}
+          </ul>
+          {ctr.clickers.length > 5 && (
+            <p className="text-[0.7rem] text-[var(--text-muted,#9ca3af)] mt-1.5 italic">
+              + {ctr.clickers.length - 5} more
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
