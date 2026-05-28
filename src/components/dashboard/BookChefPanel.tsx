@@ -492,19 +492,47 @@ export default function BookChefPanel() {
         </div>
       )}
 
-      {/* Empty state */}
+      {/* Empty state — smarter messaging based on whether filters / search are active */}
       {!loading && !error && chefs.length === 0 && (
-        <div className="bg-white rounded-[16px] p-12 border border-[rgba(212,114,26,0.06)] text-center text-[var(--text-muted)]">
-          <Search className="w-10 h-10 mx-auto mb-3 opacity-30" />
-          <p className="text-[0.9rem]">No chefs match your filters. Try clearing some filters.</p>
-          {activeFilterCount > 0 && (
-            <button
-              onClick={clearAllFilters}
-              className="mt-3 px-5 py-2 rounded-full bg-[var(--orange-500)] text-white text-[0.82rem] font-semibold border-none cursor-pointer"
-              style={{ fontFamily: "var(--font-body)" }}
-            >
-              Clear all filters
-            </button>
+        <div className="bg-white rounded-[16px] p-12 border border-[rgba(212,114,26,0.06)] text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-[rgba(212,114,26,0.08)] flex items-center justify-center">
+            <Search className="w-8 h-8 text-[var(--orange-500)]" strokeWidth={1.5} />
+          </div>
+          <h3 className="font-bold text-[1.05rem] text-[var(--brown-800)] mb-1.5">
+            {debouncedSearch
+              ? `No chefs found for "${debouncedSearch}"`
+              : activeFilterCount > 0
+                ? "No chefs match your filters"
+                : "No chefs available right now"}
+          </h3>
+          <p className="text-[0.88rem] text-[var(--text-muted)] mb-4">
+            {debouncedSearch
+              ? "Try a different cuisine, name, or specialty — or clear the search."
+              : activeFilterCount > 0
+                ? "Try widening your filters to see more results."
+                : "Please check back soon — we're onboarding new chefs every day."}
+          </p>
+          {(activeFilterCount > 0 || debouncedSearch) && (
+            <div className="flex items-center justify-center gap-2 flex-wrap">
+              {debouncedSearch && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="px-4 py-2 rounded-full bg-white text-[var(--brown-800)] border border-[rgba(0,0,0,0.1)] text-[0.82rem] font-semibold cursor-pointer hover:border-[var(--orange-500)]"
+                  style={{ fontFamily: "var(--font-body)" }}
+                >
+                  Clear search
+                </button>
+              )}
+              {activeFilterCount > 0 && (
+                <button
+                  onClick={clearAllFilters}
+                  className="px-5 py-2 rounded-full bg-[var(--orange-500)] text-white text-[0.82rem] font-semibold border-none cursor-pointer hover:bg-[var(--orange-400)]"
+                  style={{ fontFamily: "var(--font-body)" }}
+                >
+                  Clear all filters
+                </button>
+              )}
+            </div>
           )}
         </div>
       )}

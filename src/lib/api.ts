@@ -311,6 +311,10 @@ export const bookingsApi = {
 
   /** Get refund estimate before cancelling */
   getRefundEstimate: (id: string) => api.get(`/bookings/${id}/refund-estimate`),
+
+  /** Round 2: download a paid booking's PDF receipt as a Blob. */
+  getReceipt: (id: string) =>
+    api.get(`/bookings/${id}/receipt`, { responseType: "blob" }),
 };
 
 // â•â•â• Payments API â•â•â•
