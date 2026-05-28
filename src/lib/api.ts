@@ -444,6 +444,29 @@ export const adminApi = {
       responseType: "blob",
     }),
 
+  /**
+   * Phase 3 — PDF export.
+   * Returns the report as a Blob (Content-Type: application/pdf).
+   * Currently `metric=overview` is the only supported value; the
+   * generator pulls top chefs and locations alongside, so 'overview'
+   * is the comprehensive report.
+   */
+  exportAnalyticsPdf: (
+    metric: "overview" = "overview",
+    params?: AnalyticsRangeParams,
+  ) =>
+    api.get("/admin/analytics/export.pdf", {
+      params: { ...params, metric },
+      responseType: "blob",
+    }),
+
+  /** Phase 3 — peek at the daily digest payload without sending email. */
+  previewDigest: () => api.get("/admin/analytics/digest/preview"),
+
+  /** Phase 3 — fire the daily digest right now (still respects per-admin
+   *  email_enabled and the ANALYTICS_DIGEST_DISABLED env flag). */
+  runDigestNow: () => api.post("/admin/analytics/digest/run-now"),
+
   // ─── ROUND 3: BROADCAST PUSH ────────────────────────────────
   // POST a broadcast — title 1-65 chars, body 1-240 chars, audience
   // ('all' | 'customers' | 'cooks' | 'area'). When audience='area',
