@@ -9,6 +9,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { authApi } from "@/lib/api";
 import { Eye, EyeOff, ArrowLeft, UtensilsCrossed, ChefHat, Mail, ShieldCheck, KeyRound } from "lucide-react";
 import toast from "react-hot-toast";
+import PasswordStrength, { evaluatePassword } from "@/components/ui/PasswordStrength";
 
 type Role = "Customer" | "Chef" | "";
 type AuthTab = "login" | "signup";
@@ -172,6 +173,11 @@ function LoginPage() {
     if (!signupPhone) { toast.error("Phone number is required."); return; }
     if (!signupEmail) { toast.error("Email address is required."); return; }
     if (!signupPass || signupPass.length < 8) { toast.error("Password must be at least 8 characters."); return; }
+    // Require at least Fair strength (≥2 score) so we don't ship truly weak passwords
+    if (evaluatePassword(signupPass).score < 2) {
+      toast.error("Please strengthen your password. Mix letters, numbers, and a symbol.");
+      return;
+    }
     if (!termsAccepted) { toast.error("Please accept the Terms of Service."); return; }
 
     // Batch B1: chef must pick at least one specialty
@@ -763,6 +769,7 @@ function LoginPage() {
                     {showSignupPass ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                   </button>
                 </div>
+                <PasswordStrength value={signupPass} />
               </div>
 
               {role === "Chef" && (

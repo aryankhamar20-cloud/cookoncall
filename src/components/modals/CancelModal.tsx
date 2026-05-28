@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "@/components/ui/Modal";
 import { formatCurrency } from "@/lib/utils";
+import { bookingsApi } from "@/lib/api";
 import type { Booking } from "@/types";
 import toast from "react-hot-toast";
 
@@ -21,65 +22,23 @@ const cancellationReasons = [
   "Other",
 ];
 
-// ─── REFUND POLICY V2 — Apr 26 LOCKED (matches backend getCancellationRefund) ──
-// Option B: % applies to TOTAL. Platform absorbs chef compensation.
+// ─── REFUND POLICY V2 (display-only, mirrors backend Apr 26 LOCKED) ─────
+// Actual refund amount is computed server-side via GET /bookings/:id/refund-estimate.
+// The table here is purely informational — we never compute it on the client.
 const refundPolicy = [
-  { window: "24+ hours before slot", percent: 100, chefFee: 0, color: "text-[var(--green-ok)]" },
-  { window: "8–24 hours before slot", percent: 75, chefFee: 25, color: "text-[var(--orange-500)]" },
-  { window: "4–8 hours before slot", percent: 50, chefFee: 50, color: "text-[var(--orange-500)]" },
-  { window: "2–4 hours before slot", percent: 25, chefFee: 75, color: "text-[var(--orange-500)]" },
-  { window: "Less than 2 hours / no-show", percent: 0, chefFee: 100, color: "text-[var(--red-err)]" },
+  { window: "24+ hours before slot", percent: 100, color: "text-[var(--green-ok)]" },
+  { window: "8–24 hours before slot", percent: 75, color: "text-[var(--orange-500)]" },
+  { window: "4–8 hours before slot", percent: 50, color: "text-[var(--orange-500)]" },
+  { window: "2–4 hours before slot", percent: 25, color: "text-[var(--orange-500)]" },
+  { window: "Less than 2 hours / no-show", percent: 0, color: "text-[var(--red-err)]" },
 ];
 
-function getRefund(booking: Booking): {
-  percent: number;
-  reason: string;
-  amount: number;
-  chefFee: number;
-} {
-  const total = Number(booking.totalPrice) || 0;
-
-  // Fallback if scheduledAt is missing — give full refund safely
-  if (!booking.scheduledAt) {
-    return { percent: 100, reason: "Full refund", amount: total, chefFee: 0 };
-  }
-
-  const scheduled = new Date(booking.scheduledAt);
-  const now = new Date();
-  const hoursUntil = (scheduled.getTime() - now.getTime()) / (1000 * 60 * 60);
-
-  let percent: number;
-  let chefFee: number;
-  let reason: string;
-
-  if (hoursUntil >= 24) {
-    percent = 100;
-    chefFee = 0;
-    reason = "24+ hours before slot — full refund";
-  } else if (hoursUntil >= 8) {
-    percent = 75;
-    chefFee = 25;
-    reason = "8–24 hours before slot — 75% refund";
-  } else if (hoursUntil >= 4) {
-    percent = 50;
-    chefFee = 50;
-    reason = "4–8 hours before slot — 50% refund";
-  } else if (hoursUntil >= 2) {
-    percent = 25;
-    chefFee = 75;
-    reason = "2–4 hours before slot — 25% refund";
-  } else {
-    percent = 0;
-    chefFee = 100;
-    reason = "Less than 2 hours before slot — no refund";
-  }
-
-  return {
-    percent,
-    reason,
-    amount: Math.round((total * percent) / 100),
-    chefFee,
-  };
+interface ServerEstimate {
+  refund_amount: number;
+  chef_cancellation_fee: number;
+  total_price: number;
+  hours_until_session: number;
+  policy: string;
 }
 
 export default function CancelModal({
@@ -90,18 +49,50 @@ export default function CancelModal({
 }: CancelModalProps) {
   const [reason, setReason] = useState(cancellationReasons[0]);
   const [confirming, setConfirming] = useState(false);
+  const [estimate, setEstimate] = useState<ServerEstimate | null>(null);
+  const [loadingEstimate, setLoadingEstimate] = useState(false);
+  const [estimateError, setEstimateError] = useState(false);
+
+  // Fetch the authoritative refund estimate from the server every time
+  // the modal opens. The server is the source of truth — client-side
+  // calculation could disagree due to timezone drift / clock skew.
+  useEffect(() => {
+    if (!isOpen || !booking?.id) {
+      setEstimate(null);
+      setEstimateError(false);
+      return;
+    }
+    let cancelled = false;
+    setLoadingEstimate(true);
+    setEstimateError(false);
+    bookingsApi
+      .getRefundEstimate(booking.id)
+      .then((res) => {
+        if (cancelled) return;
+        const data = (res.data?.data ?? res.data) as ServerEstimate;
+        setEstimate(data);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setEstimateError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingEstimate(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, booking?.id]);
 
   if (!booking) return null;
-
-  const refund = getRefund(booking);
 
   async function handleConfirm() {
     setConfirming(true);
     try {
       onConfirmCancel(booking!.id, reason);
-      if (refund.percent > 0) {
+      if (estimate && estimate.refund_amount > 0) {
         toast.success(
-          `Order cancelled. ₹${refund.amount} refund will be processed in 3–5 business days.`,
+          `Order cancelled. ₹${estimate.refund_amount} refund will be processed in 3–5 business days.`,
         );
       } else {
         toast.success("Order cancelled.");
@@ -115,7 +106,7 @@ export default function CancelModal({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Cancel Order" maxWidth="max-w-[440px]">
-      {/* Policy */}
+      {/* Policy reference table */}
       <div className="bg-[var(--cream-100)] rounded-[12px] p-4 mb-4">
         <div className="font-semibold text-[0.9rem] mb-2">Cancellation Policy</div>
         {refundPolicy.map((p) => (
@@ -129,22 +120,40 @@ export default function CancelModal({
         ))}
       </div>
 
-      {/* Refund estimate for this booking */}
+      {/* Refund estimate from server */}
       <div className="bg-[var(--cream-100)] rounded-[12px] p-4 mb-4 text-center">
         <div className="text-[0.78rem] text-[var(--text-muted)] mb-1">
           Your refund estimate
         </div>
-        <div className="font-bold text-[var(--orange-500)] text-[1.4rem]">
-          {formatCurrency(refund.amount)}{" "}
-          <span className="text-[0.95rem] font-semibold">({refund.percent}%)</span>
-        </div>
-        <div className="text-[0.78rem] text-[var(--text-muted)] mt-1">
-          {refund.reason}
-        </div>
-        {refund.chefFee > 0 && (
-          <div className="text-[0.75rem] text-[var(--text-muted)] mt-2 italic">
-            Your chef will be compensated ₹{refund.chefFee} for the blocked slot.
+
+        {loadingEstimate && (
+          <div className="font-semibold text-[var(--text-muted)] text-[0.95rem] py-2">
+            Calculating refund...
           </div>
+        )}
+
+        {estimateError && !loadingEstimate && (
+          <div className="text-[var(--red-err)] text-[0.85rem] py-2">
+            Couldn't load refund estimate. You can still cancel — the exact
+            refund will be confirmed by our team.
+          </div>
+        )}
+
+        {!loadingEstimate && !estimateError && estimate && (
+          <>
+            <div className="font-bold text-[var(--orange-500)] text-[1.4rem]">
+              {formatCurrency(estimate.refund_amount)}
+            </div>
+            <div className="text-[0.78rem] text-[var(--text-muted)] mt-1">
+              {estimate.policy}
+            </div>
+            {estimate.chef_cancellation_fee > 0 && (
+              <div className="text-[0.75rem] text-[var(--text-muted)] mt-2 italic">
+                Your chef will be compensated ₹{estimate.chef_cancellation_fee} for
+                the blocked slot.
+              </div>
+            )}
+          </>
         )}
       </div>
 
@@ -167,7 +176,7 @@ export default function CancelModal({
 
       <button
         onClick={handleConfirm}
-        disabled={confirming}
+        disabled={confirming || loadingEstimate}
         className="w-full py-3.5 border-none rounded-[12px] bg-[var(--red-err)] text-white font-bold text-[0.95rem] cursor-pointer transition-all hover:bg-[#B91C1C] disabled:opacity-60"
         style={{ fontFamily: "var(--font-body)" }}
       >
