@@ -147,6 +147,11 @@ export default function OrdersPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const PAGE_SIZE = 20;
   const { on, off } = useSocket();
 
   // Review modal
@@ -179,13 +184,16 @@ export default function OrdersPanel() {
     try {
       setLoading(true);
       setError(null);
-      const params: any = {};
+      setPage(1);
+      setHasMore(true);
+      const params: any = { page: 1, limit: PAGE_SIZE };
       if (activeFilter) params.status = activeFilter;
       const res = await api.get("/bookings", { params });
       const data = res.data?.data ?? res.data;
       const list = Array.isArray(data) ? data : data?.bookings ?? data?.data ?? [];
       const safeList = Array.isArray(list) ? list : [];
       setBookings(safeList);
+      setHasMore(safeList.length === PAGE_SIZE);
 
       const map: Record<string, { rating: number; comment: string } | null> = {};
       safeList.forEach((b: any) => {
@@ -205,6 +213,28 @@ export default function OrdersPanel() {
       setLoading(false);
     }
   }, [activeFilter]);
+
+  // Load next page (Load More button)
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore) return;
+    setLoadingMore(true);
+    try {
+      const nextPage = page + 1;
+      const params: any = { page: nextPage, limit: PAGE_SIZE };
+      if (activeFilter) params.status = activeFilter;
+      const res = await api.get("/bookings", { params });
+      const data = res.data?.data ?? res.data;
+      const list = Array.isArray(data) ? data : data?.bookings ?? data?.data ?? [];
+      const safeList = Array.isArray(list) ? list : [];
+      setBookings((prev) => [...prev, ...safeList]);
+      setPage(nextPage);
+      setHasMore(safeList.length === PAGE_SIZE);
+    } catch {
+      // silent — user can retry
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, hasMore, page, activeFilter]);
 
   useEffect(() => {
     fetchBookings();
@@ -561,6 +591,20 @@ export default function OrdersPanel() {
               </div>
             );
           })}
+
+          {/* Load More button — shown when more pages exist */}
+          {hasMore && (
+            <div className="flex justify-center pt-2 pb-4">
+              <button
+                onClick={loadMore}
+                disabled={loadingMore}
+                className="px-6 py-2.5 rounded-full text-[0.85rem] font-semibold text-[var(--orange-500)] bg-white border border-[rgba(212,114,26,0.2)] cursor-pointer hover:bg-[rgba(212,114,26,0.04)] disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                style={{ fontFamily: "var(--font-body)" }}
+              >
+                {loadingMore ? "Loading..." : "Load More"}
+              </button>
+            </div>
+          )}
         </div>
       )}
 
