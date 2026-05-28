@@ -2,6 +2,7 @@
 
 import React, { Component, type ReactNode, type ErrorInfo } from "react";
 import { AlertTriangle, RefreshCw } from "lucide-react";
+import { captureException } from "@/lib/sentry";
 
 interface Props {
   children: ReactNode;
@@ -26,6 +27,12 @@ export default class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error("[CookOnCall] Unexpected error:", error, errorInfo);
+
+    // Forward to Sentry (no-op if NEXT_PUBLIC_SENTRY_DSN unset)
+    captureException(error, {
+      component_stack: errorInfo.componentStack,
+      url: typeof window !== "undefined" ? window.location.href : null,
+    });
 
     // POST to backend — best-effort, never throws (we're already in error state)
     try {
