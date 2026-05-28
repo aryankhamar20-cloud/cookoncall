@@ -11,12 +11,14 @@ import {
   AlertCircle, Loader2, RefreshCw, Ban, Trash2, Pencil, X, Save,
   Eye, ExternalLink, CheckCircle2, XCircle, Phone, MapPin, CreditCard, Landmark,
   ScrollText,
+  BarChart3,
 } from "lucide-react";
 import AuditLogPanel from "@/components/dashboard/AuditLogPanel";
+import AnalyticsPanel from "@/components/dashboard/AnalyticsPanel";
 
 /* ═══ TYPES ═══ */
 
-type AdminPanel = "overview" | "users" | "cooks" | "bookings" | "areas" | "audit";
+type AdminPanel = "overview" | "users" | "cooks" | "bookings" | "areas" | "audit" | "analytics";
 type CookFilter = "all" | "verified" | "pending_review" | "unverified";
 
 interface AdminStatsData {
@@ -65,6 +67,7 @@ interface Pagination { page: number; limit: number; total: number; total_pages: 
 
 const sidebarLinks: { id: AdminPanel; label: string; icon: React.ReactNode }[] = [
   { id: "overview", label: "Overview", icon: <LayoutGrid className="w-5 h-5" /> },
+  { id: "analytics", label: "Analytics", icon: <BarChart3 className="w-5 h-5" /> },
   { id: "users", label: "Users", icon: <Users className="w-5 h-5" /> },
   { id: "cooks", label: "Cooks", icon: <ChefHat className="w-5 h-5" /> },
   { id: "bookings", label: "Bookings", icon: <FileText className="w-5 h-5" /> },
@@ -1287,6 +1290,9 @@ export default function AdminDashboardPage() {
 
           {/* Admin → Audit Log (Round 1) */}
           {activePanel === "audit" && <AuditLogPanel />}
+
+          {/* Admin → Analytics (Phase 1) */}
+          {activePanel === "analytics" && <AnalyticsPanel />}
         </div>
       </div>
 
