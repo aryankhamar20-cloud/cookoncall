@@ -75,12 +75,24 @@ export default function NotificationBell() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
-  async function handleMarkRead(id: string) {
-    try {
-      await notificationsApi.markRead(id);
-      setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, is_read: true } : n));
+  /**
+   * Round 4 / Analytics Phase 2 — explicit click signal for CTR.
+   *
+   * Distinct from `markRead`: a user can mark-all-read in bulk without
+   * actually opening any single item, so CTR can't piggyback on the
+   * existing read flag. The backend records `clicked_at` exactly once,
+   * so re-clicks are safe no-ops.
+   */
+  async function handleClick(item: NotificationItem) {
+    // Optimistic UI: flip read locally immediately.
+    if (!item.is_read) {
+      setNotifications((prev) =>
+        prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n)),
+      );
       setUnreadCount((prev) => Math.max(0, prev - 1));
-    } catch { /* silent */ }
+    }
+    // Fire-and-forget the click — never block the UI on this.
+    notificationsApi.recordClick(item.id).catch(() => undefined);
   }
 
   async function handleMarkAllRead() {
@@ -143,7 +155,7 @@ export default function NotificationBell() {
               notifications.map((n) => (
                 <div
                   key={n.id}
-                  onClick={() => !n.is_read && handleMarkRead(n.id)}
+                  onClick={() => handleClick(n)}
                   className={cn(
                     "px-4 py-3 border-b border-[rgba(212,114,26,0.04)] cursor-pointer transition-colors hover:bg-[rgba(212,114,26,0.02)]",
                     !n.is_read && "bg-[rgba(212,114,26,0.03)]"
