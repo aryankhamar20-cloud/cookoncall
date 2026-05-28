@@ -10,11 +10,13 @@ import {
   Shield, ShieldX, UserCheck, BadgeCheck,
   AlertCircle, Loader2, RefreshCw, Ban, Trash2, Pencil, X, Save,
   Eye, ExternalLink, CheckCircle2, XCircle, Phone, MapPin, CreditCard, Landmark,
+  ScrollText,
 } from "lucide-react";
+import AuditLogPanel from "@/components/dashboard/AuditLogPanel";
 
 /* ═══ TYPES ═══ */
 
-type AdminPanel = "overview" | "users" | "cooks" | "bookings" | "areas";
+type AdminPanel = "overview" | "users" | "cooks" | "bookings" | "areas" | "audit";
 type CookFilter = "all" | "verified" | "pending_review" | "unverified";
 
 interface AdminStatsData {
@@ -67,6 +69,7 @@ const sidebarLinks: { id: AdminPanel; label: string; icon: React.ReactNode }[] =
   { id: "cooks", label: "Cooks", icon: <ChefHat className="w-5 h-5" /> },
   { id: "bookings", label: "Bookings", icon: <FileText className="w-5 h-5" /> },
   { id: "areas", label: "Areas", icon: <MapPin className="w-5 h-5" /> },
+  { id: "audit", label: "Audit Log", icon: <ScrollText className="w-5 h-5" /> },
 ];
 
 /* ═══ HELPERS ═══ */
@@ -1281,6 +1284,9 @@ export default function AdminDashboardPage() {
               </div>
             </div>
           )}
+
+          {/* Admin → Audit Log (Round 1) */}
+          {activePanel === "audit" && <AuditLogPanel />}
         </div>
       </div>
 

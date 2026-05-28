@@ -190,6 +190,33 @@ export default function CookDashboardPage() {
   // Cooking OTP
   const [otpState, setOtpState] = useState<Record<string, { step: string; otp: string; loading: boolean }>>({});
 
+  // ─── Customer phone reveal (post-confirmation only) ───
+  // Phone is fetched lazily from GET /bookings/:id/customer-phone — the
+  // backend hides it pre-confirmation so chefs can't bypass the platform.
+  const [phoneState, setPhoneState] = useState<
+    Record<string, { phone: string | null; loading: boolean; error?: string }>
+  >({});
+
+  const handleRevealPhone = useCallback(async (bookingId: string) => {
+    setPhoneState((s) => ({ ...s, [bookingId]: { phone: null, loading: true } }));
+    try {
+      const res = await api.get(`/bookings/${bookingId}/customer-phone`);
+      const body = res.data?.data ?? res.data;
+      const phone: string | null = body?.customer_phone ?? null;
+      setPhoneState((s) => ({ ...s, [bookingId]: { phone, loading: false } }));
+      if (!phone) toast.error("Customer hasn't added a phone number yet.");
+    } catch (e: any) {
+      const msg =
+        e?.response?.data?.message ||
+        "Couldn't fetch phone — make sure the booking is confirmed.";
+      setPhoneState((s) => ({
+        ...s,
+        [bookingId]: { phone: null, loading: false, error: msg },
+      }));
+      toast.error(msg);
+    }
+  }, []);
+
   useEffect(() => {
     const valid = ["overview", "requests", "earnings", "menu", "packages", "profile", "verification", "reviews", "availability", "bank"];
     if (!valid.includes(activePanel)) setPanel("overview");
@@ -732,6 +759,11 @@ export default function CookDashboardPage() {
     const customerName = customer ? `${customer.name || ""} ${customer.lastName || customer.last_name || ""}`.trim() : "Customer";
     const status = b.status || "pending";
     const otpS = otpState[b.id];
+    const phoneS = phoneState[b.id];
+    // Customer phone is only meaningful once the booking is paid / confirmed —
+    // matches the backend authorization on GET /bookings/:id/customer-phone.
+    const canRevealPhone =
+      status === "confirmed" || status === "in_progress" || status === "completed";
 
     return (
       <div key={b.id} className="bg-white rounded-[16px] p-5 border border-[rgba(212,114,26,0.06)] transition-all hover:shadow-[0_4px_16px_rgba(26,15,10,0.05)]">
@@ -754,6 +786,37 @@ export default function CookDashboardPage() {
           <div className="flex items-center gap-1.5 text-[0.82rem] font-semibold text-[var(--green-ok)]"><IndianRupee className="w-3.5 h-3.5 shrink-0" /><span>{Math.round((Number(b.total_price) || 0) * 0.85)} <span className="font-normal text-[var(--text-muted)]">(your share)</span></span></div>
         </div>
         {b.address && <div className="flex items-start gap-1.5 text-[0.82rem] text-[var(--text-muted)] mb-3"><MapPin className="w-3.5 h-3.5 shrink-0 mt-0.5" /><span className="line-clamp-1">{b.address}</span></div>}
+
+        {/* Customer phone — visible only post-confirmation. Shown as a tappable
+            tel: link once revealed so the chef can call directly from the dashboard. */}
+        {canRevealPhone && (
+          <div className="mb-3">
+            {phoneS?.phone ? (
+              <a
+                href={`tel:${phoneS.phone}`}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[10px] bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold text-[0.82rem] hover:bg-emerald-100 transition-colors"
+              >
+                <Phone className="w-3.5 h-3.5" />
+                Call customer · {phoneS.phone}
+              </a>
+            ) : (
+              <button
+                type="button"
+                onClick={() => handleRevealPhone(b.id)}
+                disabled={phoneS?.loading}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[10px] bg-white border border-[rgba(0,0,0,0.08)] text-[var(--brown-800)] font-semibold text-[0.82rem] hover:border-emerald-400 hover:text-emerald-700 disabled:opacity-50"
+              >
+                {phoneS?.loading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Phone className="w-3.5 h-3.5" />
+                )}
+                {phoneS?.loading ? "Loading…" : "Show customer phone"}
+              </button>
+            )}
+          </div>
+        )}
+
         {b.dishes && <div className="text-[0.82rem] text-[var(--text-muted)] mb-3 bg-[var(--cream-100)] rounded-[8px] px-3 py-2"><span className="font-semibold text-[var(--brown-800)]">Dishes requested:</span> {b.dishes}</div>}
         {b.instructions && <div className="text-[0.82rem] text-[var(--text-muted)] mb-3 italic">Note: {b.instructions}</div>}
 
