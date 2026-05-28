@@ -24,7 +24,7 @@ import StarRating from "@/components/ui/StarRating";
 import PackageSelector from "@/components/dashboard/PackageSelector";
 import BookingModal from "@/components/modals/BookingModal";
 import type { BookingFormData } from "@/components/modals/BookingModal";
-import type { PackageSelectionPayload, PaymentMethod } from "@/types";
+import type { PackageSelectionPayload } from "@/types";
 import { useAuthStore } from "@/stores/authStore";
 import {
   ArrowLeft, MapPin, IndianRupee, Clock, ChefHat, Star,
@@ -147,13 +147,8 @@ function ChefDetailContent() {
     }
   }
 
-  function handlePaymentSuccess(_method?: PaymentMethod) {
-    setPaymentModalOpen(false);
-    setPendingPackage(null);
-    setBookingData(null);
-    toast.success("Payment confirmed! Your booking is confirmed.");
-    router.push("/dashboard/customer");
-  }
+  // Payment no longer happens on the public page — chef must accept first.
+  // Payment is handled in the customer dashboard OrdersPanel after acceptance.
 
   if (loading) {
     return (
