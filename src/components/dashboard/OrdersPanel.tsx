@@ -15,6 +15,7 @@ import toast from "react-hot-toast";
 import type { Cook } from "@/types";
 import { getInitials, formatCurrency } from "@/lib/utils";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useSocket } from "@/hooks/useSocket";
 
 // ─── Filter options (lowercase to match backend status values) ──
 const filters = [
@@ -146,6 +147,7 @@ export default function OrdersPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const { on, off } = useSocket();
 
   // Review modal
   const [reviewModal, setReviewModal] = useState<{
@@ -214,6 +216,32 @@ export default function OrdersPanel() {
     const id = setInterval(() => fetchBookings(), 60_000);
     return () => clearInterval(id);
   }, [fetchBookings]);
+
+  // ─── Real-time WebSocket booking updates ─────────────────────────
+  // When the backend emits any booking lifecycle event, immediately
+  // re-fetch so the UI reflects the new status without waiting for polling.
+  useEffect(() => {
+    const bookingEvents = [
+      "booking:accepted",
+      "booking:rejected",
+      "booking:paid",
+      "booking:started",
+      "booking:completed",
+      "booking:cancelled",
+      "booking:expired",
+    ] as const;
+
+    const handleBookingUpdate = () => {
+      // Small delay so the backend has committed the status change
+      setTimeout(() => fetchBookings(), 500);
+    };
+
+    bookingEvents.forEach((event) => on(event, handleBookingUpdate));
+
+    return () => {
+      bookingEvents.forEach((event) => off(event, handleBookingUpdate));
+    };
+  }, [fetchBookings, on, off]);
 
   async function handleCancel(bookingId: string) {
     if (!confirm("Are you sure you want to cancel this booking?")) return;

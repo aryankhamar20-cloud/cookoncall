@@ -1,9 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Bell, Check, CheckCheck } from "lucide-react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Bell, CheckCheck } from "lucide-react";
 import { notificationsApi } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { useSocket } from "@/hooks/useSocket";
 
 interface NotificationItem {
   id: string;
@@ -20,13 +21,48 @@ export default function NotificationBell() {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const { on, off } = useSocket();
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await notificationsApi.getAll({ limit: 10 });
+      const data = res.data?.data || res.data;
+      const items = data?.notifications || (Array.isArray(data) ? data : []);
+      setNotifications(items);
+      setUnreadCount(data?.unread_count || items.filter((n: any) => !n.is_read).length);
+    } catch {
+      // Silently fail — notifications aren't critical
+    }
+  }, []);
 
   useEffect(() => {
     fetchNotifications();
-    // Poll every 30 seconds
-    const interval = setInterval(fetchNotifications, 30000);
-    return () => clearInterval(interval);
-  }, []);
+
+    // ─── Real-time: listen for new notifications via WebSocket ───
+    // Falls back to 60s polling if WS is unavailable (e.g. offline)
+    const handleNewNotification = (data: any) => {
+      const newItem: NotificationItem = {
+        id: data.id || String(Date.now()),
+        type: data.type || "general",
+        title: data.title || "New notification",
+        message: data.message || "",
+        is_read: false,
+        created_at: data.ts || new Date().toISOString(),
+      };
+      setNotifications((prev) => [newItem, ...prev].slice(0, 10));
+      setUnreadCount((prev) => prev + 1);
+    };
+
+    on("notification:new", handleNewNotification);
+
+    // Fallback polling — 60s instead of 30s since WS handles instant updates
+    const interval = setInterval(fetchNotifications, 60_000);
+
+    return () => {
+      off("notification:new", handleNewNotification);
+      clearInterval(interval);
+    };
+  }, [fetchNotifications, on, off]);
 
   // Close on outside click
   useEffect(() => {
@@ -38,18 +74,6 @@ export default function NotificationBell() {
     if (open) document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
-
-  async function fetchNotifications() {
-    try {
-      const res = await notificationsApi.getAll({ limit: 10 });
-      const data = res.data?.data || res.data;
-      const items = data?.notifications || (Array.isArray(data) ? data : []);
-      setNotifications(items);
-      setUnreadCount(data?.unread_count || items.filter((n: any) => !n.is_read).length);
-    } catch {
-      // Silently fail — notifications aren't critical
-    }
-  }
 
   async function handleMarkRead(id: string) {
     try {
