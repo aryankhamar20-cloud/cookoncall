@@ -210,10 +210,12 @@ export default function BookChefPanel() {
     setBookingModalOpen(true);
   }
 
-  // ─── Apr 21 NEW FLOW ──────────────────────────────────
+  // ─── New flow (May 29, 2026 — see backend PR #36) ─────
   // Create booking → it goes to PENDING_CHEF_APPROVAL on backend.
-  // We DO NOT open PaymentModal here. Customer pays from OrdersPanel
-  // only after chef accepts (status becomes AWAITING_PAYMENT).
+  // We DO NOT open PaymentModal here. Once the chef accepts, status
+  // flips to CONFIRMED and the customer can pay any time before the
+  // session ends — payment is initiated from OrdersPanel (the "Pay"
+  // button on a confirmed row).
   async function handleProceedToPayment(formData: BookingFormData) {
     try {
       const payload: any = {
@@ -691,7 +693,8 @@ export default function BookChefPanel() {
             </p>
             <p className="text-[0.85rem] text-[var(--text-muted)] mb-4">
               Your chef has <strong>3 hours</strong> to accept.
-              We'll email you the moment they respond. Pay from <strong>My Orders</strong> once they confirm.
+              We'll email you the moment they respond. Once confirmed, you can
+              pay any time before your session — see <strong>My Orders</strong>.
             </p>
             <div className="text-left bg-[var(--cream-100)] rounded-[12px] p-4 mb-5 space-y-1.5 text-[0.85rem]">
               <div><span className="text-[var(--text-muted)]">Chef:</span> {pendingBookingSummary.chefName}</div>

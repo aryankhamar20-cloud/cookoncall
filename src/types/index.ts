@@ -90,9 +90,16 @@ export interface MenuItem {
 // IMPORTANT: backend uses lowercase snake_case for status values
 // (see modules/bookings/booking.entity.ts in cookoncall-backend).
 // The frontend must match exactly — do NOT use uppercase.
+//
+// New flow (May 29, 2026 — see cookoncall-backend PR #36):
+//   • `awaiting_payment` is no longer entered from a fresh booking
+//     (chef-accept now goes straight to `confirmed`). The value is
+//     retained as a legacy state for any pre-#36 row that's still in
+//     flight; the customer can still pay it via the same Razorpay path.
+//   • `payment_expires_at` likewise survives only on legacy rows.
 export type BookingStatus =
-  | "pending_chef_approval"   // Apr 21 new flow — chef has 3hr to respond
-  | "awaiting_payment"        // Apr 21 new flow — chef accepted; customer has 3hr to pay
+  | "pending_chef_approval"   // chef has 3hr to respond (unchanged)
+  | "awaiting_payment"        // LEGACY — pre-#36 rows; new bookings skip this
   | "pending"                 // LEGACY — kept only for old DB rows not yet migrated
   | "confirmed"
   | "in_progress"
@@ -139,9 +146,9 @@ export interface Booking {
   cancellation_reason?: string;
   refund_amount?: number;
 
-  // New flow (Apr 21) timestamps
+  // New flow (Apr 21, May 29) timestamps
   chef_responded_at?: string;      // when chef accepted or rejected
-  payment_expires_at?: string;     // chef_responded_at + 3hr
+  payment_expires_at?: string;     // LEGACY — pre-#36 awaiting_payment rows only
   rejection_reason?: string;       // internal — backend strips for customer GETs
   expired_at?: string;
 

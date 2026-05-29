@@ -107,7 +107,8 @@ function ChefDetailContent() {
 
   // ─── BookingModal callback — NEW PENDING FLOW ─────────
   // Creates booking → status = pending_chef_approval (no payment yet).
-  // Chef has 3 hours to accept. Customer pays only after acceptance.
+  // Chef has 3 hours to accept. Once they accept the booking is CONFIRMED;
+  // customer can pay any time before the session ends (May 29, 2026 flow).
   async function handleProceedToPayment(data: BookingFormData) {
     try {
       setBookingData(data);
@@ -132,13 +133,16 @@ function ChefDetailContent() {
         payload.selectedAddonIds = data.selectedAddonIds;
       }
       await bookingsApi.create(payload as any);
-      // Booking sent — do NOT open PaymentModal yet.
-      // Chef must accept first; customer pays via the Orders panel.
+      // Booking sent — chef must accept first. Under the new flow
+      // (May 29, 2026) chef-accept goes straight to CONFIRMED — no
+      // 3-hour payment window. Customer can pay any time before the
+      // session ends, optionally from the Orders panel.
       setBookingModalOpen(false);
       setPendingPackage(null);
       setBookingData(null);
       toast.success(
-        "Booking request sent! The chef has 3 hours to accept. You'll be notified to pay after acceptance.",
+        "Booking request sent! The chef has 3 hours to accept. " +
+          "Once they confirm, you can pay any time before your session ends.",
         { duration: 5000 }
       );
       router.push("/dashboard/customer");
