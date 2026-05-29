@@ -1,4 +1,4 @@
-﻿import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import Cookies from "js-cookie";
 import type { ApiResponse } from "@/types";
 
@@ -12,7 +12,7 @@ const api = axios.create({
   },
 });
 
-// â•â•â• Request interceptor â€” attach JWT â•â•â•
+// === Request interceptor — attach JWT ===
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = Cookies.get("coc_token");
@@ -24,7 +24,7 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
-// â•â•â• Response interceptor â€” handle 401 + refresh â•â•â•
+// === Response interceptor — handle 401 + refresh ===
 let isRefreshing = false;
 let failedQueue: Array<{
   resolve: (value: unknown) => void;
@@ -127,7 +127,7 @@ api.interceptors.response.use(
 
 export default api;
 
-// â•â•â• Auth API â•â•â•
+// === Auth API ===
 export const authApi = {
   register: (data: {
     name: string;
@@ -178,7 +178,7 @@ export const authApi = {
   getMe: () => api.get("/auth/me"),
 };
 
-// â•â•â• Users API â•â•â•
+// === Users API ===
 export const usersApi = {
   getMe: () => api.get("/users/me"),
   updateMe: (data: Partial<{
@@ -203,7 +203,7 @@ export const usersApi = {
   }) => api.patch("/users/me/notification-preferences", data),
 };
 
-// â•â•â• Cooks API â•â•â•
+// === Cooks API ===
 export const cooksApi = {
   search: (params?: Record<string, string | number | boolean>) =>
     api.get("/cooks", { params }),
@@ -238,7 +238,7 @@ export const cooksApi = {
     status?: "created" | "authorized" | "captured" | "refunded" | "failed";
   }) => api.get("/cooks/me/payouts", { params }),
 
-  // â”€â”€â”€ VERIFICATION â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --- VERIFICATION ----------------------------------
   submitVerification: (data: {
     aadhaar_url: string;
     pan_url: string;
@@ -251,13 +251,13 @@ export const cooksApi = {
 
   getVerificationStatus: () => api.get("/cooks/me/verification-status"),
 
-  // â”€â”€â”€ REVIEWS RECEIVED (chef-side "My Reviews" panel) â”€
+  // --- REVIEWS RECEIVED (chef-side "My Reviews" panel) -
   // Fetches reviews + aggregate stats for the currently logged-in chef.
   getMyReviewsReceived: (params?: { page?: number; limit?: number }) =>
     api.get("/reviews/cook/me/received", { params }),
 };
 
-// â•â•â• Availability API (Apr 24, 2026) â•â•â•
+// === Availability API (Apr 24, 2026) ===
 // Weekly schedules + date overrides + slot picker.
 export interface TimeWindow { start: string; end: string }
 export interface AvailSchedule { id: string; weekday: number; enabled: boolean; windows: TimeWindow[] }
@@ -275,14 +275,14 @@ export const availabilityApi = {
   deleteOverride: (id: string) => api.delete(`/availability/me/override/${id}`),
   updateSettings: (data: Partial<AvailSettings>) =>
     api.patch("/availability/me/settings", data),
-  // Public â€” slot picker
+  // Public — slot picker
   getCookSlots: (cookId: string, date: string, durationHours: number) =>
     api.get(`/availability/cook/${cookId}/slots`, {
       params: { date, duration: durationHours },
     }),
 };
 
-// â•â•â• Bookings API â•â•â•
+// === Bookings API ===
 export const bookingsApi = {
   create: (data: {
     cook_id: string;
@@ -294,7 +294,7 @@ export const bookingsApi = {
     instructions?: string;
     selected_items?: Array<{ menuItemId: string; qty: number }>;
     order_items?: Array<{ menuItemId: string; name: string; qty: number; price: number }>;
-    // â”€â”€â”€ Package booking fields (P1.5c) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // --- Package booking fields (P1.5c) ---------------
      packageId?: string;
      guestCount?: number;
      selectedCategories?: Array<{ categoryId: string; dishIds: string[] }>;
@@ -306,8 +306,8 @@ export const bookingsApi = {
 
   getById: (id: string) => api.get(`/bookings/${id}`),
 
-  // â”€â”€â”€ NEW FLOW (Apr 21, 2026) â€” backend uses POST, not PATCH â”€â”€
-  /** Chef accepts â†’ booking becomes AWAITING_PAYMENT, customer has 3hr to pay */
+  // --- NEW FLOW (Apr 21, 2026) — backend uses POST, not PATCH --
+  /** Chef accepts -> booking becomes AWAITING_PAYMENT, customer has 3hr to pay */
   accept: (id: string) => api.post(`/bookings/${id}/accept`),
   /** Chef rejects with internal reason (never shown to customer) */
   reject: (id: string, reason: string) =>
@@ -327,7 +327,7 @@ export const bookingsApi = {
   start: (id: string) => api.patch(`/bookings/${id}/start`),
   complete: (id: string) => api.patch(`/bookings/${id}/complete`),
 
-  // â”€â”€â”€ COOKING SESSION OTP â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --- COOKING SESSION OTP ---------------------------
   sendStartOtp: (id: string) => api.post(`/bookings/${id}/start-otp`),
   verifyStartOtp: (id: string, otp: string) =>
     api.post(`/bookings/${id}/verify-start-otp`, { otp }),
@@ -343,7 +343,7 @@ export const bookingsApi = {
     api.get(`/bookings/${id}/receipt`, { responseType: "blob" }),
 };
 
-// â•â•â• Payments API â•â•â•
+// === Payments API ===
 export const paymentsApi = {
   createOrder: (data: { booking_id: string }) =>
     api.post("/payments/create-order", data),
@@ -354,7 +354,7 @@ export const paymentsApi = {
   }) => api.post("/payments/verify", data),
 };
 
-// â•â•â• Reviews API â•â•â•
+// === Reviews API ===
 export const reviewsApi = {
   submit: (data: {
     booking_id: string;
@@ -367,7 +367,7 @@ export const reviewsApi = {
 };
 
 
-// â•â•â• Notifications API â•â•â•
+// === Notifications API ===
 export const notificationsApi = {
   getAll: (params?: { page?: number; limit?: number }) =>
     api.get("/notifications", { params }),
@@ -392,7 +392,7 @@ export const eventsApi = {
   }) => api.post("/events", data),
 };
 
-// â•â•â• Admin API â•â•â•
+// === Admin API ===
 export const adminApi = {
   getStats: () => api.get("/admin/stats"),
   getUsers: (params?: { search?: string; page?: number; limit?: number }) =>
@@ -412,7 +412,7 @@ export const adminApi = {
   getRecentUsers: () => api.get("/admin/recent-users"),
   getRecentBookings: () => api.get("/admin/recent-bookings"),
 
-  // â”€â”€â”€ AUDIT LOG (NEW Apr 24) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // --- AUDIT LOG (NEW Apr 24) ------------------------
   getAuditLog: (params?: {
     page?: number;
     limit?: number;
@@ -552,11 +552,11 @@ export interface AnalyticsRangeParams {
   to?: string;
 }
 
-// â•â•â• Uploads API â•â•â•
+// === Uploads API ===
 export const uploadsApi = {
   uploadImage: (file: File) => {
     const formData = new FormData();
-    formData.append("file", file);          // âœ… was "image", backend expects "file"
+    formData.append("file", file);          // OK was "image", backend expects "file"
     return api.post("/uploads/image", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
@@ -586,7 +586,7 @@ export const uploadsApi = {
   },
 };
 
-// â”€â”€â”€ MEAL PACKAGES API (P1.5) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// --- MEAL PACKAGES API (P1.5) -------------------------------
 export const mealPackagesApi = {
   // Chef
   getMy: () => api.get('/meal-packages/my'),
@@ -618,13 +618,13 @@ export const mealPackagesApi = {
   deleteAddon: (pkgId: string, addonId: string) =>
     api.delete(`/meal-packages/${pkgId}/addons/${addonId}`),
 
-  // Public (customer view â€” used in P1.5c)
+  // Public (customer view — used in P1.5c)
   getCookPackages: (cookId: string) => api.get(`/meal-packages/cook/${cookId}`),
   getPublicByCook: (cookId: string) => api.get(`/meal-packages/cook/${cookId}`),  
 };
 
 
-// â•â•â• Addresses API â•â•â•
+// === Addresses API ===
 export const addressesApi = {
   getAll: () => api.get("/addresses"),
 
@@ -670,7 +670,7 @@ export const addressesApi = {
   delete: (id: string) => api.delete(`/addresses/${id}`),
 };
 
-// â•â•â• Areas API (P1.6 â€” Apr 27, 2026) â•â•â•
+// === Areas API (P1.6 — Apr 27, 2026) ===
 export interface ServiceAreaDto {
   id: string;
   slug: string;
@@ -695,32 +695,32 @@ export interface AreaRequestDto {
 }
 
 export const areasApi = {
-  // Public â€” list active areas (cached client-side via SWR-style)
+  // Public — list active areas (cached client-side via SWR-style)
   list: (city?: string) =>
     api.get<{ data: ServiceAreaDto[] }>('/areas', {
       params: city ? { city } : undefined,
     }),
 
-  // Auth â€” request a new area (chef or customer)
+  // Auth — request a new area (chef or customer)
   request: (data: { name: string; city?: string }) =>
     api.post('/areas/request', data),
 
-  // Admin â€” list all area requests, filterable by status
+  // Admin — list all area requests, filterable by status
   adminListRequests: (status?: 'pending' | 'approved' | 'rejected') =>
     api.get<{ data: AreaRequestDto[] }>('/areas/admin/requests', {
       params: status ? { status } : undefined,
     }),
 
-  // Admin â€” approve a request, must specify slug + region
+  // Admin — approve a request, must specify slug + region
   adminApprove: (id: string, data: { slug: string; region: string }) =>
     api.patch(`/areas/admin/requests/${id}/approve`, data),
 
-  // Admin â€” reject a request with a reason
+  // Admin — reject a request with a reason
   adminReject: (id: string, reason: string) =>
     api.patch(`/areas/admin/requests/${id}/reject`, { reject_reason: reason }),
 };
 
-// â•â•â• Pincode Lookup (India Post API â€” free, no key) â•â•â•
+// === Pincode Lookup (India Post API — free, no key) ===
 export async function lookupPincode(pincode: string): Promise<{
   city: string;
   state: string;
