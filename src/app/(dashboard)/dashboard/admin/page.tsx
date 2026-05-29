@@ -15,6 +15,7 @@ import {
   Bell,
   Ticket,
   KeyRound,
+  Activity,
 } from "lucide-react";
 import AuditLogPanel from "@/components/dashboard/AuditLogPanel";
 import AnalyticsPanel from "@/components/dashboard/AnalyticsPanel";
@@ -585,6 +586,35 @@ export default function AdminDashboardPage() {
 
   const ah = useCallback(() => ({ headers: { Authorization: `Bearer ${adminToken}` } }), [adminToken]);
 
+  /**
+   * Centralised admin-side error handler.
+   *
+   * If the server says 401, the JWT has expired (admin tokens currently
+   * have a 15m TTL and there's no refresh token issued for the admin
+   * panel — see PR description). Drop the cookies, surface a clear
+   * "session expired" message, and bounce back to the admin login
+   * form. Crucially we DO NOT call window.location.href = "/login" or
+   * navigate anywhere else: that's what was happening before this
+   * effort because the global axios interceptor was attempting a
+   * customer-style refresh and forcing a hard redirect on failure.
+   *
+   * For every other status, fall back to the API's own message so the
+   * admin sees what actually went wrong.
+   */
+  const handleAdminError = useCallback((e: any, fallback: string) => {
+    const status = e?.response?.status;
+    if (status === 401) {
+      Cookies.remove("coc_admin_token");
+      Cookies.remove("coc_admin_name");
+      setIsLoggedIn(false);
+      setAdminToken("");
+      setAdminName("");
+      setLoginError("Your admin session expired. Please sign in again.");
+      return;
+    }
+    setError(e?.response?.data?.message || fallback);
+  }, []);
+
   async function handleLogin() {
     if (!email || !password) { setLoginError("Please enter both email and password."); return; }
     setLoginLoading(true); setLoginError("");
@@ -616,9 +646,9 @@ export default function AdminDashboardPage() {
       setStats(s.data.data || s.data);
       const u = ru.data.data || ru.data; setRecentUsers(Array.isArray(u) ? u : []);
       const b = rb.data.data || rb.data; setRecentBookings(Array.isArray(b) ? b : []);
-    } catch (e: any) { setError(e?.response?.data?.message || "Failed to load overview"); }
+    } catch (e: any) { handleAdminError(e, "Failed to load overview"); }
     finally { setLoading(false); }
-  }, [adminToken, ah]);
+  }, [adminToken, ah, handleAdminError]);
 
   const fetchUsers = useCallback(async (page = 1) => {
     if (!adminToken) return; setLoading(true); setError("");
@@ -626,9 +656,9 @@ export default function AdminDashboardPage() {
       const p: any = { page, limit: 20 }; if (userSearch.trim()) p.search = userSearch.trim();
       const { data } = await api.get("/admin/users", { ...ah(), params: p });
       const r = data.data || data; setUsers(r.users || []); setUsersPag(r.pagination || null);
-    } catch (e: any) { setError(e?.response?.data?.message || "Failed to load users"); }
+    } catch (e: any) { handleAdminError(e, "Failed to load users"); }
     finally { setLoading(false); }
-  }, [adminToken, ah, userSearch]);
+  }, [adminToken, ah, userSearch, handleAdminError]);
 
   const fetchCooks = useCallback(async (page = 1) => {
     if (!adminToken) return; setLoading(true); setError("");
@@ -640,9 +670,9 @@ export default function AdminDashboardPage() {
       else if (cookFilter === "pending_review") url = "/admin/cooks/pending";
       const { data } = await api.get(url, { ...ah(), params: p });
       const r = data.data || data; setCooks(r.cooks || []); setCooksPag(r.pagination || null);
-    } catch (e: any) { setError(e?.response?.data?.message || "Failed to load cooks"); }
+    } catch (e: any) { handleAdminError(e, "Failed to load cooks"); }
     finally { setLoading(false); }
-  }, [adminToken, ah, cookFilter]);
+  }, [adminToken, ah, cookFilter, handleAdminError]);
 
   const fetchBookings = useCallback(async (page = 1) => {
     if (!adminToken) return; setLoading(true); setError("");
@@ -650,9 +680,9 @@ export default function AdminDashboardPage() {
       const p: any = { page, limit: 20 }; if (bookingSearch.trim()) p.search = bookingSearch.trim();
       const { data } = await api.get("/admin/bookings", { ...ah(), params: p });
       const r = data.data || data; setBookings(r.bookings || []); setBookingsPag(r.pagination || null);
-    } catch (e: any) { setError(e?.response?.data?.message || "Failed to load bookings"); }
+    } catch (e: any) { handleAdminError(e, "Failed to load bookings"); }
     finally { setLoading(false); }
-  }, [adminToken, ah, bookingSearch]);
+  }, [adminToken, ah, bookingSearch, handleAdminError]);
 
   // P1.6 — fetch area requests (filterable by status)
   const fetchAreaRequests = useCallback(async () => {
@@ -665,11 +695,11 @@ export default function AdminDashboardPage() {
       const list = (data?.data ?? data ?? []) as AreaRequestRow[];
       setAreaReqs(Array.isArray(list) ? list : []);
     } catch (e: any) {
-      setError(e?.response?.data?.message || "Failed to load area requests");
+      handleAdminError(e, "Failed to load area requests");
     } finally {
       setAreaReqsLoading(false);
     }
-  }, [adminToken, ah, areaReqStatusFilter]);
+  }, [adminToken, ah, areaReqStatusFilter, handleAdminError]);
 
   function slugifyForApproval(name: string): string {
     return (name || "")
@@ -830,20 +860,22 @@ export default function AdminDashboardPage() {
             </div>
           )}
           <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Admin email"
-            className="w-full px-4 py-3.5 bg-[rgba(255,255,255,0.06)] border-[1.5px] border-[rgba(255,255,255,0.1)] rounded-[12px] text-white text-[0.95rem] outline-none mb-3 placeholder:text-[rgba(255,255,255,0.3)] focus:border-[var(--orange-500)]"
+            autoComplete="email"
+            className="w-full px-4 py-3.5 bg-[rgba(255,255,255,0.06)] border-[1.5px] border-[rgba(255,255,255,0.1)] rounded-[12px] text-white text-[0.95rem] outline-none mb-3 placeholder:text-[rgba(255,255,255,0.3)] focus:border-[var(--orange-500)] transition-colors"
             style={{ fontFamily: "var(--font-body)" }} />
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleLogin()} placeholder="Password"
-            className="w-full px-4 py-3.5 bg-[rgba(255,255,255,0.06)] border-[1.5px] border-[rgba(255,255,255,0.1)] rounded-[12px] text-white text-[0.95rem] outline-none placeholder:text-[rgba(255,255,255,0.3)] focus:border-[var(--orange-500)]"
+            autoComplete="current-password"
+            className="w-full px-4 py-3.5 bg-[rgba(255,255,255,0.06)] border-[1.5px] border-[rgba(255,255,255,0.1)] rounded-[12px] text-white text-[0.95rem] outline-none placeholder:text-[rgba(255,255,255,0.3)] focus:border-[var(--orange-500)] transition-colors"
             style={{ fontFamily: "var(--font-body)" }} />
-          <button onClick={handleLogin} disabled={loginLoading}
-            className="w-full mt-3.5 py-4 border-none rounded-[12px] bg-[var(--orange-500)] text-white font-bold text-base cursor-pointer transition-all hover:bg-[var(--orange-400)] disabled:opacity-50 flex items-center justify-center gap-2"
+          <button onClick={handleLogin} disabled={loginLoading || !email || !password}
+            className="w-full mt-3.5 py-4 border-none rounded-[12px] bg-[var(--orange-500)] text-white font-bold text-base cursor-pointer transition-all hover:bg-[var(--orange-400)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             style={{ fontFamily: "var(--font-body)" }}>
             {loginLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-            {loginLoading ? "Logging in..." : "Login to Admin"}
+            {loginLoading ? "Signing in..." : "Sign in to Admin"}
           </button>
-          <div className="mt-4">
-            <Link href="/" className="text-[rgba(255,255,255,0.3)] text-[0.82rem] no-underline hover:text-[var(--orange-400)]">&larr; Back to Home</Link>
+          <div className="mt-5">
+            <Link href="/" className="text-[rgba(255,255,255,0.35)] text-[0.82rem] no-underline hover:text-[var(--orange-400)] transition-colors">&larr; Back to Home</Link>
           </div>
         </div>
       </div>
@@ -881,57 +913,109 @@ export default function AdminDashboardPage() {
       />
 
       {/* Sidebar */}
-      <aside className={cn("w-[240px] fixed top-0 left-0 bottom-0 bg-[#120B07] z-[100] flex flex-col transition-transform duration-300 lg:translate-x-0 border-r border-[rgba(255,255,255,0.05)]", sidebarOpen ? "translate-x-0" : "-translate-x-full")}>
-        <div className="px-5 pt-6 pb-5 border-b border-[rgba(255,255,255,0.05)]">
-          <div className="font-display font-[900] text-base flex items-center gap-2">
-            <Shield className="w-5 h-5 text-[var(--orange-500)]" />COOKONCALL
+      <aside className={cn("w-[240px] fixed top-0 left-0 bottom-0 bg-[#120B07] z-[100] flex flex-col transition-transform duration-300 lg:translate-x-0 border-r border-[rgba(255,255,255,0.06)] shadow-[2px_0_24px_rgba(0,0,0,0.3)] lg:shadow-none", sidebarOpen ? "translate-x-0" : "-translate-x-full")}>
+        <div className="px-5 pt-6 pb-5 border-b border-[rgba(255,255,255,0.06)]">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="font-display font-[900] text-base flex items-center gap-2">
+                <Shield className="w-5 h-5 text-[var(--orange-500)]" />COOKONCALL
+              </div>
+              <span className="block text-[0.65rem] font-normal text-[rgba(255,255,255,0.4)] mt-0.5 tracking-wider ml-7">Admin Panel</span>
+            </div>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              aria-label="Close sidebar"
+              className="lg:hidden bg-transparent border-none cursor-pointer text-[rgba(255,255,255,0.4)] hover:text-white transition-colors p-1"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
-          <span className="block text-[0.65rem] font-normal text-[rgba(255,255,255,0.3)] mt-0.5 tracking-wider ml-7">Admin Panel</span>
         </div>
-        <nav className="flex-1 py-4">
-          {sidebarLinks.map((l) => (
-            <button key={l.id} onClick={() => { setActivePanel(l.id); setSidebarOpen(false); }}
-              className={cn("flex items-center gap-3 px-5 py-3 text-[0.88rem] font-medium w-full text-left border-none bg-transparent cursor-pointer transition-all",
-                activePanel === l.id ? "bg-[rgba(212,114,26,0.12)] text-[var(--orange-400)]" : "text-[rgba(255,255,255,0.45)] hover:bg-[rgba(255,255,255,0.04)] hover:text-[rgba(255,255,255,0.8)]"
-              )} style={{ fontFamily: "var(--font-body)" }}>{l.icon}{l.label}</button>
-          ))}
+        <nav className="flex-1 py-3 overflow-y-auto">
+          {sidebarLinks.map((l) => {
+            const active = activePanel === l.id;
+            return (
+              <button
+                key={l.id}
+                onClick={() => { setActivePanel(l.id); setSidebarOpen(false); }}
+                className={cn(
+                  "flex items-center gap-3 px-5 py-2.5 text-[0.88rem] font-medium w-full text-left border-none bg-transparent cursor-pointer transition-all relative",
+                  active
+                    ? "bg-[rgba(212,114,26,0.12)] text-[var(--orange-400)]"
+                    : "text-[rgba(255,255,255,0.5)] hover:bg-[rgba(255,255,255,0.04)] hover:text-white"
+                )}
+                style={{ fontFamily: "var(--font-body)" }}
+              >
+                {/* Active indicator bar */}
+                {active && <span className="absolute left-0 top-2 bottom-2 w-[3px] bg-[var(--orange-500)] rounded-r" />}
+                {l.icon}
+                {l.label}
+              </button>
+            );
+          })}
         </nav>
-        <div className="px-5 py-4 border-t border-[rgba(255,255,255,0.05)]">
-          <button onClick={handleLogout} className="flex items-center gap-2 text-[rgba(255,255,255,0.4)] text-[0.82rem] bg-transparent border-none cursor-pointer hover:text-white transition-colors w-full" style={{ fontFamily: "var(--font-body)" }}>
-            <LogOut className="w-4 h-4" /> Logout
+        <div className="px-5 py-4 border-t border-[rgba(255,255,255,0.06)]">
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 text-[rgba(255,255,255,0.5)] text-[0.85rem] bg-transparent border-none cursor-pointer hover:text-red-400 transition-colors w-full"
+            style={{ fontFamily: "var(--font-body)" }}
+          >
+            <LogOut className="w-4 h-4" /> Sign out
           </button>
         </div>
       </aside>
 
       {/* Main */}
       <div className="flex-1 lg:ml-[240px]">
-        <header className="sticky top-0 z-50 bg-[rgba(12,7,5,0.95)] backdrop-blur-sm border-b border-[rgba(255,255,255,0.05)] px-5 h-[56px] flex items-center justify-between">
+        <header className="sticky top-0 z-50 bg-[rgba(12,7,5,0.95)] backdrop-blur-md border-b border-[rgba(255,255,255,0.06)] px-5 h-[60px] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <button onClick={() => setSidebarOpen(true)} className="lg:hidden bg-transparent border-none cursor-pointer text-white p-1"><Menu className="w-5 h-5" /></button>
-            <div className="font-bold text-[0.95rem]">{sidebarLinks.find((l) => l.id === activePanel)?.label}</div>
+            <button
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open sidebar"
+              className="lg:hidden bg-transparent border-none cursor-pointer text-white p-1 hover:text-[var(--orange-400)] transition-colors"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="font-bold text-[0.95rem] flex items-center gap-2">
+              {sidebarLinks.find((l) => l.id === activePanel)?.icon}
+              <span>{sidebarLinks.find((l) => l.id === activePanel)?.label}</span>
+            </div>
           </div>
-          <div className="text-[0.78rem] text-[rgba(255,255,255,0.3)]">Admin: <span className="text-[var(--orange-400)]">{adminName}</span></div>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/"
+              className="hidden sm:flex text-[0.78rem] text-[rgba(255,255,255,0.35)] hover:text-white transition-colors items-center gap-1.5"
+              style={{ fontFamily: "var(--font-body)" }}
+            >
+              <ExternalLink className="w-3 h-3" /> View site
+            </Link>
+            <div className="hidden sm:block w-px h-4 bg-[rgba(255,255,255,0.1)]" />
+            <div className="text-[0.78rem] text-[rgba(255,255,255,0.5)]" style={{ fontFamily: "var(--font-body)" }}>
+              Signed in as <span className="text-[var(--orange-400)] font-semibold">{adminName}</span>
+            </div>
+          </div>
         </header>
 
         <div className="p-5 md:p-7">
-          {/* Success toast */}
+          {/* Success toast — fixed top-right so it doesn't shift content layout */}
           {successMsg && (
-            <div className="flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-[10px] px-4 py-3 mb-5 text-green-400 text-[0.85rem]">
+            <div className="fixed top-[72px] right-5 z-[150] flex items-center gap-2 bg-green-500/15 border border-green-500/30 rounded-[10px] px-4 py-3 text-green-300 text-[0.85rem] shadow-[0_8px_24px_rgba(0,0,0,0.4)] animate-in fade-in slide-in-from-top-2">
               <BadgeCheck className="w-4 h-4 shrink-0" />{successMsg}
             </div>
           )}
 
           {error && (
-            <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-[10px] px-4 py-3 mb-5 text-red-400 text-[0.85rem]">
-              <AlertCircle className="w-4 h-4 shrink-0" />{error}
-              <button onClick={() => setError("")} className="ml-auto text-red-400/60 hover:text-red-400 bg-transparent border-none cursor-pointer text-lg">&times;</button>
+            <div role="alert" className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 rounded-[10px] px-4 py-3 mb-5 text-red-400 text-[0.85rem]">
+              <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+              <span className="flex-1">{error}</span>
+              <button onClick={() => setError("")} aria-label="Dismiss error" className="text-red-400/60 hover:text-red-400 bg-transparent border-none cursor-pointer text-lg leading-none">&times;</button>
             </div>
           )}
 
           {loading && (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-6 h-6 animate-spin text-[var(--orange-400)]" />
-              <span className="ml-2 text-[rgba(255,255,255,0.4)] text-[0.85rem]">Loading...</span>
+              <span className="ml-2 text-[rgba(255,255,255,0.4)] text-[0.85rem]">Loading…</span>
             </div>
           )}
 
@@ -939,20 +1023,27 @@ export default function AdminDashboardPage() {
           {activePanel === "overview" && !loading && (
             <div>
               {stats && (
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 mb-8">
                   {[
-                    { label: "Total Users", value: stats.total_users },
-                    { label: "Total Cooks", value: stats.total_cooks },
-                    { label: "Verified Cooks", value: stats.verified_cooks },
-                    { label: "Pending Verification", value: stats.pending_cooks },
-                    { label: "Total Bookings", value: stats.total_bookings },
-                    { label: "Completed", value: stats.completed_bookings },
-                    { label: "Active", value: stats.active_bookings },
-                    { label: "Revenue", value: fmtCurrency(stats.total_revenue) },
+                    { label: "Total Users", value: stats.total_users, icon: <Users className="w-4 h-4" />, accent: "text-blue-400", border: "hover:border-blue-500/30" },
+                    { label: "Total Cooks", value: stats.total_cooks, icon: <ChefHat className="w-4 h-4" />, accent: "text-orange-400", border: "hover:border-orange-500/30" },
+                    { label: "Verified Cooks", value: stats.verified_cooks, icon: <BadgeCheck className="w-4 h-4" />, accent: "text-green-400", border: "hover:border-green-500/30" },
+                    { label: "Pending Verification", value: stats.pending_cooks, icon: <Shield className="w-4 h-4" />, accent: "text-yellow-400", border: "hover:border-yellow-500/30" },
+                    { label: "Total Bookings", value: stats.total_bookings, icon: <FileText className="w-4 h-4" />, accent: "text-purple-400", border: "hover:border-purple-500/30" },
+                    { label: "Completed", value: stats.completed_bookings, icon: <CheckCircle2 className="w-4 h-4" />, accent: "text-emerald-400", border: "hover:border-emerald-500/30" },
+                    { label: "Active", value: stats.active_bookings, icon: <Activity className="w-4 h-4" />, accent: "text-sky-400", border: "hover:border-sky-500/30" },
+                    { label: "Revenue", value: fmtCurrency(stats.total_revenue), icon: <BarChart3 className="w-4 h-4" />, accent: "text-[var(--orange-400)]", border: "hover:border-[var(--orange-500)]/40" },
                   ].map((s) => (
-                    <div key={s.label} className="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-5">
-                      <div className="font-display text-[1.5rem] font-[800] text-[var(--orange-400)]">{s.value}</div>
-                      <div className="text-[0.78rem] text-[rgba(255,255,255,0.4)] mt-1">{s.label}</div>
+                    <div
+                      key={s.label}
+                      className={cn(
+                        "bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-[14px] p-5 transition-all hover:bg-[rgba(255,255,255,0.05)]",
+                        s.border
+                      )}
+                    >
+                      <div className={cn("flex items-center gap-1.5 mb-2", s.accent)}>{s.icon}</div>
+                      <div className="font-display text-[1.5rem] font-[800] text-white leading-tight">{s.value}</div>
+                      <div className="text-[0.78rem] text-[rgba(255,255,255,0.45)] mt-1" style={{ fontFamily: "var(--font-body)" }}>{s.label}</div>
                     </div>
                   ))}
                 </div>

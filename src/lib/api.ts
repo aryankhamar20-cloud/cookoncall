@@ -13,10 +13,38 @@ const api = axios.create({
 });
 
 // === Request interceptor — attach JWT ===
+//
+// Auth-header precedence (highest first):
+//
+//   1. An Authorization header explicitly set on the request config
+//      (e.g. the admin panel's `ah()` helper passes its own token via
+//      coc_admin_token, which is a different cookie). The interceptor
+//      MUST NOT overwrite an explicit header — doing so was the root
+//      cause of the "every 3 seconds I get kicked out of the admin
+//      panel" bug, where the regular customer's coc_token got attached
+//      to admin API calls instead, the backend returned 401, and the
+//      response interceptor below redirected to /login.
+//
+//   2. Otherwise, fall back to coc_token (regular customer / cook
+//      session) from cookies.
+//
+// The admin panel deliberately uses a separate coc_admin_token cookie
+// so an admin can be signed into both views in the same browser without
+// the cookies clobbering each other.
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
+    if (!config.headers) return config;
+    // Check both casings — axios normalizes to "Authorization" but
+    // older calls may have used "authorization".
+    const explicit =
+      config.headers.Authorization ?? (config.headers as any).authorization;
+    if (explicit) {
+      // Caller already attached a token (e.g. admin panel via ah()).
+      // Leave it alone.
+      return config;
+    }
     const token = Cookies.get("coc_token");
-    if (token && config.headers) {
+    if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
@@ -68,6 +96,24 @@ api.interceptors.response.use(
     };
 
     if (error.response?.status === 401 && isAuthEndpoint(originalRequest?.url)) {
+      return Promise.reject(error);
+    }
+
+    // Admin-panel calls supply their own Authorization header (sourced
+    // from coc_admin_token, NOT coc_token). The customer-side refresh
+    // flow below uses coc_refresh_token which the admin login never
+    // sets — so trying to refresh would always fail and bounce the
+    // admin to /login on the very first 401.
+    //
+    // Detect those calls by the presence of an explicit Authorization
+    // header on the original request config and surface the 401 to the
+    // admin page handler unchanged. Admin re-login is then handled
+    // by the panel itself (showing a "session expired" toast and
+    // re-rendering the login form), not by this global interceptor.
+    const hasExplicitAuth =
+      !!originalRequest?.headers?.Authorization ||
+      !!(originalRequest?.headers as any)?.authorization;
+    if (error.response?.status === 401 && hasExplicitAuth) {
       return Promise.reject(error);
     }
 
