@@ -159,7 +159,8 @@ export default function CartDrawer() {
               </p>
               <p className="text-[0.85rem] text-[var(--text-muted)] leading-relaxed mb-6">
                 The chef has <strong>3 hours</strong> to confirm your delivery order.
-                You'll get an email when they respond. Pay from <strong>My Orders</strong> once confirmed.
+                You'll get an email when they respond. Once confirmed, you can
+                pay any time before your session — see <strong>My Orders</strong>.
               </p>
               <button
                 onClick={handleClose}

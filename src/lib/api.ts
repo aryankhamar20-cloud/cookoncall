@@ -360,7 +360,10 @@ export const bookingsApi = {
   getById: (id: string) => api.get(`/bookings/${id}`),
 
   // --- NEW FLOW (Apr 21, 2026) — backend uses POST, not PATCH --
-  /** Chef accepts -> booking becomes AWAITING_PAYMENT, customer has 3hr to pay */
+  /** Chef accepts -> booking becomes CONFIRMED. Customer can pay any
+   *  time before the session-end OTP (May 29, 2026 flow — see backend
+   *  PR #36). The chef cannot mark the session COMPLETED via end-OTP
+   *  until a captured payment row exists. */
   accept: (id: string) => api.post(`/bookings/${id}/accept`),
   /** Chef rejects with internal reason (never shown to customer) */
   reject: (id: string, reason: string) =>

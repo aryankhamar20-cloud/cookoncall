@@ -357,10 +357,16 @@ export default function CookDashboardPage() {
   }, [authorized, activePanel]);
 
   // ─── BOOKING ACTIONS ───────────────────────────────────
-  // Apr 21 new flow:
-  //   - Accept  → POST /bookings/:id/accept  (status becomes AWAITING_PAYMENT)
-  //   - Reject  → POST /bookings/:id/reject  { reason }  (internal reason, never shown to customer)
+  // New flow (May 29, 2026 — see cookoncall-backend PR #36):
+  //   - Accept  → POST /bookings/:id/accept  (status becomes CONFIRMED;
+  //               customer pays any time before session-end OTP).
+  //   - Reject  → POST /bookings/:id/reject  { reason }  (internal reason,
+  //               never shown to customer).
   //   - Generic status changes still use PATCH /bookings/:id/status (Cancel only).
+  //
+  // Important: the chef CANNOT mark the session complete via end-OTP
+  // until a captured payment exists. Customer-paid status is visible in
+  // the cook dashboard order list so the chef knows whether to nudge.
 
   // Reject modal state — replaces the old `confirm()` alert with a proper
   // textarea so we can capture (and store internally) the rejection reason.
@@ -376,7 +382,10 @@ export default function CookDashboardPage() {
     try {
       setActionId(bookingId);
       await bookingsApi.accept(bookingId);
-      toast.success("Booking accepted! Customer has 3 hours to pay.");
+      toast.success(
+        "Booking confirmed. Customer will pay any time before the session ends.",
+        { duration: 5000 }
+      );
       fetchRequests(reqFilter || undefined);
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Could not accept booking.");
@@ -831,8 +840,9 @@ export default function CookDashboardPage() {
 
         {showActions && (
           <div className="flex gap-2 pt-3 border-t border-[rgba(212,114,26,0.06)] flex-wrap">
-            {/* Apr 21 NEW FLOW — Accept / Reject
-                Accept → POST /bookings/:id/accept  (→ AWAITING_PAYMENT, customer gets 3hr)
+            {/* New flow (May 29, 2026) — Accept / Reject
+                Accept → POST /bookings/:id/accept  (→ CONFIRMED;
+                  customer pays any time before session-end OTP).
                 Reject → opens modal with reason textarea → POST /bookings/:id/reject */}
             {(status === "pending_chef_approval" || status === "pending") && (<>
               <button onClick={() => handleAccept(b.id)} disabled={actionId === b.id} className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-[var(--green-ok)] border-none cursor-pointer hover:opacity-90 disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}><CheckCircle2 className="w-4 h-4" />{actionId === b.id ? "..." : "Accept"}</button>

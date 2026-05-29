@@ -19,10 +19,15 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useSocket } from "@/hooks/useSocket";
 
 // ─── Filter options (lowercase to match backend status values) ──
+//
+// New flow (May 29, 2026 — see cookoncall-backend PR #36):
+// chef-accept now flips status straight to `confirmed`. The
+// `awaiting_payment` value is retained for legacy rows but is no
+// longer entered from new bookings, so it has no dedicated filter
+// — it falls under "Confirmed" alongside truly-confirmed rows.
 const filters = [
   { label: "All", value: "" },
   { label: "Awaiting Chef", value: "pending_chef_approval" },
-  { label: "Pay Now", value: "awaiting_payment" },
   { label: "Confirmed", value: "confirmed" },
   { label: "In Progress", value: "in_progress" },
   { label: "Completed", value: "completed" },
@@ -32,7 +37,10 @@ const filters = [
 
 const statusStyles: Record<string, string> = {
   pending_chef_approval: "bg-amber-50 text-amber-700 border-amber-200",
-  awaiting_payment: "bg-orange-50 text-orange-700 border-orange-200",
+  // Legacy rows in awaiting_payment now visually match the post-accept
+  // 'Confirmed' state — they're effectively confirmed bookings whose
+  // payment hasn't landed yet.
+  awaiting_payment: "bg-green-50 text-green-700 border-green-200",
   pending: "bg-yellow-50 text-yellow-700 border-yellow-200", // legacy
   confirmed: "bg-green-50 text-green-700 border-green-200",
   in_progress: "bg-blue-50 text-blue-700 border-blue-200",
@@ -44,7 +52,12 @@ const statusStyles: Record<string, string> = {
 
 const statusLabels: Record<string, string> = {
   pending_chef_approval: "Awaiting Chef",
-  awaiting_payment: "Pay Now",
+  // Display 'Confirmed' for legacy awaiting_payment rows too — under
+  // the new flow these are bookings whose chef has accepted but
+  // payment hasn't been captured yet. The "Pay" button on the row
+  // makes the actionable bit clear without needing a status label
+  // that contradicts the in-app message.
+  awaiting_payment: "Confirmed",
   pending: "Pending", // legacy
   confirmed: "Confirmed",
   in_progress: "In Progress",
@@ -164,8 +177,10 @@ export default function OrdersPanel() {
   }>({ open: false, bookingId: "", chefName: "", existingReview: null });
   const [reviewMap, setReviewMap] = useState<Record<string, { rating: number; comment: string } | null>>({});
 
-  // Apr 21 NEW FLOW — payment modal lives here now (not BookChefPanel).
-  // Customer taps "Pay Now" on an AWAITING_PAYMENT booking → modal opens.
+  // Payment modal lives here now (not BookChefPanel).
+  // Customer taps "Pay" on a confirmed booking → modal opens.
+  // (Legacy `awaiting_payment` rows from before backend PR #36 use the
+  // same path — we just label them as Confirmed.)
   const [paymentModal, setPaymentModal] = useState<{
     open: boolean;
     bookingId: string;
@@ -249,8 +264,8 @@ export default function OrdersPanel() {
     fetchBookings();
   }, [fetchBookings]);
 
-  // Auto-refresh every 60s so AWAITING_PAYMENT/PENDING_CHEF_APPROVAL
-  // bookings update without user needing to click Retry.
+  // Auto-refresh every 60s so PENDING_CHEF_APPROVAL bookings (and any
+  // legacy awaiting_payment rows) update without user needing to click Retry.
   useEffect(() => {
     const id = setInterval(() => fetchBookings(), 60_000);
     return () => clearInterval(id);
@@ -444,14 +459,40 @@ export default function OrdersPanel() {
               : "Chef";
             const status = b.status || "pending_chef_approval";
 
-            // ─── Apr 21 new-flow action flags ───
+            // ─── New-flow action flags (May 29, 2026) ───
+            //
+            // Background:
+            // Pre-#36, chef accept flipped status to `awaiting_payment`
+            // and the customer had a 3-hour payment window before the
+            // booking auto-expired. That row showed a mandatory "Pay Now"
+            // button and a countdown.
+            //
+            // Post-#36, chef accept goes straight to `confirmed`. Payment
+            // is OPTIONAL until the chef tries to close the session via
+            // end-OTP. We keep the legacy `awaiting_payment` value
+            // working: it's any pre-#36 row whose chef accepted but the
+            // customer never paid — those rows should now behave like
+            // a confirmed booking (no auto-expiry, optional pay button).
             const isAwaitingChef = status === "pending_chef_approval" || status === "pending";
-            const isAwaitingPayment = status === "awaiting_payment";
+            const isConfirmed = status === "confirmed" || status === "awaiting_payment";
+            const isInProgress = status === "in_progress";
             const isRejectedByChef = status === "cancelled_by_cook";
 
-            // Customer can cancel while awaiting chef OR awaiting their own payment.
-            // `confirmed` cancels go through refund policy (handled by backend).
-            const canCancel = isAwaitingChef || isAwaitingPayment || status === "confirmed";
+            // Whether the customer can/should still pay.
+            // Backend allows `confirmed` and `in_progress` to receive
+            // payment. A captured payment is required before the chef
+            // can flip to `completed` via end-OTP — the button is
+            // surfaced as long as it's possible to pay.
+            const isPaid =
+              !!b.payment &&
+              (b.payment.status === "captured" ||
+                b.payment.status === "CAPTURED");
+            const canPay = (isConfirmed || isInProgress) && !isPaid;
+
+            // Customer can cancel while awaiting chef OR while confirmed
+            // (refund policy applies for confirmed cancels — handled by
+            // backend).
+            const canCancel = isAwaitingChef || isConfirmed;
 
             const existingReview = reviewMap[b.id];
             const hasReviewed = !!existingReview;
@@ -459,17 +500,13 @@ export default function OrdersPanel() {
             const canEditReview = status === "completed" && hasReviewed;
             const cleanAddress = normalizeAddress(b.address);
 
-            // Deadlines for countdown timers.
-            // Chef has 3hr from booking creation.
-            // Customer has 3hr from chef_responded_at to pay.
+            // Chef approval window — still 3 hours from creation. Only
+            // shown on awaiting-chef rows. The customer-side payment
+            // countdown is gone entirely (no payment window).
             const createdAtMs = b.created_at ? new Date(b.created_at).getTime() : 0;
             const chefDeadline = createdAtMs > 0
               ? new Date(createdAtMs + 3 * 60 * 60 * 1000).toISOString()
               : undefined;
-            const paymentDeadline = b.payment_expires_at
-              || (b.chef_responded_at
-                ? new Date(new Date(b.chef_responded_at).getTime() + 3 * 60 * 60 * 1000).toISOString()
-                : undefined);
 
             return (
               <div key={b.id}
@@ -501,7 +538,10 @@ export default function OrdersPanel() {
                   </span>
                 </div>
 
-                {/* Countdown timer banner — ONLY for pending_chef_approval & awaiting_payment */}
+                {/* Chef-acceptance countdown — still 3 hours, shown only
+                    on awaiting-chef rows. The customer-side payment
+                    countdown that used to live here was removed in #36
+                    when the 3-hour payment window was retired. */}
                 {isAwaitingChef && chefDeadline && (
                   <div className="flex items-center justify-between gap-2 mb-3 bg-amber-50 border border-amber-200 rounded-[10px] px-3 py-2">
                     <div className="flex items-center gap-2 text-[0.82rem] text-amber-800">
@@ -511,13 +551,15 @@ export default function OrdersPanel() {
                     <CountdownTimer deadline={chefDeadline} expiredLabel="Auto-expired" />
                   </div>
                 )}
-                {isAwaitingPayment && paymentDeadline && (
-                  <div className="flex items-center justify-between gap-2 mb-3 bg-orange-50 border border-orange-200 rounded-[10px] px-3 py-2">
-                    <div className="flex items-center gap-2 text-[0.82rem] text-orange-800">
-                      <BadgeCheck className="w-3.5 h-3.5 shrink-0 text-green-600" />
-                      <span className="font-semibold">Chef accepted — pay to confirm</span>
-                    </div>
-                    <CountdownTimer deadline={paymentDeadline} expiredLabel="Window closed" />
+                {isConfirmed && (
+                  <div className="flex items-center gap-2 mb-3 bg-green-50 border border-green-200 rounded-[10px] px-3 py-2">
+                    <BadgeCheck className="w-3.5 h-3.5 shrink-0 text-green-600" />
+                    <span className="text-[0.82rem] text-green-800">
+                      <span className="font-semibold">Booking confirmed.</span>{" "}
+                      {canPay
+                        ? "Pay any time before your session ends."
+                        : "Payment received — see you at the session."}
+                    </span>
                   </div>
                 )}
 
@@ -585,8 +627,12 @@ export default function OrdersPanel() {
                 {/* Action buttons */}
                 <div className="flex justify-between items-center pt-2 border-t border-[rgba(212,114,26,0.06)] gap-2 flex-wrap">
                   <div className="flex items-center gap-2 flex-wrap">
-                    {/* Apr 21 NEW FLOW — Pay Now button (only for AWAITING_PAYMENT) */}
-                    {isAwaitingPayment && (
+                    {/* Pay button (May 29, 2026 new flow). Surfaced for any
+                        confirmed/in-progress booking that doesn't yet have
+                        a captured payment. The chef cannot mark the
+                        session COMPLETED via end-OTP until payment lands,
+                        so make sure to pay before the session ends. */}
+                    {canPay && (
                       <button
                         onClick={() => openPayment(b)}
                         disabled={paymentOpeningId === b.id}
@@ -601,7 +647,7 @@ export default function OrdersPanel() {
                         ) : (
                           <>
                             <CreditCard className="w-3.5 h-3.5" />
-                            Pay Now · {formatCurrency(Number(b.total_price || 0))}
+                            Pay · {formatCurrency(Number(b.total_price || 0))}
                           </>
                         )}
                       </button>
