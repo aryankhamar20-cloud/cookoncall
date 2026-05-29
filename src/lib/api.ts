@@ -1,4 +1,4 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+import axios, { AxiosError, AxiosRequestConfig, InternalAxiosRequestConfig } from "axios";
 import Cookies from "js-cookie";
 import type { ApiResponse } from "@/types";
 
@@ -449,24 +449,66 @@ export const eventsApi = {
 };
 
 // === Admin API ===
+//
+// Every method below MUST go through `withAdminAuth()` so the request
+// carries the admin's bearer token (`coc_admin_token`) instead of the
+// regular customer token (`coc_token`). The two cookies are deliberately
+// separate so an admin can be signed into both views in the same browser
+// (see fix/admin-panel-auth-and-polish PR #22 for the original write-up).
+//
+// Why this matters
+// ----------------
+// Pre-this-fix, every adminApi.* call hit the bare `api.<verb>` instance.
+// The request interceptor saw no explicit Authorization header and fell
+// back to coc_token — which is empty for an admin-only session. Backend
+// returned 401, the response interceptor redirected to /login, the admin
+// got bounced back to the home page every 5–6 seconds. PR #22 added the
+// "explicit Authorization header survives" rule to the interceptor, but
+// adminApi never set that header — so the rule never kicked in. THIS
+// helper sets it.
+//
+// Calls now carry the admin token AND opt into the response interceptor's
+// "don't refresh on 401" escape hatch (because the request had an explicit
+// Authorization). The page's handleAdminError surfaces the 401 as a clean
+// "session expired" instead of a hard redirect.
+function withAdminAuth(extraConfig?: AxiosRequestConfig): AxiosRequestConfig {
+  const token = Cookies.get("coc_admin_token");
+  const baseHeaders = (extraConfig?.headers ?? {}) as Record<string, string>;
+  return {
+    ...(extraConfig ?? {}),
+    headers: {
+      ...baseHeaders,
+      // Always set, even if the cookie is missing — sending an empty
+      // bearer triggers a 401 immediately, which the page handles by
+      // surfacing the login form. That's better UX than a silent fall-
+      // through to coc_token.
+      Authorization: `Bearer ${token ?? ""}`,
+    },
+  };
+}
+
 export const adminApi = {
-  getStats: () => api.get("/admin/stats"),
+  getStats: () => api.get("/admin/stats", withAdminAuth()),
   getUsers: (params?: { search?: string; page?: number; limit?: number }) =>
-    api.get("/admin/users", { params }),
+    api.get("/admin/users", withAdminAuth({ params })),
   getCooks: (params?: { verified?: string; page?: number; limit?: number }) =>
-    api.get("/admin/cooks", { params }),
+    api.get("/admin/cooks", withAdminAuth({ params })),
   getPendingCooks: (params?: { page?: number; limit?: number }) =>
-    api.get("/admin/cooks/pending", { params }),
+    api.get("/admin/cooks/pending", withAdminAuth({ params })),
   verifyCook: (cookId: string, verified: boolean, rejectionReason?: string) =>
-    api.patch(`/admin/cooks/${cookId}/verify`, { verified, rejection_reason: rejectionReason }),
+    api.patch(
+      `/admin/cooks/${cookId}/verify`,
+      { verified, rejection_reason: rejectionReason },
+      withAdminAuth(),
+    ),
   toggleUserActive: (userId: string) =>
-    api.patch(`/admin/users/${userId}/toggle-active`),
+    api.patch(`/admin/users/${userId}/toggle-active`, undefined, withAdminAuth()),
   getBookings: (params?: { status?: string; search?: string; page?: number; limit?: number }) =>
-    api.get("/admin/bookings", { params }),
+    api.get("/admin/bookings", withAdminAuth({ params })),
   updateBookingStatus: (bookingId: string, status: string) =>
-    api.patch(`/admin/bookings/${bookingId}/status`, { status }),
-  getRecentUsers: () => api.get("/admin/recent-users"),
-  getRecentBookings: () => api.get("/admin/recent-bookings"),
+    api.patch(`/admin/bookings/${bookingId}/status`, { status }, withAdminAuth()),
+  getRecentUsers: () => api.get("/admin/recent-users", withAdminAuth()),
+  getRecentBookings: () => api.get("/admin/recent-bookings", withAdminAuth()),
 
   // --- AUDIT LOG (NEW Apr 24) ------------------------
   getAuditLog: (params?: {
@@ -474,31 +516,34 @@ export const adminApi = {
     limit?: number;
     action?: string;
     target_type?: string;
-  }) => api.get("/admin/audit-log", { params }),
+  }) => api.get("/admin/audit-log", withAdminAuth({ params })),
 
   // ─── ANALYTICS PHASE 1 ──────────────────────────────────────
   // Every endpoint accepts ?range=24h|7d|30d|90d|custom (+ from/to for custom).
   getAnalyticsOverview: (params?: AnalyticsRangeParams) =>
-    api.get("/admin/analytics/overview", { params }),
+    api.get("/admin/analytics/overview", withAdminAuth({ params })),
   getAnalyticsUsers: (params?: AnalyticsRangeParams) =>
-    api.get("/admin/analytics/users", { params }),
+    api.get("/admin/analytics/users", withAdminAuth({ params })),
   getAnalyticsBookings: (params?: AnalyticsRangeParams) =>
-    api.get("/admin/analytics/bookings", { params }),
+    api.get("/admin/analytics/bookings", withAdminAuth({ params })),
   getAnalyticsRevenue: (params?: AnalyticsRangeParams) =>
-    api.get("/admin/analytics/revenue", { params }),
+    api.get("/admin/analytics/revenue", withAdminAuth({ params })),
   getAnalyticsChefs: (params?: AnalyticsRangeParams) =>
-    api.get("/admin/analytics/chefs", { params }),
+    api.get("/admin/analytics/chefs", withAdminAuth({ params })),
   getAnalyticsLocations: (params?: AnalyticsRangeParams) =>
-    api.get("/admin/analytics/locations", { params }),
+    api.get("/admin/analytics/locations", withAdminAuth({ params })),
   /** Returns CSV as a Blob — caller triggers the download. */
   exportAnalyticsCsv: (
     metric: "bookings" | "revenue" | "users" | "top_chefs",
     params?: AnalyticsRangeParams,
   ) =>
-    api.get("/admin/analytics/export.csv", {
-      params: { ...params, metric },
-      responseType: "blob",
-    }),
+    api.get(
+      "/admin/analytics/export.csv",
+      withAdminAuth({
+        params: { ...params, metric },
+        responseType: "blob",
+      }),
+    ),
 
   /**
    * Phase 3 — PDF export.
@@ -511,17 +556,21 @@ export const adminApi = {
     metric: "overview" = "overview",
     params?: AnalyticsRangeParams,
   ) =>
-    api.get("/admin/analytics/export.pdf", {
-      params: { ...params, metric },
-      responseType: "blob",
-    }),
+    api.get(
+      "/admin/analytics/export.pdf",
+      withAdminAuth({
+        params: { ...params, metric },
+        responseType: "blob",
+      }),
+    ),
 
   /** Phase 3 — peek at the daily digest payload without sending email. */
-  previewDigest: () => api.get("/admin/analytics/digest/preview"),
+  previewDigest: () => api.get("/admin/analytics/digest/preview", withAdminAuth()),
 
   /** Phase 3 — fire the daily digest right now (still respects per-admin
    *  email_enabled and the ANALYTICS_DIGEST_DISABLED env flag). */
-  runDigestNow: () => api.post("/admin/analytics/digest/run-now"),
+  runDigestNow: () =>
+    api.post("/admin/analytics/digest/run-now", undefined, withAdminAuth()),
 
   // ─── ROUND 3: BROADCAST PUSH ────────────────────────────────
   // POST a broadcast — title 1-65 chars, body 1-240 chars, audience
@@ -534,11 +583,11 @@ export const adminApi = {
     audience: "all" | "customers" | "cooks" | "area";
     area_slug?: string;
     deep_link?: string;
-  }) => api.post("/admin/notifications/broadcast", data),
+  }) => api.post("/admin/notifications/broadcast", data, withAdminAuth()),
 
   /** Last N broadcasts for the history panel (newest first). */
   getBroadcasts: (params?: { page?: number; limit?: number }) =>
-    api.get("/admin/notifications/broadcasts", { params }),
+    api.get("/admin/notifications/broadcasts", withAdminAuth({ params })),
 
   /**
    * Round 4 / Analytics Phase 2 — click-through-rate for one broadcast.
@@ -547,16 +596,16 @@ export const adminApi = {
    * BroadcastPanel when the admin expands a row.
    */
   getBroadcastCtr: (id: string) =>
-    api.get(`/admin/notifications/broadcasts/${id}/ctr`),
+    api.get(`/admin/notifications/broadcasts/${id}/ctr`, withAdminAuth()),
 
   // ─── ROUND 4: PROMO CODE MANAGER ────────────────────────────
   // Backend mounts these under /promo-codes (admin-only via @Roles).
   promos: {
     /** List promos. status filter: active|inactive|expired|exhausted. */
     list: (status?: "active" | "inactive" | "expired" | "exhausted") =>
-      api.get("/promo-codes", { params: status ? { status } : {} }),
+      api.get("/promo-codes", withAdminAuth({ params: status ? { status } : {} })),
 
-    get: (id: string) => api.get(`/promo-codes/${id}`),
+    get: (id: string) => api.get(`/promo-codes/${id}`, withAdminAuth()),
 
     create: (data: {
       code: string;
@@ -569,7 +618,7 @@ export const adminApi = {
       expires_at?: string; // ISO date
       description?: string;
       is_active?: boolean;
-    }) => api.post("/promo-codes", data),
+    }) => api.post("/promo-codes", data, withAdminAuth()),
 
     /** Edit any field except `code`; backend rejects updates to code. */
     update: (
@@ -585,19 +634,20 @@ export const adminApi = {
         description: string;
         is_active: boolean;
       }>,
-    ) => api.patch(`/promo-codes/${id}`, data),
+    ) => api.patch(`/promo-codes/${id}`, data, withAdminAuth()),
 
-    toggle: (id: string) => api.patch(`/promo-codes/${id}/toggle`),
+    toggle: (id: string) =>
+      api.patch(`/promo-codes/${id}/toggle`, undefined, withAdminAuth()),
 
     /**
      * Backend returns 409 with a friendly message when the promo has
      * already been used. Caller surfaces the message verbatim.
      */
-    remove: (id: string) => api.delete(`/promo-codes/${id}`),
+    remove: (id: string) => api.delete(`/promo-codes/${id}`, withAdminAuth()),
 
     /** Paginated redemption history with hydrated user names/emails. */
     usages: (id: string, params?: { page?: number; limit?: number }) =>
-      api.get(`/promo-codes/${id}/usages`, { params }),
+      api.get(`/promo-codes/${id}/usages`, withAdminAuth({ params })),
   },
 };
 
