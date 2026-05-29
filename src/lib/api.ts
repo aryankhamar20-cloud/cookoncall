@@ -173,6 +173,13 @@ export const authApi = {
   resetPassword: (data: { email: string; otp: string; new_password: string }) =>
     api.post("/auth/reset-password", data),
 
+  // Logged-in self-service. Distinct from resetPassword (forgot flow) —
+  // requires a valid JWT and re-verifies the current password before
+  // accepting the new one. Backend: cookoncall-backend PR #28
+  // (POST /auth/change-password).
+  changePassword: (data: { current_password: string; new_password: string }) =>
+    api.post("/auth/change-password", data),
+
   logout: () => api.post("/auth/logout"),
 
   getMe: () => api.get("/auth/me"),
