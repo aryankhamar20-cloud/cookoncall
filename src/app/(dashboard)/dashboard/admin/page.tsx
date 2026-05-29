@@ -586,34 +586,100 @@ export default function AdminDashboardPage() {
 
   const ah = useCallback(() => ({ headers: { Authorization: `Bearer ${adminToken}` } }), [adminToken]);
 
+  // ─── Admin refresh-token (May 29, 2026) ───────────────
+  //
+  // Backend `/auth/login` already issues both an `access_token` (15m TTL)
+  // and a `refresh_token` (7d TTL). Pre-this-fix, the admin login flow
+  // discarded the refresh token, so the admin's session died at the 15m
+  // mark and they got bounced to the login screen — even after the PR #22
+  // fix that stopped the *hard redirect* to /login.
+  //
+  // We now persist the refresh token under coc_admin_refresh_token (a
+  // separate cookie from the customer-side coc_refresh_token, same
+  // reasoning as the access token: keep customer + admin sessions
+  // independent in the same browser). When a 401 hits, we try one
+  // silent refresh against /auth/refresh before surfacing "session
+  // expired" to the user.
+  const refreshAdminTokenInline = useCallback(async (): Promise<string | null> => {
+    const refreshToken = Cookies.get("coc_admin_refresh_token");
+    if (!refreshToken) return null;
+    try {
+      // Plain fetch — we don't want the global axios interceptors to
+      // intercept this call (there'd be a chicken-and-egg with the
+      // very mechanism we're using to recover from auth failure).
+      const apiBase =
+        process.env.NEXT_PUBLIC_API_URL ||
+        "https://cookoncall-backend-production-7c6d.up.railway.app/api/v1";
+      const resp = await fetch(`${apiBase}/auth/refresh`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh_token: refreshToken }),
+      });
+      if (!resp.ok) return null;
+      const json = await resp.json();
+      const data = json.data || json;
+      const newAccess: string | undefined =
+        data.access_token || data.accessToken;
+      const newRefresh: string | undefined =
+        data.refresh_token || data.refreshToken;
+      if (!newAccess) return null;
+      // Refresh-token rotation — backend issues a new refresh on every
+      // refresh call. Persist both, mirror customer-side behaviour:
+      //   access  cookie: short-lived (kept at 2h, comfortably bigger
+      //                   than the actual 15m JWT TTL so the cookie
+      //                   never falls behind the token).
+      //   refresh cookie: 7d (matches backend TTL).
+      Cookies.set("coc_admin_token", newAccess, { expires: 2 / 24 });
+      if (newRefresh) {
+        Cookies.set("coc_admin_refresh_token", newRefresh, { expires: 7 });
+      }
+      setAdminToken(newAccess);
+      return newAccess;
+    } catch {
+      return null;
+    }
+  }, []);
+
   /**
    * Centralised admin-side error handler.
    *
-   * If the server says 401, the JWT has expired (admin tokens currently
-   * have a 15m TTL and there's no refresh token issued for the admin
-   * panel — see PR description). Drop the cookies, surface a clear
-   * "session expired" message, and bounce back to the admin login
-   * form. Crucially we DO NOT call window.location.href = "/login" or
-   * navigate anywhere else: that's what was happening before this
-   * effort because the global axios interceptor was attempting a
-   * customer-style refresh and forcing a hard redirect on failure.
+   * On 401:
+   *   1. Try one silent refresh against /auth/refresh using the stored
+   *      coc_admin_refresh_token. If it succeeds, ask the caller to
+   *      retry by returning `{ retry: true }`.
+   *   2. If refresh fails or no refresh token exists, drop ALL admin
+   *      cookies and re-render the login form with a clear "session
+   *      expired" message. Crucially we DO NOT navigate via
+   *      window.location — the global axios interceptor's escape hatch
+   *      (#22) keeps the page from doing that on its own.
    *
-   * For every other status, fall back to the API's own message so the
-   * admin sees what actually went wrong.
+   * For non-401 errors, surface the API's own message verbatim and
+   * return `{ retry: false }`.
    */
-  const handleAdminError = useCallback((e: any, fallback: string) => {
-    const status = e?.response?.status;
-    if (status === 401) {
-      Cookies.remove("coc_admin_token");
-      Cookies.remove("coc_admin_name");
-      setIsLoggedIn(false);
-      setAdminToken("");
-      setAdminName("");
-      setLoginError("Your admin session expired. Please sign in again.");
-      return;
-    }
-    setError(e?.response?.data?.message || fallback);
-  }, []);
+  const handleAdminError = useCallback(
+    async (e: any, fallback: string): Promise<{ retry: boolean }> => {
+      const status = e?.response?.status;
+      if (status === 401) {
+        const newToken = await refreshAdminTokenInline();
+        if (newToken) {
+          // Caller can retry with the fresh token. We don't auto-retry
+          // here because the original call site has all the parameters.
+          return { retry: true };
+        }
+        Cookies.remove("coc_admin_token");
+        Cookies.remove("coc_admin_name");
+        Cookies.remove("coc_admin_refresh_token");
+        setIsLoggedIn(false);
+        setAdminToken("");
+        setAdminName("");
+        setLoginError("Your admin session expired. Please sign in again.");
+        return { retry: false };
+      }
+      setError(e?.response?.data?.message || fallback);
+      return { retry: false };
+    },
+    [refreshAdminTokenInline],
+  );
 
   async function handleLogin() {
     if (!email || !password) { setLoginError("Please enter both email and password."); return; }
@@ -623,9 +689,16 @@ export default function AdminDashboardPage() {
       const res = data.data || data;
       const user = res.user;
       const token = res.access_token || res.accessToken;
+      const refresh = res.refresh_token || res.refreshToken;
       if (user.role !== "admin") { setLoginError("This account does not have admin access."); setLoginLoading(false); return; }
+      // 2-hour access cookie is comfortably bigger than the actual 15m
+      // JWT TTL — the cookie never falls behind the token. Refresh
+      // cookie is the long-lived one (7 days, matches backend).
       Cookies.set("coc_admin_token", token, { expires: 2 / 24 });
       Cookies.set("coc_admin_name", user.name, { expires: 2 / 24 });
+      if (refresh) {
+        Cookies.set("coc_admin_refresh_token", refresh, { expires: 7 });
+      }
       setAdminToken(token); setAdminName(user.name); setIsLoggedIn(true);
     } catch (err: any) {
       setLoginError(err?.response?.data?.message || "Invalid credentials");
@@ -633,7 +706,9 @@ export default function AdminDashboardPage() {
   }
 
   function handleLogout() {
-    Cookies.remove("coc_admin_token"); Cookies.remove("coc_admin_name");
+    Cookies.remove("coc_admin_token");
+    Cookies.remove("coc_admin_name");
+    Cookies.remove("coc_admin_refresh_token");
     setIsLoggedIn(false); setAdminToken(""); setAdminName("");
   }
 

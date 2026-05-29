@@ -50,7 +50,7 @@ vi.mock("js-cookie", () => {
 });
 
 // Import AFTER the mock is set up so api.ts uses the mocked Cookies module.
-import api from "./api";
+import api, { adminApi } from "./api";
 import Cookies from "js-cookie";
 
 const cookieStore = (Cookies as unknown as { __store: Record<string, string> })
@@ -210,5 +210,135 @@ describe("api.ts — response interceptor (admin 401 escape hatch)", () => {
         value: originalLocation,
       });
     }
+  });
+});
+
+describe("adminApi — every method attaches the admin token via withAdminAuth()", () => {
+  /**
+   * The original "every 5–6 seconds I get redirected to /login" bug
+   * lived here, not in the interceptor: every adminApi.* method called
+   * the bare `api.<verb>` instance with no Authorization header. The
+   * request interceptor saw no explicit header, fell back to coc_token
+   * (the customer cookie, empty for an admin-only session), and the
+   * call went out unauthenticated. Backend returned 401, the response
+   * interceptor's customer-refresh path kicked in, and bounced to
+   * /login.
+   *
+   * Fix: every adminApi method now wraps its config through
+   * withAdminAuth(), which reads coc_admin_token and sets the
+   * Authorization header. These tests intercept the underlying axios
+   * call to verify the header is actually attached.
+   *
+   * Test approach
+   * -------------
+   * We spy on `api.get` / `api.post` / `api.patch` / `api.delete` and
+   * assert the third (or second, for GETs) argument carries
+   * `headers.Authorization === "Bearer <coc_admin_token>"`. The body
+   * of the request and the URL are also asserted so a refactor that
+   * changes the URL shape would also surface here.
+   */
+
+  beforeEach(() => {
+    cookieStore.coc_admin_token = "admin-jwt-from-cookie";
+  });
+
+  it("getStats attaches the admin Authorization header", async () => {
+    const spy = vi.spyOn(api, "get").mockResolvedValue({ data: {} } as any);
+    await adminApi.getStats();
+    expect(spy).toHaveBeenCalledTimes(1);
+    const [url, config] = spy.mock.calls[0];
+    expect(url).toBe("/admin/stats");
+    expect(config?.headers?.Authorization).toBe("Bearer admin-jwt-from-cookie");
+  });
+
+  it("getUsers attaches admin Authorization AND forwards the params object", async () => {
+    const spy = vi.spyOn(api, "get").mockResolvedValue({ data: {} } as any);
+    await adminApi.getUsers({ search: "alice", page: 2, limit: 50 });
+    const [url, config] = spy.mock.calls[0];
+    expect(url).toBe("/admin/users");
+    expect(config?.headers?.Authorization).toBe("Bearer admin-jwt-from-cookie");
+    expect(config?.params).toEqual({ search: "alice", page: 2, limit: 50 });
+  });
+
+  it("verifyCook (PATCH) attaches admin Authorization on a body+config call", async () => {
+    const spy = vi.spyOn(api, "patch").mockResolvedValue({ data: {} } as any);
+    await adminApi.verifyCook("cook-id-123", true, "ok");
+    const [url, body, config] = spy.mock.calls[0];
+    expect(url).toBe("/admin/cooks/cook-id-123/verify");
+    expect(body).toEqual({ verified: true, rejection_reason: "ok" });
+    expect(config?.headers?.Authorization).toBe("Bearer admin-jwt-from-cookie");
+  });
+
+  it("toggleUserActive (PATCH with no body) still attaches admin Authorization in the third arg", async () => {
+    const spy = vi.spyOn(api, "patch").mockResolvedValue({ data: {} } as any);
+    await adminApi.toggleUserActive("user-id-456");
+    const [url, body, config] = spy.mock.calls[0];
+    expect(url).toBe("/admin/users/user-id-456/toggle-active");
+    expect(body).toBeUndefined();
+    expect(config?.headers?.Authorization).toBe("Bearer admin-jwt-from-cookie");
+  });
+
+  it("promos.list attaches admin Authorization (the panel that triggered the bug report)", async () => {
+    const spy = vi.spyOn(api, "get").mockResolvedValue({ data: {} } as any);
+    await adminApi.promos.list("active");
+    const [url, config] = spy.mock.calls[0];
+    expect(url).toBe("/promo-codes");
+    expect(config?.headers?.Authorization).toBe("Bearer admin-jwt-from-cookie");
+    expect(config?.params).toEqual({ status: "active" });
+  });
+
+  it("promos.remove (DELETE) attaches admin Authorization", async () => {
+    const spy = vi.spyOn(api, "delete").mockResolvedValue({ data: {} } as any);
+    await adminApi.promos.remove("promo-id-789");
+    const [url, config] = spy.mock.calls[0];
+    expect(url).toBe("/promo-codes/promo-id-789");
+    expect(config?.headers?.Authorization).toBe("Bearer admin-jwt-from-cookie");
+  });
+
+  it("sendBroadcast (POST) attaches admin Authorization in the third arg, body unchanged", async () => {
+    const spy = vi.spyOn(api, "post").mockResolvedValue({ data: {} } as any);
+    await adminApi.sendBroadcast({
+      title: "T",
+      body: "B",
+      audience: "all",
+    });
+    const [url, body, config] = spy.mock.calls[0];
+    expect(url).toBe("/admin/notifications/broadcast");
+    expect(body).toEqual({ title: "T", body: "B", audience: "all" });
+    expect(config?.headers?.Authorization).toBe("Bearer admin-jwt-from-cookie");
+  });
+
+  it("getAnalyticsOverview (range param) attaches BOTH admin Authorization and the range param", async () => {
+    const spy = vi.spyOn(api, "get").mockResolvedValue({ data: {} } as any);
+    await adminApi.getAnalyticsOverview({ range: "30d" });
+    const [url, config] = spy.mock.calls[0];
+    expect(url).toBe("/admin/analytics/overview");
+    expect(config?.headers?.Authorization).toBe("Bearer admin-jwt-from-cookie");
+    expect(config?.params).toEqual({ range: "30d" });
+  });
+
+  it("exportAnalyticsCsv keeps responseType:blob AND attaches admin Authorization", async () => {
+    // Most likely place for a regression: an admin downloads a CSV, the
+    // helper drops responseType:'blob' while merging configs, the file
+    // downloads as a parsed JSON object instead of a binary blob.
+    const spy = vi.spyOn(api, "get").mockResolvedValue({ data: new Blob() } as any);
+    await adminApi.exportAnalyticsCsv("bookings", { range: "7d" });
+    const [, config] = spy.mock.calls[0];
+    expect(config?.headers?.Authorization).toBe("Bearer admin-jwt-from-cookie");
+    expect(config?.responseType).toBe("blob");
+    expect(config?.params).toEqual({ range: "7d", metric: "bookings" });
+  });
+
+  it("falls back to an empty bearer when coc_admin_token is missing (will get 401 immediately, surfaced by the page)", async () => {
+    delete cookieStore.coc_admin_token;
+    const spy = vi.spyOn(api, "get").mockResolvedValue({ data: {} } as any);
+    await adminApi.getStats();
+    const [, config] = spy.mock.calls[0];
+    // We send `Bearer ` (empty token) rather than no header at all so
+    // the response interceptor's "explicit Authorization → escape
+    // hatch" rule still applies, and the 401 reaches handleAdminError
+    // (which can then show "session expired" instead of redirecting
+    // to /login).
+    expect(config?.headers?.Authorization).toBe("Bearer ");
   });
 });

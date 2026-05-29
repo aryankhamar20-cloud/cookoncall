@@ -270,11 +270,11 @@ export default function PromosPanel() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-[10px] bg-[var(--orange-500)]/15 flex items-center justify-center">
-            <Ticket className="w-5 h-5 text-[var(--orange-500)]" />
+            <Ticket className="w-5 h-5 text-[var(--orange-400)]" />
           </div>
           <div>
-            <h2 className="font-bold text-[1.05rem]">Promo Codes</h2>
-            <p className="text-[0.8rem] text-[var(--text-muted,#6b7280)]">
+            <h2 className="font-bold text-[1.05rem] text-white">Promo Codes</h2>
+            <p className="text-[0.8rem] text-[rgba(255,255,255,0.5)]">
               Generate, edit and revoke promo codes. Every action is recorded
               in the audit log.
             </p>
@@ -284,7 +284,7 @@ export default function PromosPanel() {
           <button
             onClick={() => fetchPromos(true)}
             disabled={refreshing}
-            className="px-3 py-2 rounded-[10px] bg-white border border-[rgba(0,0,0,0.08)] text-[0.85rem] font-semibold flex items-center gap-2 hover:border-[var(--orange-500)] disabled:opacity-50"
+            className="px-3 py-2 rounded-[10px] bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-[0.85rem] font-semibold text-white flex items-center gap-2 hover:border-[var(--orange-500)] disabled:opacity-50 transition-colors"
           >
             <RefreshCw
               className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`}
@@ -303,7 +303,7 @@ export default function PromosPanel() {
 
       {/* Banners */}
       {error && (
-        <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-red-50 border border-red-200 text-red-800 text-[0.82rem]">
+        <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-red-500/10 border border-red-500/30 text-red-300 text-[0.82rem]">
           <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <div className="flex-1">{error}</div>
           <button onClick={() => setError(null)} className="opacity-60 hover:opacity-100">
@@ -312,7 +312,7 @@ export default function PromosPanel() {
         </div>
       )}
       {success && (
-        <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-emerald-50 border border-emerald-200 text-emerald-800 text-[0.82rem]">
+        <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[0.82rem]">
           <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <span>{success}</span>
         </div>
@@ -357,7 +357,7 @@ export default function PromosPanel() {
               className={`px-3 py-1.5 rounded-full text-[0.78rem] font-semibold capitalize transition-all ${
                 filter === f
                   ? "bg-[var(--orange-500)] text-white"
-                  : "bg-white border border-[rgba(0,0,0,0.08)] text-[var(--brown-800,#3d2418)] hover:border-[var(--orange-500)]"
+                  : "bg-[rgba(255,255,255,0.04)] border border-[rgba(255,255,255,0.08)] text-white hover:border-[var(--orange-500)]"
               }`}
             >
               {f}
@@ -366,32 +366,32 @@ export default function PromosPanel() {
         )}
         <div className="flex-1 min-w-[200px]" />
         <div className="relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted,#9ca3af)]" />
+          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(255,255,255,0.45)]" />
           <input
             type="text"
             placeholder="Search code or description…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 pr-3 py-2 rounded-[10px] border border-[rgba(0,0,0,0.08)] text-[0.85rem] bg-white focus:outline-none focus:border-[var(--orange-500)] w-[260px]"
+            className="pl-9 pr-3 py-2 rounded-[10px] border border-[rgba(255,255,255,0.08)] text-[0.85rem] bg-[rgba(255,255,255,0.04)] text-white placeholder:text-[rgba(255,255,255,0.35)] focus:outline-none focus:border-[var(--orange-500)] w-[260px]"
           />
         </div>
       </div>
 
       {/* List */}
-      <div className="bg-white rounded-[14px] border border-[rgba(0,0,0,0.06)] overflow-hidden">
+      <div className="bg-[rgba(255,255,255,0.03)] rounded-[14px] border border-[rgba(255,255,255,0.08)] overflow-hidden">
         {loading ? (
-          <div className="flex items-center justify-center py-16 text-[var(--text-muted,#6b7280)]">
-            <Loader2 className="w-5 h-5 animate-spin mr-2" />
+          <div className="flex items-center justify-center py-16 text-[rgba(255,255,255,0.5)]">
+            <Loader2 className="w-5 h-5 animate-spin mr-2 text-[var(--orange-400)]" />
             Loading promo codes…
           </div>
         ) : filtered.length === 0 ? (
-          <div className="py-16 text-center text-[0.88rem] text-[var(--text-muted,#6b7280)]">
+          <div className="py-16 text-center text-[0.88rem] text-[rgba(255,255,255,0.5)]">
             {promos.length === 0
               ? "No promo codes yet. Click New promo to create one."
               : "No promos match the current filter."}
           </div>
         ) : (
-          <ul className="divide-y divide-[rgba(0,0,0,0.06)]">
+          <ul className="divide-y divide-[rgba(255,255,255,0.06)]">
             {filtered.map((p) => (
               <PromoRow
                 key={p.id}
@@ -444,24 +444,29 @@ function KpiTile({
   icon: React.ReactNode;
   tone?: "orange" | "emerald" | "gray" | "amber" | "red";
 }) {
+  // Dark-theme tones (admin shell is dark — see #22 overview tiles for
+  // the same pattern). Using semi-transparent backgrounds for the icon
+  // chip so the colour reads against the dark card.
   const toneClass = {
-    orange: "text-[var(--orange-500)] bg-[var(--orange-500)]/12",
-    emerald: "text-emerald-600 bg-emerald-100",
-    gray: "text-gray-500 bg-gray-100",
-    amber: "text-amber-600 bg-amber-100",
-    red: "text-red-600 bg-red-100",
+    orange: "text-[var(--orange-400)] bg-[var(--orange-500)]/15",
+    emerald: "text-emerald-400 bg-emerald-500/15",
+    gray: "text-gray-400 bg-white/8",
+    amber: "text-amber-400 bg-amber-500/15",
+    red: "text-red-400 bg-red-500/15",
   }[tone];
 
   return (
-    <div className="bg-white rounded-[14px] border border-[rgba(0,0,0,0.06)] p-3.5 flex items-center gap-3">
-      <div className={`w-9 h-9 rounded-[10px] flex items-center justify-center ${toneClass}`}>
+    <div className="bg-[rgba(255,255,255,0.04)] rounded-[14px] border border-[rgba(255,255,255,0.08)] p-3.5 flex items-center gap-3 hover:border-[rgba(255,255,255,0.16)] transition-colors">
+      <div
+        className={`w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0 ${toneClass}`}
+      >
         {icon}
       </div>
       <div className="min-w-0">
-        <div className="text-[0.7rem] uppercase tracking-wide font-semibold text-[var(--text-muted,#9ca3af)]">
+        <div className="text-[0.7rem] uppercase tracking-wide font-semibold text-[rgba(255,255,255,0.5)]">
           {label}
         </div>
-        <div className="font-bold text-[1.1rem] text-[var(--brown-800,#3d2418)]">
+        <div className="font-bold text-[1.15rem] text-white leading-tight">
           {value.toLocaleString("en-IN")}
         </div>
       </div>
@@ -491,12 +496,14 @@ function PromoRow({
     p.max_uses != null && p.used_count >= p.max_uses;
 
   // Status pill style picker — order matters; "expired" beats "live"
-  // even when is_active is still true.
+  // even when is_active is still true. Dark-theme variants for the
+  // admin shell — semi-transparent backgrounds + lighter text so the
+  // pill reads against the dark row.
   const statusPill = (() => {
-    if (expired) return { text: "Expired", cls: "bg-amber-100 text-amber-700" };
-    if (exhausted) return { text: "Exhausted", cls: "bg-red-100 text-red-700" };
-    if (live) return { text: "Live", cls: "bg-emerald-100 text-emerald-700" };
-    return { text: "Inactive", cls: "bg-gray-100 text-gray-600" };
+    if (expired) return { text: "Expired", cls: "bg-amber-500/15 text-amber-300" };
+    if (exhausted) return { text: "Exhausted", cls: "bg-red-500/15 text-red-300" };
+    if (live) return { text: "Live", cls: "bg-emerald-500/15 text-emerald-300" };
+    return { text: "Inactive", cls: "bg-white/8 text-gray-400" };
   })();
 
   const valueLabel =
@@ -513,16 +520,16 @@ function PromoRow({
     p.max_uses != null ? Math.min(100, (p.used_count / p.max_uses) * 100) : 0;
 
   return (
-    <li className="px-4 py-3.5 flex items-start gap-4 hover:bg-[var(--cream-50,#fffaf5)]">
+    <li className="px-4 py-3.5 flex items-start gap-4 hover:bg-[rgba(255,255,255,0.04)] transition-colors">
       {/* Left: code chip + meta */}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2 flex-wrap">
-          <span className="font-mono font-bold text-[0.95rem] text-[var(--brown-800,#3d2418)] tracking-wide">
+          <span className="font-mono font-bold text-[0.95rem] text-white tracking-wide">
             {p.code}
           </span>
           <button
             onClick={onCopy}
-            className="p-1 rounded hover:bg-[var(--orange-500)]/10 text-[var(--text-muted,#6b7280)] hover:text-[var(--orange-500)]"
+            className="p-1 rounded hover:bg-[var(--orange-500)]/15 text-[rgba(255,255,255,0.5)] hover:text-[var(--orange-400)]"
             title="Copy code"
           >
             <Copy className="w-3.5 h-3.5" />
@@ -530,20 +537,18 @@ function PromoRow({
           <span className={`px-2 py-0.5 rounded-full text-[0.7rem] font-semibold uppercase tracking-wide ${statusPill.cls}`}>
             {statusPill.text}
           </span>
-          <span className="px-2 py-0.5 rounded-full bg-[var(--orange-500)]/12 text-[var(--orange-500)] text-[0.7rem] font-semibold uppercase tracking-wide">
+          <span className="px-2 py-0.5 rounded-full bg-[var(--orange-500)]/15 text-[var(--orange-400)] text-[0.7rem] font-semibold uppercase tracking-wide">
             {TYPE_LABEL[p.type]}
           </span>
           {p.single_use && (
-            <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-[0.7rem] font-semibold uppercase tracking-wide">
+            <span className="px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 text-[0.7rem] font-semibold uppercase tracking-wide">
               1 / user
             </span>
           )}
         </div>
 
-        <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.78rem] text-[var(--text-muted,#4b5563)]">
-          <span className="font-semibold text-[var(--brown-800,#3d2418)]">
-            {valueLabel}
-          </span>
+        <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-[0.78rem] text-[rgba(255,255,255,0.6)]">
+          <span className="font-semibold text-white">{valueLabel}</span>
           {num(p.min_order_amount) > 0 && (
             <span>min order {fmtINR(p.min_order_amount)}</span>
           )}
@@ -551,21 +556,21 @@ function PromoRow({
         </div>
 
         {p.description && (
-          <p className="mt-1 text-[0.78rem] text-[var(--text-muted,#6b7280)] line-clamp-1">
+          <p className="mt-1 text-[0.78rem] text-[rgba(255,255,255,0.5)] line-clamp-1">
             {p.description}
           </p>
         )}
 
         {/* Usage progress */}
         <div className="mt-2 flex items-center gap-2 max-w-md">
-          <span className="text-[0.72rem] text-[var(--text-muted,#9ca3af)] whitespace-nowrap">
+          <span className="text-[0.72rem] text-[rgba(255,255,255,0.45)] whitespace-nowrap">
             {p.used_count.toLocaleString("en-IN")}
             {p.max_uses != null
               ? ` / ${p.max_uses.toLocaleString("en-IN")}`
               : " uses"}
           </span>
           {p.max_uses != null && (
-            <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="flex-1 h-1.5 bg-white/8 rounded-full overflow-hidden">
               <div
                 className={`h-full ${
                   usagePct >= 100
@@ -588,9 +593,9 @@ function PromoRow({
         </IconBtn>
         <IconBtn title={p.is_active ? "Deactivate" : "Activate"} onClick={onToggle}>
           {p.is_active ? (
-            <ToggleRight className="w-4 h-4 text-emerald-600" />
+            <ToggleRight className="w-4 h-4 text-emerald-400" />
           ) : (
-            <ToggleLeft className="w-4 h-4 text-gray-400" />
+            <ToggleLeft className="w-4 h-4 text-gray-500" />
           )}
         </IconBtn>
         <IconBtn title="Edit" onClick={onEdit}>
@@ -619,10 +624,10 @@ function IconBtn({
     <button
       onClick={onClick}
       title={title}
-      className={`p-2 rounded-[8px] hover:bg-gray-100 ${
+      className={`p-2 rounded-[8px] transition-colors ${
         danger
-          ? "text-red-500 hover:bg-red-50"
-          : "text-[var(--text-muted,#6b7280)] hover:text-[var(--brown-800,#3d2418)]"
+          ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
+          : "text-[rgba(255,255,255,0.5)] hover:bg-white/5 hover:text-white"
       }`}
     >
       {children}
