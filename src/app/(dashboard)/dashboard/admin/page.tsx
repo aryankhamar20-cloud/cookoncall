@@ -16,16 +16,18 @@ import {
   Ticket,
   KeyRound,
   Activity,
+  Star,
 } from "lucide-react";
 import AuditLogPanel from "@/components/dashboard/AuditLogPanel";
 import AnalyticsPanel from "@/components/dashboard/AnalyticsPanel";
 import BroadcastPanel from "@/components/dashboard/BroadcastPanel";
 import PromosPanel from "@/components/dashboard/PromosPanel";
+import ReviewsPanel from "@/components/dashboard/ReviewsPanel";
 import AdminAccountPanel from "@/components/dashboard/AdminAccountPanel";
 
 /* ═══ TYPES ═══ */
 
-type AdminPanel = "overview" | "users" | "cooks" | "bookings" | "areas" | "audit" | "analytics" | "broadcast" | "promos" | "account";
+type AdminPanel = "overview" | "users" | "cooks" | "bookings" | "areas" | "audit" | "analytics" | "broadcast" | "promos" | "reviews" | "account";
 type CookFilter = "all" | "verified" | "pending_review" | "unverified";
 
 interface AdminStatsData {
@@ -80,6 +82,7 @@ const sidebarLinks: { id: AdminPanel; label: string; icon: React.ReactNode }[] =
   { id: "bookings", label: "Bookings", icon: <FileText className="w-5 h-5" /> },
   { id: "areas", label: "Areas", icon: <MapPin className="w-5 h-5" /> },
   { id: "promos", label: "Promos", icon: <Ticket className="w-5 h-5" /> },
+  { id: "reviews", label: "Reviews", icon: <Star className="w-5 h-5" /> },
   { id: "broadcast", label: "Broadcast", icon: <Bell className="w-5 h-5" /> },
   { id: "audit", label: "Audit Log", icon: <ScrollText className="w-5 h-5" /> },
   { id: "account", label: "Account", icon: <KeyRound className="w-5 h-5" /> },
@@ -1474,6 +1477,8 @@ export default function AdminDashboardPage() {
 
           {/* Admin → Promo Manager (Round 4) */}
           {activePanel === "promos" && <PromosPanel />}
+
+          {activePanel === "reviews" && <ReviewsPanel />}
 
           {/* Admin → Account (change password) — uses POST /auth/change-password
               (added in cookoncall-backend PR #28). Calls the API with the

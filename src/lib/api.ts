@@ -603,6 +603,10 @@ export const adminApi = {
   getBroadcastCtr: (id: string) =>
     api.get(`/admin/notifications/broadcasts/${id}/ctr`, withAdminAuth()),
 
+  // Reviews moderation list (admin). max_rating filters low-rated bookings.
+  reviews: (params?: { page?: number; limit?: number; max_rating?: number }) =>
+    api.get("/admin/reviews", withAdminAuth({ params })),
+
   // ─── ROUND 4: PROMO CODE MANAGER ────────────────────────────
   // Backend mounts these under /promo-codes. `validate` is customer-facing
   // (regular coc_token auth); the rest are admin-only via @Roles.
@@ -816,6 +820,14 @@ export interface AreaRequestDto {
   created_at: string;
   requester?: { id: string; name: string; email: string };
 }
+
+// Customer favorites (saved chefs). Shared backend with the mobile app.
+export const favoritesApi = {
+  ids: () => api.get<string[]>("/favorites/ids"),
+  list: () => api.get("/favorites"),
+  toggle: (cookId: string) =>
+    api.post<{ favorited: boolean }>(`/favorites/${cookId}`),
+};
 
 export const areasApi = {
   // Public — list active areas (cached client-side via SWR-style)
