@@ -359,6 +359,11 @@ export const bookingsApi = {
 
   getById: (id: string) => api.get(`/bookings/${id}`),
 
+  /** Customer reschedules a booking to a new time (ISO). Shared backend
+   *  endpoint (PATCH /bookings/:id/reschedule) with the mobile app. */
+  reschedule: (id: string, scheduled_at: string) =>
+    api.patch(`/bookings/${id}/reschedule`, { scheduled_at }),
+
   // --- NEW FLOW (Apr 21, 2026) — backend uses POST, not PATCH --
   /** Chef accepts -> booking becomes CONFIRMED. Customer can pay any
    *  time before the session-end OTP (May 29, 2026 flow — see backend
@@ -599,8 +604,20 @@ export const adminApi = {
     api.get(`/admin/notifications/broadcasts/${id}/ctr`, withAdminAuth()),
 
   // ─── ROUND 4: PROMO CODE MANAGER ────────────────────────────
-  // Backend mounts these under /promo-codes (admin-only via @Roles).
+  // Backend mounts these under /promo-codes. `validate` is customer-facing
+  // (regular coc_token auth); the rest are admin-only via @Roles.
   promos: {
+    /**
+     * CUSTOMER — validate a promo code against an order amount before
+     * booking. Returns { discount, final_amount, message }. Same endpoint
+     * the mobile app calls, so web + app stay in parity.
+     */
+    validate: (data: { code: string; order_amount: number }) =>
+      api.post<{ discount: number; final_amount: number; message: string }>(
+        "/promo-codes/validate",
+        data,
+      ),
+
     /** List promos. status filter: active|inactive|expired|exhausted. */
     list: (status?: "active" | "inactive" | "expired" | "exhausted") =>
       api.get("/promo-codes", withAdminAuth({ params: status ? { status } : {} })),

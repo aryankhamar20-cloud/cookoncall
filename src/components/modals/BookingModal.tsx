@@ -59,6 +59,11 @@ export interface BookingFormData {
   packageName?: string;
   selectedCategories?: Array<{ categoryId: string; dishIds: string[] }>;
   selectedAddonIds?: string[];
+  // ─── Promo code ───────────────────────────────────
+  // Customer-applied code; backend re-validates + applies discount in
+  // createBooking. Mirrors the mobile app booking sheet for web↔app parity.
+  promoCode?: string;
+  discount?: number;
 }
 
 interface SelectedDish {
@@ -126,6 +131,47 @@ export default function BookingModal({
   const [loadingMenu, setLoadingMenu] = useState(false);
   const [selectedDishes, setSelectedDishes] = useState<SelectedDish[]>([]);
   const [showMenu, setShowMenu] = useState(true);
+
+  // ─── Promo code (web↔app parity with the mobile booking sheet) ───
+  const [promoInput, setPromoInput] = useState("");
+  const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [discount, setDiscount] = useState(0);
+  const [promoMsg, setPromoMsg] = useState<string | null>(null);
+  const [promoErr, setPromoErr] = useState<string | null>(null);
+  const [promoLoading, setPromoLoading] = useState(false);
+
+  async function applyPromo() {
+    const code = promoInput.trim();
+    if (!code) return;
+    setPromoLoading(true);
+    setPromoErr(null);
+    setPromoMsg(null);
+    try {
+      const { data } = await api.post("/promo-codes/validate", {
+        code: code.toUpperCase(),
+        order_amount: totalAmount,
+      });
+      const res = data?.data ?? data;
+      const d = Number(res?.discount) || 0;
+      setAppliedPromo(code.toUpperCase());
+      setDiscount(d);
+      setPromoMsg(res?.message || `Promo applied! You save ${formatCurrency(d)}`);
+    } catch (err: any) {
+      setAppliedPromo(null);
+      setDiscount(0);
+      setPromoErr(err?.response?.data?.message || "Invalid promo code.");
+    } finally {
+      setPromoLoading(false);
+    }
+  }
+
+  function removePromo() {
+    setAppliedPromo(null);
+    setDiscount(0);
+    setPromoInput("");
+    setPromoErr(null);
+    setPromoMsg(null);
+  }
 
   useEffect(() => {
     if (isOpen && chef?.id) {
@@ -349,7 +395,9 @@ if (isPackageMode && preselectedPackage) {
       guests,
       guestsCount: isPackageMode ? (preselectedPackage?.guestCount ?? selectedGuests.count) : selectedGuests.count,
       notes,
-      amount: totalAmount,
+      amount: Math.max(0, totalAmount - discount),
+      promoCode: appliedPromo || undefined,
+      discount: discount || undefined,
       address: addressLine,
       addressId: picked.id,
       latitude: picked.latitude != null ? Number(picked.latitude) : undefined,
@@ -767,9 +815,40 @@ if (isPackageMode && preselectedPackage) {
                     <span className="text-[var(--text-muted)]">Convenience fee (2.5%)</span>
                     <span>{formatCurrency(convenienceFee)}</span>
                   </div>
+                  {/* Promo code */}
+                  <div className="mt-3">
+                    <div className="flex gap-2">
+                      <input
+                        value={promoInput}
+                        onChange={(e) => setPromoInput(e.target.value.toUpperCase())}
+                        disabled={!!appliedPromo}
+                        placeholder="Promo code"
+                        className="flex-1 px-3 py-2 rounded-[8px] border border-[rgba(212,114,26,0.2)] text-[0.85rem] bg-white disabled:opacity-60"
+                      />
+                      {appliedPromo ? (
+                        <button type="button" onClick={removePromo}
+                          className="px-3 py-2 rounded-[8px] text-[0.8rem] font-semibold text-[#ba1a1a]">
+                          Remove
+                        </button>
+                      ) : (
+                        <button type="button" onClick={applyPromo} disabled={promoLoading}
+                          className="px-4 py-2 rounded-[8px] text-[0.8rem] font-semibold border border-[var(--orange-500)] text-[var(--orange-500)] disabled:opacity-50">
+                          {promoLoading ? "…" : "Apply"}
+                        </button>
+                      )}
+                    </div>
+                    {promoErr && <div className="text-[0.75rem] text-[#ba1a1a] mt-1">{promoErr}</div>}
+                    {promoMsg && <div className="text-[0.75rem] text-[#2d8c6e] mt-1">{promoMsg}</div>}
+                  </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-[0.88rem] mb-1.5 mt-2">
+                      <span className="text-[#2d8c6e]">Promo ({appliedPromo})</span>
+                      <span className="text-[#2d8c6e]">-{formatCurrency(discount)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-[1rem] font-bold border-t border-[rgba(212,114,26,0.12)] pt-2 mt-2">
                     <span>Total</span>
-                    <span className="text-[var(--orange-500)]">{formatCurrency(totalAmount)}</span>
+                    <span className="text-[var(--orange-500)]">{formatCurrency(Math.max(0, totalAmount - discount))}</span>
                   </div>
                   <div className="text-[0.72rem] text-[var(--text-muted)] mt-2 leading-snug">
                     + Ingredients at actual market cost (with receipt)
@@ -796,7 +875,7 @@ if (isPackageMode && preselectedPackage) {
               {isPackageMode
                 ? `Confirm Package — ₹${totalAmount.toLocaleString('en-IN')}`
                 : hasDishSelection
-                  ? `Proceed to Payment — ${formatCurrency(totalAmount)}`
+                  ? `Proceed to Payment — ${formatCurrency(Math.max(0, totalAmount - discount))}`
                   : "Select a dish to continue"}
             </button>
           </>

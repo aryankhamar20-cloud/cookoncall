@@ -126,6 +126,8 @@ function ChefDetailContent() {
         amount: data.amount,
         selected_items: data.selectedItems,
       };
+      // Promo: backend re-validates + applies the discount in createBooking.
+      if (data.promoCode) payload.promo_code = data.promoCode;
       if (data.packageId) {
         payload.packageId = data.packageId;
         payload.guestCount = data.guestsCount;

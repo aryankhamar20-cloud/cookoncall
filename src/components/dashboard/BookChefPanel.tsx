@@ -231,6 +231,8 @@ export default function BookChefPanel() {
         dishes: formData.dishes,
         instructions: formData.notes,
       };
+      // Promo: backend re-validates and applies the discount in createBooking.
+      if (formData.promoCode) payload.promo_code = formData.promoCode;
       if (formData.selectedItems && formData.selectedItems.length > 0) {
         payload.selected_items = formData.selectedItems.map((i) => ({
           menuItemId: i.menuItemId,
