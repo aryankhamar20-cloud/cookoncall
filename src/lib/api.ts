@@ -402,6 +402,10 @@ export const bookingsApi = {
   /** Round 2: download a paid booking's PDF receipt as a Blob. */
   getReceipt: (id: string) =>
     api.get(`/bookings/${id}/receipt`, { responseType: "blob" }),
+
+  /** P6.2: email the invoice PDF to the booking's customer. Shared
+   *  backend endpoint (POST /bookings/:id/receipt/email) with the app. */
+  emailReceipt: (id: string) => api.post(`/bookings/${id}/receipt/email`),
 };
 
 // === Payments API ===
@@ -425,6 +429,20 @@ export const reviewsApi = {
   getByCook: (cookId: string, params?: { page?: number; limit?: number }) =>
     api.get(`/reviews/cook/${cookId}`, { params }),
   getMyReviews: () => api.get("/reviews/me"),
+};
+
+// === Referrals API (Refer & Earn) ===
+// Shared backend with the mobile app: GET /referrals/my-code returns the
+// user's code + stats, POST /referrals/apply records a referral at sign-up.
+export const referralsApi = {
+  getMyCode: () =>
+    api.get<{
+      code: string;
+      total_referrals: number;
+      rewarded_referrals: number;
+      total_earned: number;
+    }>("/referrals/my-code"),
+  apply: (code: string) => api.post("/referrals/apply", { code }),
 };
 
 

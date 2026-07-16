@@ -10,7 +10,7 @@ import {
   AlertCircle, MapPin, Clock, ChefHat, XCircle, Calendar,
   Users, IndianRupee, Star, Edit3, CreditCard, RotateCcw,
   BadgeCheck, Hourglass, ChevronDown, ChevronUp, Leaf, Award, Search, Truck,
-  Loader2, FileDown,
+  Loader2, FileDown, Mail,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Cook } from "@/types";
@@ -195,6 +195,7 @@ export default function OrdersPanel() {
 
   // Round 2: per-booking flag for the receipt download button.
   const [downloadingReceiptId, setDownloadingReceiptId] = useState<string | null>(null);
+  const [emailingReceiptId, setEmailingReceiptId] = useState<string | null>(null);
 
   // Apr 21 NEW FLOW — rebook modal state.
   // When chef rejects, customer can book another chef with same date/time/address/guests.
@@ -385,6 +386,24 @@ export default function OrdersPanel() {
       toast.error(msg);
     } finally {
       setDownloadingReceiptId(null);
+    }
+  }
+
+  // ─── P6.2: email the invoice PDF to the customer ──────
+  async function handleEmailReceipt(b: any) {
+    if (emailingReceiptId) return;
+    setEmailingReceiptId(b.id);
+    try {
+      const res = await bookingsApi.emailReceipt(b.id);
+      const msg = res.data?.data?.message || res.data?.message || "Invoice emailed to you";
+      toast.success(msg);
+    } catch (err: any) {
+      const msg = err?.response?.data?.message
+        || err?.response?.statusText
+        || "Couldn't email the invoice. Try again in a moment.";
+      toast.error(msg);
+    } finally {
+      setEmailingReceiptId(null);
     }
   }
 
@@ -679,6 +698,27 @@ export default function OrdersPanel() {
                           <>
                             <FileDown className="w-3.5 h-3.5" />
                             Receipt
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {/* P6.2 — email the invoice PDF to the customer */}
+                    {(status === "completed" || status === "in_progress" || status === "confirmed") && (
+                      <button
+                        onClick={() => handleEmailReceipt(b)}
+                        disabled={emailingReceiptId === b.id}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.82rem] font-semibold text-[var(--brown-800)] bg-[rgba(0,0,0,0.03)] border border-[rgba(0,0,0,0.08)] cursor-pointer transition-all hover:bg-[rgba(0,0,0,0.06)] disabled:opacity-60 disabled:cursor-wait"
+                        style={{ fontFamily: "var(--font-body)" }}>
+                        {emailingReceiptId === b.id ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            Emailing…
+                          </>
+                        ) : (
+                          <>
+                            <Mail className="w-3.5 h-3.5" />
+                            Email invoice
                           </>
                         )}
                       </button>

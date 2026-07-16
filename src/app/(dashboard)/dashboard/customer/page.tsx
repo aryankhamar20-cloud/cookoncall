@@ -8,6 +8,7 @@ import {
   User,
   Settings as SettingsIcon,
   LifeBuoy,
+  Gift,
 } from "lucide-react";
 import DashboardLayout, { type SidebarSection } from "@/components/layout/DashboardLayout";
 import { useUIStore } from "@/stores/uiStore";
@@ -20,6 +21,7 @@ import OrdersPanel from "@/components/dashboard/OrdersPanel";
 import ProfilePanel from "@/components/dashboard/ProfilePanel";
 import SettingsPanel from "@/components/dashboard/SettingsPanel";
 import HelpSupportPanel from "@/components/dashboard/HelpSupportPanel";
+import ReferralPanel from "@/components/dashboard/ReferralPanel";
 import CartDrawer from "@/components/dashboard/CartDrawer";
 import NotificationBell from "@/components/dashboard/NotificationBell";
 import BookingModal from "@/components/modals/BookingModal";
@@ -31,6 +33,7 @@ const titles: Record<string, string> = {
   "order-food": "Order Food",
   orders: "My Bookings",
   profile: "My Profile",
+  referrals: "Refer & Earn",
   settings: "Settings",
   help: "Help & Support",
 };
@@ -65,6 +68,7 @@ export default function CustomerDashboardPage() {
       title: "Account",
       links: [
         { id: "profile", label: "My Profile", icon: <User className="w-5 h-5" /> },
+        { id: "referrals", label: "Refer & Earn", icon: <Gift className="w-5 h-5" /> },
         { id: "settings", label: "Settings", icon: <SettingsIcon className="w-5 h-5" /> },
         { id: "help", label: "Help & Support", icon: <LifeBuoy className="w-5 h-5" /> },
       ],
@@ -112,6 +116,7 @@ export default function CustomerDashboardPage() {
         {activePanel === "order-food" && <OrderFoodPanel />}
         {activePanel === "orders" && <OrdersPanel />}
         {activePanel === "profile" && <ProfilePanel />}
+        {activePanel === "referrals" && <ReferralPanel />}
         {activePanel === "settings" && <SettingsPanel />}
         {activePanel === "help" && <HelpSupportPanel />}
       </DashboardLayout>

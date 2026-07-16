@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import Cookies from "js-cookie";
 import { eventsApi } from "@/lib/api";
 
 /**
@@ -65,6 +66,18 @@ export default function PageViewTracker() {
   // on the next page_view, useful for "people who visited /chefs
   // tend to next visit /chef/<id>" funnel queries.
   const lastPathRef = useRef<string | null>(null);
+
+  // Refer & Earn — capture a `?ref=CODE` from any landing URL (the share
+  // link points at `/?ref=CODE`) and stash it in a 30-day cookie. The
+  // login page applies it via POST /referrals/apply right after the
+  // referred friend finishes signing up. Never overwrite an existing
+  // pending ref so the FIRST referrer who brought them here wins.
+  useEffect(() => {
+    const ref = searchParams?.get("ref");
+    if (ref && !Cookies.get("coc_ref")) {
+      Cookies.set("coc_ref", ref, { expires: 30 });
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!pathname) return;

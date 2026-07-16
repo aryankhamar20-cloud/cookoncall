@@ -6,7 +6,7 @@ import Link from "next/link";
 import Cookies from "js-cookie";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
-import { authApi } from "@/lib/api";
+import { authApi, referralsApi } from "@/lib/api";
 import { Eye, EyeOff, ArrowLeft, UtensilsCrossed, ChefHat, Mail, ShieldCheck, KeyRound } from "lucide-react";
 import toast from "react-hot-toast";
 import PasswordStrength, { evaluatePassword } from "@/components/ui/PasswordStrength";
@@ -116,6 +116,23 @@ function LoginPage() {
     storeLogin(data.user, data.accessToken);
   }
 
+  // Refer & Earn — after a brand-new account is authenticated, redeem any
+  // referral code the friend arrived with (captured into `coc_ref` by
+  // PageViewTracker from a `?ref=CODE` share link). Best-effort: the
+  // backend silently no-ops if they were already referred or used their
+  // own code, so failures here must never block the signup redirect.
+  async function applyPendingReferral() {
+    const code = Cookies.get("coc_ref");
+    if (!code) return;
+    try {
+      await referralsApi.apply(code);
+    } catch {
+      /* invalid/self/duplicate code — ignore */
+    } finally {
+      Cookies.remove("coc_ref");
+    }
+  }
+
   // Round A Fix #5: Auto-redirect after role selection — no Continue button
   function handleRoleSelect(selectedRole: Role) {
     setRole(selectedRole);
@@ -146,6 +163,10 @@ function LoginPage() {
         refreshToken: responseData.refreshToken || responseData.refresh_token,
         user: responseData.user,
       });
+      // Google sign-up may have just created the account — redeem any
+      // pending referral code (backend no-ops for existing users).
+      await applyPendingReferral();
+
       toast.success(`Welcome, ${responseData.user?.name || "back"}!`);
       const userRole = responseData.user?.role;
       if (userRole === "cook") router.push("/dashboard/cook");
@@ -312,6 +333,9 @@ function LoginPage() {
           user: responseData.user,
         });
       }
+
+      // Redeem a pending referral code now that the new account is live.
+      await applyPendingReferral();
 
       toast.success("Email verified! Welcome to CookOnCall!");
 
