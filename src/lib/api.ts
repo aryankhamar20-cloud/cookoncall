@@ -625,6 +625,23 @@ export const adminApi = {
   reviews: (params?: { page?: number; limit?: number; max_rating?: number }) =>
     api.get("/admin/reviews", withAdminAuth({ params })),
 
+  // ─── PAYOUTS / SETTLEMENT (P-lane) ──────────────────────────
+  // Outstanding balance per chef = total earned − SUM(paid payouts).
+  getPayoutBalances: () =>
+    api.get("/payouts/admin/balances", withAdminAuth()),
+  getPayouts: (params?: { page?: number; limit?: number }) =>
+    api.get("/payouts/admin", withAdminAuth({ params })),
+  createPayout: (data: {
+    cook_id: string;
+    amount: number;
+    method?: string;
+    reference?: string;
+    notes?: string;
+    mark_paid?: boolean;
+  }) => api.post("/payouts/admin", data, withAdminAuth()),
+  markPayoutPaid: (id: string, data: { method?: string; reference?: string }) =>
+    api.patch(`/payouts/admin/${id}/mark-paid`, data, withAdminAuth()),
+
   // ─── ROUND 4: PROMO CODE MANAGER ────────────────────────────
   // Backend mounts these under /promo-codes. `validate` is customer-facing
   // (regular coc_token auth); the rest are admin-only via @Roles.
