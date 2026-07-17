@@ -4,7 +4,7 @@ import type { Cook } from "@/types";
 import { getInitials, formatCurrency } from "@/lib/utils";
 import { ChefCardSkeleton } from "@/components/ui/Skeleton";
 import { BadgeCheck, AlertCircle, Star, ChevronDown, ChevronUp, Leaf, ExternalLink, Search, SlidersHorizontal, X, Award, Clock, MapPin, Heart } from "lucide-react";
-import api, { favoritesApi } from "@/lib/api";
+import api, { favoritesApi, subscriptionsApi } from "@/lib/api";
 import BookingModal from "@/components/modals/BookingModal";
 import type { BookingFormData } from "@/components/modals/BookingModal";
 import toast from "react-hot-toast";
@@ -309,6 +309,24 @@ export default function BookChefPanel() {
       if (!bookingId) {
         toast.error("Could not create booking. Please try again.");
         return;
+      }
+
+      // Phase C — if the customer chose "make it recurring", create a
+      // subscription using the exact booking payload as its template.
+      // Best-effort: the one-off booking already succeeded, so a failure
+      // here must not surface as a booking error.
+      if (formData.recurring) {
+        try {
+          await subscriptionsApi.create({
+            cook_id: formData.cookId,
+            cadence: formData.recurring.cadence,
+            days_of_week: formData.recurring.days_of_week,
+            time_slot: formData.recurring.time_slot,
+            price_per_session: totalPrice,
+            booking_template: payload,
+          });
+          toast.success("Subscription set up — future sessions will be booked automatically.");
+        } catch { /* booking already placed; subscription is optional */ }
       }
 
       setPendingBookingSummary({

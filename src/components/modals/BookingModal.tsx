@@ -64,6 +64,14 @@ export interface BookingFormData {
   // createBooking. Mirrors the mobile app booking sheet for web↔app parity.
   promoCode?: string;
   discount?: number;
+  // ─── Recurring / subscription (Phase C) ───────────
+  // When set, after the one-off booking is created we also create a
+  // subscription with the same payload as its template.
+  recurring?: {
+    cadence: "weekly" | "biweekly" | "monthly";
+    days_of_week: number[];
+    time_slot: string; // "HH:mm"
+  };
 }
 
 interface SelectedDish {
@@ -118,6 +126,11 @@ export default function BookingModal({
   const [guests, setGuests] = useState(guestOptions[0].label);
   const [notes, setNotes] = useState("");
   const [dishes, setDishes] = useState("");
+
+  // ─── Recurring / subscription (Phase C) ───────────────
+  const [makeRecurring, setMakeRecurring] = useState(false);
+  const [recurCadence, setRecurCadence] = useState<"weekly" | "biweekly" | "monthly">("weekly");
+  const [recurDays, setRecurDays] = useState<number[]>([]);
 
   // ─── Addresses ────────────────────────────────────────
   const [addresses, setAddresses] = useState<Address[]>([]);
@@ -406,6 +419,10 @@ if (isPackageMode && preselectedPackage) {
       dishes: isPackageMode
         ? (preselectedPackage?.dishSummary || "Package booking")
         : (selectedDishes.map((d) => d.name).join(", ") || dishes.trim()),
+      recurring:
+        makeRecurring && recurDays.length > 0
+          ? { cadence: recurCadence, days_of_week: recurDays, time_slot: time }
+          : undefined,
     };
 
     if (isPackageMode && preselectedPackage) {
@@ -866,6 +883,80 @@ if (isPackageMode && preselectedPackage) {
             <div className="text-[0.75rem] text-[var(--text-muted)] mb-4 leading-relaxed bg-[rgba(212,114,26,0.04)] rounded-[8px] p-3">
               <span className="font-semibold text-[var(--brown-800)]">Cancellation:</span>{" "}
               Free 24h+ before slot (100% refund). After that: 75% (8h+), 50% (4h+), 25% (2h+), 0% under 2h.
+            </div>
+
+            {/* Make it recurring (Phase C — subscriptions) */}
+            <div className="mb-4 rounded-[10px] border border-[rgba(212,114,26,0.14)] p-3">
+              <label className="flex items-center gap-2.5 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={makeRecurring}
+                  onChange={(e) => {
+                    const on = e.target.checked;
+                    setMakeRecurring(on);
+                    if (on && recurDays.length === 0) {
+                      const wd = new Date(`${date}T00:00:00`).getDay();
+                      setRecurDays([Number.isNaN(wd) ? 1 : wd]);
+                    }
+                  }}
+                  className="w-[18px] h-[18px] accent-[var(--orange-500)] cursor-pointer"
+                />
+                <span className="font-semibold text-[0.9rem] text-[var(--brown-800)]">
+                  Make it recurring
+                </span>
+                <span className="text-[0.72rem] text-[var(--text-muted)]">— auto-book this on a schedule</span>
+              </label>
+
+              {makeRecurring && (
+                <div className="mt-3 space-y-3">
+                  <div className="flex gap-2">
+                    {(["weekly", "biweekly", "monthly"] as const).map((c) => (
+                      <button
+                        key={c}
+                        type="button"
+                        onClick={() => setRecurCadence(c)}
+                        className={`flex-1 py-2 rounded-lg text-[0.8rem] font-semibold border cursor-pointer ${
+                          recurCadence === c
+                            ? "bg-[var(--orange-500)] text-white border-[var(--orange-500)]"
+                            : "bg-white text-[var(--text-muted)] border-[var(--cream-300)]"
+                        }`}
+                      >
+                        {c.charAt(0).toUpperCase() + c.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                  <div>
+                    <div className="text-[0.75rem] text-[var(--text-muted)] mb-1.5">Repeat on</div>
+                    <div className="flex gap-1.5">
+                      {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => {
+                        const on = recurDays.includes(i);
+                        return (
+                          <button
+                            key={i}
+                            type="button"
+                            onClick={() =>
+                              setRecurDays((prev) =>
+                                prev.includes(i) ? prev.filter((x) => x !== i) : [...prev, i]
+                              )
+                            }
+                            className={`w-8 h-8 rounded-full text-[0.8rem] font-semibold border cursor-pointer ${
+                              on
+                                ? "bg-[var(--orange-500)] text-white border-[var(--orange-500)]"
+                                : "bg-white text-[var(--text-muted)] border-[var(--cream-300)]"
+                            }`}
+                          >
+                            {d}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="text-[0.72rem] text-[var(--text-muted)]">
+                    Sessions will be booked at <span className="font-semibold text-[var(--brown-800)]">{time}</span>,
+                    starting from your first booking. Manage or cancel anytime under Subscriptions.
+                  </div>
+                </div>
+              )}
             </div>
 
             <button onClick={handleProceed}
