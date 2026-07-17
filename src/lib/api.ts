@@ -445,6 +445,29 @@ export const referralsApi = {
   apply: (code: string) => api.post("/referrals/apply", { code }),
 };
 
+// === Subscriptions API (recurring meal plans) — shared backend with app ===
+export const subscriptionsApi = {
+  mine: () => api.get("/subscriptions/me"),
+  create: (data: {
+    cook_id: string;
+    cadence: "weekly" | "biweekly" | "monthly";
+    days_of_week: number[];
+    time_slot: string; // "HH:mm"
+    meal_package_id?: string;
+    address_id?: string;
+    price_per_session?: number;
+    booking_template: Record<string, unknown>;
+    ends_at?: string;
+  }) => api.post("/subscriptions", data),
+  pause: (id: string) => api.patch(`/subscriptions/${id}/pause`),
+  resume: (id: string) => api.patch(`/subscriptions/${id}/resume`),
+  cancel: (id: string) => api.patch(`/subscriptions/${id}/cancel`),
+  // Chef view + admin
+  cookCommitments: () => api.get("/subscriptions/cook/me"),
+  adminList: (params?: { page?: number; limit?: number }) =>
+    api.get("/subscriptions/admin", withAdminAuth({ params })),
+};
+
 
 // === Notifications API ===
 export const notificationsApi = {

@@ -10,6 +10,7 @@ import {
   LifeBuoy,
   Gift,
   Heart,
+  Repeat,
 } from "lucide-react";
 import DashboardLayout, { type SidebarSection } from "@/components/layout/DashboardLayout";
 import { useUIStore } from "@/stores/uiStore";
@@ -24,6 +25,7 @@ import SettingsPanel from "@/components/dashboard/SettingsPanel";
 import HelpSupportPanel from "@/components/dashboard/HelpSupportPanel";
 import ReferralPanel from "@/components/dashboard/ReferralPanel";
 import SavedChefsPanel from "@/components/dashboard/SavedChefsPanel";
+import SubscriptionsPanel from "@/components/dashboard/SubscriptionsPanel";
 import CartDrawer from "@/components/dashboard/CartDrawer";
 import NotificationBell from "@/components/dashboard/NotificationBell";
 import BookingModal from "@/components/modals/BookingModal";
@@ -34,6 +36,7 @@ const titles: Record<string, string> = {
   "book-chef": "Book a Chef",
   "order-food": "Order Food",
   orders: "My Bookings",
+  subscriptions: "Subscriptions",
   profile: "My Profile",
   saved: "Saved Chefs",
   referrals: "Refer & Earn",
@@ -65,6 +68,7 @@ export default function CustomerDashboardPage() {
           badge: cartStore.totalItems(),
         },
         { id: "orders", label: "My Bookings", icon: <CalendarCheck className="w-5 h-5" /> },
+        { id: "subscriptions", label: "Subscriptions", icon: <Repeat className="w-5 h-5" /> },
         { id: "saved", label: "Saved Chefs", icon: <Heart className="w-5 h-5" /> },
       ],
     },
@@ -120,6 +124,7 @@ export default function CustomerDashboardPage() {
         {activePanel === "order-food" && <OrderFoodPanel />}
         {activePanel === "orders" && <OrdersPanel />}
         {activePanel === "profile" && <ProfilePanel />}
+        {activePanel === "subscriptions" && <SubscriptionsPanel />}
         {activePanel === "saved" && <SavedChefsPanel />}
         {activePanel === "referrals" && <ReferralPanel />}
         {activePanel === "settings" && <SettingsPanel />}
