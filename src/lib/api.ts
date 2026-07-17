@@ -686,6 +686,16 @@ export const adminApi = {
   markPayoutPaid: (id: string, data: { method?: string; reference?: string }) =>
     api.patch(`/payouts/admin/${id}/mark-paid`, data, withAdminAuth()),
 
+  // ─── REFERRALS (admin) ──────────────────────────────────────
+  referralsList: (params?: { page?: number; limit?: number }) =>
+    api.get("/referrals/admin", withAdminAuth({ params })),
+
+  // ─── WALLET (admin) ─────────────────────────────────────────
+  getUserWallet: (userId: string) =>
+    api.get(`/wallet/admin/${userId}`, withAdminAuth()),
+  adjustWallet: (userId: string, data: { amount: number; description?: string }) =>
+    api.post(`/wallet/admin/${userId}/adjust`, data, withAdminAuth()),
+
   // ─── ROUND 4: PROMO CODE MANAGER ────────────────────────────
   // Backend mounts these under /promo-codes. `validate` is customer-facing
   // (regular coc_token auth); the rest are admin-only via @Roles.
