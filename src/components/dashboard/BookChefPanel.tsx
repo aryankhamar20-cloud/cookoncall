@@ -3,8 +3,8 @@ import { useState, useEffect, useCallback } from "react";
 import type { Cook } from "@/types";
 import { getInitials, formatCurrency } from "@/lib/utils";
 import { ChefCardSkeleton } from "@/components/ui/Skeleton";
-import { BadgeCheck, AlertCircle, Star, ChevronDown, ChevronUp, Leaf, ExternalLink, Search, SlidersHorizontal, X, Award, Clock, MapPin } from "lucide-react";
-import api from "@/lib/api";
+import { BadgeCheck, AlertCircle, Star, ChevronDown, ChevronUp, Leaf, ExternalLink, Search, SlidersHorizontal, X, Award, Clock, MapPin, Heart } from "lucide-react";
+import api, { favoritesApi } from "@/lib/api";
 import BookingModal from "@/components/modals/BookingModal";
 import type { BookingFormData } from "@/components/modals/BookingModal";
 import toast from "react-hot-toast";
@@ -110,6 +110,49 @@ export default function BookChefPanel() {
   // P1.6 — area filter (defaults from customer's default address area_slug)
   const [areaFilter, setAreaFilter] = useState<string>("");
   const [areaList, setAreaList] = useState<{ slug: string; name: string; region: string }[]>([]);
+
+  // Favorites (saved chefs) — shared backend with the app.
+  const [favIds, setFavIds] = useState<Set<string>>(new Set());
+  const [togglingFav, setTogglingFav] = useState<string | null>(null);
+
+  // Hydrate favorited ids once on mount (silent if logged out).
+  useEffect(() => {
+    let cancelled = false;
+    favoritesApi
+      .ids()
+      .then((res: any) => {
+        if (cancelled) return;
+        const ids = (res?.data?.data ?? res?.data ?? []) as string[];
+        if (Array.isArray(ids)) setFavIds(new Set(ids.map(String)));
+      })
+      .catch(() => { /* logged out or none — fine */ });
+    return () => { cancelled = true; };
+  }, []);
+
+  const toggleFav = useCallback(async (cookId: string) => {
+    if (togglingFav) return;
+    setTogglingFav(cookId);
+    // Optimistic: flip immediately, roll back on error.
+    const wasFav = favIds.has(cookId);
+    setFavIds((prev) => {
+      const next = new Set(prev);
+      if (wasFav) next.delete(cookId); else next.add(cookId);
+      return next;
+    });
+    try {
+      await favoritesApi.toggle(cookId);
+    } catch (err: any) {
+      // Roll back
+      setFavIds((prev) => {
+        const next = new Set(prev);
+        if (wasFav) next.add(cookId); else next.delete(cookId);
+        return next;
+      });
+      toast.error(err?.response?.data?.message || "Couldn't update favourite. Please sign in.");
+    } finally {
+      setTogglingFav(null);
+    }
+  }, [favIds, togglingFav]);
 
   // Load areas list once
   useEffect(() => {
@@ -577,6 +620,19 @@ export default function BookChefPanel() {
                         <Award className="w-3 h-3" /> FSSAI
                       </span>
                     )}
+                    {/* Favourite heart */}
+                    <button
+                      onClick={() => toggleFav(chef.id)}
+                      disabled={togglingFav === chef.id}
+                      aria-label={favIds.has(chef.id) ? "Remove from saved chefs" : "Save chef"}
+                      className="absolute bottom-3 left-3 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center cursor-pointer border-none hover:bg-white transition-colors disabled:opacity-60"
+                    >
+                      <Heart
+                        className="w-4 h-4"
+                        fill={favIds.has(chef.id) ? "#a43700" : "none"}
+                        stroke={favIds.has(chef.id) ? "#a43700" : "#8B7355"}
+                      />
+                    </button>
                   </div>
                   <div className="p-5">
                     <div className="font-bold text-[1rem] mb-0.5">{name}</div>
