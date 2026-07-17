@@ -468,6 +468,14 @@ export const subscriptionsApi = {
     api.get("/subscriptions/admin", withAdminAuth({ params })),
 };
 
+// === Wallet API — shared backend with app ===
+export const walletApi = {
+  get: () =>
+    api.get<{ balance: number; transactions: any[] }>("/wallet"),
+  transactions: (limit?: number) =>
+    api.get("/wallet/transactions", { params: limit ? { limit } : {} }),
+};
+
 // === Disputes API (report an issue) — shared backend with app ===
 export const disputesApi = {
   raise: (data: { booking_id: string; reason: string; description: string }) =>

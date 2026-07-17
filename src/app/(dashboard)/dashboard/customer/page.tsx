@@ -11,6 +11,7 @@ import {
   Gift,
   Heart,
   Repeat,
+  Wallet,
 } from "lucide-react";
 import DashboardLayout, { type SidebarSection } from "@/components/layout/DashboardLayout";
 import { useUIStore } from "@/stores/uiStore";
@@ -24,6 +25,7 @@ import ProfilePanel from "@/components/dashboard/ProfilePanel";
 import SettingsPanel from "@/components/dashboard/SettingsPanel";
 import HelpSupportPanel from "@/components/dashboard/HelpSupportPanel";
 import ReferralPanel from "@/components/dashboard/ReferralPanel";
+import WalletPanel from "@/components/dashboard/WalletPanel";
 import SavedChefsPanel from "@/components/dashboard/SavedChefsPanel";
 import SubscriptionsPanel from "@/components/dashboard/SubscriptionsPanel";
 import CartDrawer from "@/components/dashboard/CartDrawer";
@@ -38,6 +40,7 @@ const titles: Record<string, string> = {
   orders: "My Bookings",
   subscriptions: "Subscriptions",
   profile: "My Profile",
+  wallet: "Wallet",
   saved: "Saved Chefs",
   referrals: "Refer & Earn",
   settings: "Settings",
@@ -76,6 +79,7 @@ export default function CustomerDashboardPage() {
       title: "Account",
       links: [
         { id: "profile", label: "My Profile", icon: <User className="w-5 h-5" /> },
+        { id: "wallet", label: "Wallet", icon: <Wallet className="w-5 h-5" /> },
         { id: "referrals", label: "Refer & Earn", icon: <Gift className="w-5 h-5" /> },
         { id: "settings", label: "Settings", icon: <SettingsIcon className="w-5 h-5" /> },
         { id: "help", label: "Help & Support", icon: <LifeBuoy className="w-5 h-5" /> },
@@ -124,6 +128,7 @@ export default function CustomerDashboardPage() {
         {activePanel === "order-food" && <OrderFoodPanel />}
         {activePanel === "orders" && <OrdersPanel />}
         {activePanel === "profile" && <ProfilePanel />}
+        {activePanel === "wallet" && <WalletPanel />}
         {activePanel === "subscriptions" && <SubscriptionsPanel />}
         {activePanel === "saved" && <SavedChefsPanel />}
         {activePanel === "referrals" && <ReferralPanel />}
