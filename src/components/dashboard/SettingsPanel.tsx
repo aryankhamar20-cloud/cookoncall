@@ -5,14 +5,17 @@ import { useUIStore } from "@/stores/uiStore";
 import { useAuthStore } from "@/stores/authStore";
 import { MapPin, Bell, User, ArrowRight, Lock } from "lucide-react";
 import NotificationSettingsPanel from "./NotificationSettingsPanel";
+import PrivacySecurityPanel from "./PrivacySecurityPanel";
 
 /**
  * Settings index — drives the customer "Settings" tab.
  *
  * Round 4: the Notifications row no longer shows a "SOON" tag — it
  * opens an inline sub-screen wired to /users/me/notification-preferences.
+ * Privacy & security likewise opens an inline sub-screen (change
+ * password + delete account).
  */
-type SettingsView = "index" | "notifications";
+type SettingsView = "index" | "notifications" | "privacy";
 
 export default function SettingsPanel() {
   const { setPanel } = useUIStore();
@@ -21,6 +24,10 @@ export default function SettingsPanel() {
 
   if (view === "notifications") {
     return <NotificationSettingsPanel onBack={() => setView("index")} />;
+  }
+
+  if (view === "privacy") {
+    return <PrivacySecurityPanel onBack={() => setView("index")} />;
   }
 
   const items = [
@@ -48,9 +55,9 @@ export default function SettingsPanel() {
     {
       icon: <Lock className="w-5 h-5" />,
       title: "Privacy & security",
-      desc: "Password, data, account deletion",
-      action: () => {},
-      available: false,
+      desc: "Password and account deletion",
+      action: () => setView("privacy"),
+      available: true,
     },
   ];
 

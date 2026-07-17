@@ -254,6 +254,12 @@ export const usersApi = {
     email_enabled?: boolean;
     sms_enabled?: boolean;
   }) => api.patch("/users/me/notification-preferences", data),
+
+  // ─── SELF-SERVICE ACCOUNT DELETION ─────────────────────────
+  // DELETE /users/me — soft-deletes + anonymises the account. Password
+  // accounts pass current_password; Google accounts pass confirm:true.
+  deleteAccount: (data: { current_password?: string; confirm?: boolean }) =>
+    api.delete("/users/me", { data }),
 };
 
 // === Cooks API ===
