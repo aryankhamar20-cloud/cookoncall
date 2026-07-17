@@ -423,6 +423,13 @@ export const paymentsApi = {
     razorpay_payment_id: string;
     razorpay_signature: string;
   }) => api.post("/payments/verify", data),
+
+  // Pay a booking entirely from wallet balance (no Razorpay). Backend
+  // POST /payments/wallet — debits the wallet and records a CAPTURED
+  // payment. Throws 400 if the balance is insufficient. Same endpoint
+  // the Flutter app uses.
+  payFromWallet: (data: { booking_id: string }) =>
+    api.post("/payments/wallet", data),
 };
 
 // === Reviews API ===

@@ -1,13 +1,19 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Modal from "@/components/ui/Modal";
 import { formatCurrency, cn } from "@/lib/utils";
 import type { PaymentMethod } from "@/types";
 import toast from "react-hot-toast";
-import { Smartphone, CreditCard, ShieldCheck, Loader2 } from "lucide-react";
+import {
+  Smartphone,
+  CreditCard,
+  ShieldCheck,
+  Loader2,
+  Wallet,
+} from "lucide-react";
 import { useAuthStore } from "@/stores/authStore";
-import api from "@/lib/api";
+import api, { paymentsApi, walletApi } from "@/lib/api";
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -79,9 +85,58 @@ export default function PaymentModal({
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>("upi");
   const [processing, setProcessing] = useState(false);
   const [status, setStatus] = useState<string>("");
+  const [walletBalance, setWalletBalance] = useState<number | null>(null);
+  const [payingWallet, setPayingWallet] = useState(false);
   const { user } = useAuthStore();
 
   const total = amount;
+  const canPayWithWallet =
+    walletBalance !== null && walletBalance >= total && total > 0;
+
+  // Fetch the wallet balance when the modal opens so we can offer a
+  // one-tap "Pay from wallet" when it covers the full total. Soft-fails:
+  // if the wallet call errors we just hide the option and fall back to
+  // the Razorpay flow.
+  useEffect(() => {
+    if (!isOpen) return;
+    let active = true;
+    setWalletBalance(null);
+    (async () => {
+      try {
+        const res = await walletApi.get();
+        const body = (res.data as any)?.data ?? res.data;
+        if (active) setWalletBalance(Number(body?.balance ?? 0));
+      } catch {
+        if (active) setWalletBalance(0);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [isOpen]);
+
+  async function handleWalletPay() {
+    if (!bookingId) {
+      toast.error("Booking ID missing. Please try again.");
+      return;
+    }
+    setPayingWallet(true);
+    setStatus("Paying from wallet...");
+    try {
+      await paymentsApi.payFromWallet({ booking_id: bookingId });
+      toast.success("Paid from wallet! Booking confirmed.");
+      onPaymentSuccess("wallet");
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message ||
+          err?.message ||
+          "Wallet payment failed. Please try again.",
+      );
+    } finally {
+      setPayingWallet(false);
+      setStatus("");
+    }
+  }
 
   async function handlePay() {
     setProcessing(true);
@@ -210,7 +265,7 @@ export default function PaymentModal({
   return (
     <Modal
       isOpen={isOpen}
-      onClose={processing ? undefined : onClose}
+      onClose={processing || payingWallet ? undefined : onClose}
       title="Payment"
       maxWidth="max-w-[440px]"
     >
@@ -234,6 +289,40 @@ export default function PaymentModal({
           </span>
         </div>
       </div>
+
+      {/* Pay from wallet — only when the balance covers the full total */}
+      {canPayWithWallet && (
+        <>
+          <button
+            onClick={handleWalletPay}
+            disabled={processing || payingWallet}
+            className="w-full py-3.5 rounded-[12px] border-[1.5px] border-[var(--orange-500)] bg-[rgba(212,114,26,0.04)] text-[var(--brown-800)] font-semibold text-[0.92rem] cursor-pointer transition-all hover:bg-[rgba(212,114,26,0.08)] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 mb-4"
+            style={{ fontFamily: "var(--font-body)" }}
+          >
+            {payingWallet ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" />
+                {status || "Processing..."}
+              </>
+            ) : (
+              <>
+                <Wallet className="w-4 h-4 text-[var(--orange-500)]" />
+                Pay {formatCurrency(total)} from wallet
+                <span className="text-[0.75rem] text-[var(--text-muted)] font-normal">
+                  (Bal: {formatCurrency(walletBalance ?? 0)})
+                </span>
+              </>
+            )}
+          </button>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="flex-1 h-px bg-[var(--cream-300)]" />
+            <span className="text-[0.72rem] text-[var(--text-muted)]">
+              or pay online
+            </span>
+            <div className="flex-1 h-px bg-[var(--cream-300)]" />
+          </div>
+        </>
+      )}
 
       {/* Method selection */}
       <div className="font-semibold text-[0.9rem] mb-2">
@@ -274,7 +363,7 @@ export default function PaymentModal({
       {/* Pay button */}
       <button
         onClick={handlePay}
-        disabled={processing}
+        disabled={processing || payingWallet}
         className="w-full py-4 border-none rounded-[12px] bg-[var(--orange-500)] text-white font-bold text-base cursor-pointer transition-all hover:bg-[var(--orange-400)] disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         style={{ fontFamily: "var(--font-body)" }}
       >
