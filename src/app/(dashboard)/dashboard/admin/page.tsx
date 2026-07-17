@@ -17,6 +17,7 @@ import {
   KeyRound,
   Activity,
   Star,
+  Repeat,
 } from "lucide-react";
 import AuditLogPanel from "@/components/dashboard/AuditLogPanel";
 import AnalyticsPanel from "@/components/dashboard/AnalyticsPanel";
@@ -24,11 +25,13 @@ import BroadcastPanel from "@/components/dashboard/BroadcastPanel";
 import PromosPanel from "@/components/dashboard/PromosPanel";
 import ReviewsPanel from "@/components/dashboard/ReviewsPanel";
 import PayoutsPanel from "@/components/dashboard/PayoutsPanel";
+import AdminSubscriptionsPanel from "@/components/dashboard/AdminSubscriptionsPanel";
+import AdminDisputesPanel from "@/components/dashboard/AdminDisputesPanel";
 import AdminAccountPanel from "@/components/dashboard/AdminAccountPanel";
 
 /* ═══ TYPES ═══ */
 
-type AdminPanel = "overview" | "users" | "cooks" | "bookings" | "areas" | "audit" | "analytics" | "broadcast" | "promos" | "reviews" | "payouts" | "account";
+type AdminPanel = "overview" | "users" | "cooks" | "bookings" | "areas" | "audit" | "analytics" | "broadcast" | "promos" | "reviews" | "payouts" | "subscriptions" | "disputes" | "account";
 type CookFilter = "all" | "verified" | "pending_review" | "unverified";
 
 interface AdminStatsData {
@@ -85,6 +88,8 @@ const sidebarLinks: { id: AdminPanel; label: string; icon: React.ReactNode }[] =
   { id: "promos", label: "Promos", icon: <Ticket className="w-5 h-5" /> },
   { id: "reviews", label: "Reviews", icon: <Star className="w-5 h-5" /> },
   { id: "payouts", label: "Payouts", icon: <Landmark className="w-5 h-5" /> },
+  { id: "subscriptions", label: "Subscriptions", icon: <Repeat className="w-5 h-5" /> },
+  { id: "disputes", label: "Disputes", icon: <ShieldX className="w-5 h-5" /> },
   { id: "broadcast", label: "Broadcast", icon: <Bell className="w-5 h-5" /> },
   { id: "audit", label: "Audit Log", icon: <ScrollText className="w-5 h-5" /> },
   { id: "account", label: "Account", icon: <KeyRound className="w-5 h-5" /> },
@@ -1483,6 +1488,10 @@ export default function AdminDashboardPage() {
           {activePanel === "reviews" && <ReviewsPanel />}
 
           {activePanel === "payouts" && <PayoutsPanel />}
+
+          {activePanel === "subscriptions" && <AdminSubscriptionsPanel />}
+
+          {activePanel === "disputes" && <AdminDisputesPanel />}
 
           {/* Admin → Account (change password) — uses POST /auth/change-password
               (added in cookoncall-backend PR #28). Calls the API with the

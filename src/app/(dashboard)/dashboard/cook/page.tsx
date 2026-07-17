@@ -169,7 +169,7 @@ export default function CookDashboardPage() {
   const [showMenuForm, setShowMenuForm] = useState(false);
   const [editingItem, setEditingItem] = useState<any>(null);
   const [menuSaving, setMenuSaving] = useState(false);
-  const [menuForm, setMenuForm] = useState({ name: "", price: "", type: "veg", category: "main_course", description: "", image: "" });
+  const [menuForm, setMenuForm] = useState({ name: "", price: "", type: "veg", category: "main_course", description: "", image: "", dietary_tags: [] as string[], allergens: [] as string[] });
   const [menuImageUploading, setMenuImageUploading] = useState(false);
   const menuImageRef = useRef<HTMLInputElement>(null);
 
@@ -621,12 +621,12 @@ export default function CookDashboardPage() {
   // ─── MENU CRUD ─────────────────────────────────────────
   function openAddMenu() {
     setEditingItem(null);
-    setMenuForm({ name: "", price: "", type: "veg", category: "main_course", description: "", image: "" });
+    setMenuForm({ name: "", price: "", type: "veg", category: "main_course", description: "", image: "", dietary_tags: [], allergens: [] });
     setShowMenuForm(true);
   }
   function openEditMenu(item: any) {
     setEditingItem(item);
-    setMenuForm({ name: item.name || "", price: String(item.price || ""), type: item.type || "veg", category: item.category || "main_course", description: item.description || "", image: item.image || "" });
+    setMenuForm({ name: item.name || "", price: String(item.price || ""), type: item.type || "veg", category: item.category || "main_course", description: item.description || "", image: item.image || "", dietary_tags: item.dietary_tags || [], allergens: item.allergens || [] });
     setShowMenuForm(true);
   }
   async function handleSaveMenuItem() {
@@ -634,7 +634,7 @@ export default function CookDashboardPage() {
     if (!menuForm.price || Number(menuForm.price) < 1) { toast.error("Price must be at least ₹1."); return; }
     try {
       setMenuSaving(true);
-      const payload: any = { name: menuForm.name.trim(), price: Number(menuForm.price), type: menuForm.type, category: menuForm.category, description: menuForm.description.trim() || undefined };
+      const payload: any = { name: menuForm.name.trim(), price: Number(menuForm.price), type: menuForm.type, category: menuForm.category, description: menuForm.description.trim() || undefined, dietary_tags: menuForm.dietary_tags, allergens: menuForm.allergens };
       if (menuForm.image) payload.image = menuForm.image;
       if (editingItem) { await api.patch(`/cooks/me/menu/${editingItem.id}`, payload); toast.success("Menu item updated!"); }
       else { await api.post("/cooks/me/menu", payload); toast.success("Menu item added!"); }
@@ -1031,6 +1031,46 @@ export default function CookDashboardPage() {
                 </div>
                 <div><label className={labelClass}>Category</label><select value={menuForm.category} onChange={(e) => setMenuForm((f) => ({ ...f, category: e.target.value }))} className={inputClass}>{DISH_CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}</select></div>
                 <div className="sm:col-span-2"><label className={labelClass}>Description (optional)</label><textarea value={menuForm.description} onChange={(e) => setMenuForm((f) => ({ ...f, description: e.target.value }))} placeholder="A brief description..." rows={2} className={cn(inputClass, "resize-none")} /></div>
+
+                {/* Dietary tags */}
+                <div className="sm:col-span-2">
+                  <label className={labelClass}>Dietary (optional)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { v: "vegan", l: "Vegan" }, { v: "jain", l: "Jain" }, { v: "halal", l: "Halal" },
+                      { v: "no_onion_garlic", l: "No onion/garlic" }, { v: "gluten_free", l: "Gluten-free" },
+                    ].map((t) => {
+                      const on = menuForm.dietary_tags.includes(t.v);
+                      return (
+                        <button key={t.v} type="button"
+                          onClick={() => setMenuForm((f) => ({ ...f, dietary_tags: on ? f.dietary_tags.filter((x) => x !== t.v) : [...f.dietary_tags, t.v] }))}
+                          className={cn("px-3 py-1.5 rounded-full border-[1.5px] text-[0.8rem] font-medium cursor-pointer", on ? "border-green-600 bg-green-50 text-green-700" : "border-[var(--cream-300)] bg-white text-[var(--text-muted)] hover:border-green-500")}>
+                          {t.l}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Allergens */}
+                <div className="sm:col-span-2">
+                  <label className={labelClass}>Contains allergens (optional)</label>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { v: "nuts", l: "Nuts" }, { v: "dairy", l: "Dairy" }, { v: "gluten", l: "Gluten" },
+                      { v: "egg", l: "Egg" }, { v: "soy", l: "Soy" }, { v: "shellfish", l: "Shellfish" },
+                    ].map((a) => {
+                      const on = menuForm.allergens.includes(a.v);
+                      return (
+                        <button key={a.v} type="button"
+                          onClick={() => setMenuForm((f) => ({ ...f, allergens: on ? f.allergens.filter((x) => x !== a.v) : [...f.allergens, a.v] }))}
+                          className={cn("px-3 py-1.5 rounded-full border-[1.5px] text-[0.8rem] font-medium cursor-pointer", on ? "border-amber-600 bg-amber-50 text-amber-700" : "border-[var(--cream-300)] bg-white text-[var(--text-muted)] hover:border-amber-500")}>
+                          {a.l}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
 
                 {/* Dish photo upload */}
                 <div className="sm:col-span-2">

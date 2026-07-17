@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { cn } from "@/lib/utils";
-import api, { bookingsApi, reviewsApi } from "@/lib/api";
+import api, { bookingsApi, reviewsApi, disputesApi } from "@/lib/api";
 import { OrderRowSkeleton } from "@/components/ui/Skeleton";
 import ReviewModal from "@/components/modals/ReviewModal";
 import PaymentModal from "@/components/modals/PaymentModal";
@@ -196,6 +196,11 @@ export default function OrdersPanel() {
   // Round 2: per-booking flag for the receipt download button.
   const [downloadingReceiptId, setDownloadingReceiptId] = useState<string | null>(null);
   const [emailingReceiptId, setEmailingReceiptId] = useState<string | null>(null);
+  // Report-an-issue (disputes)
+  const [reportModal, setReportModal] = useState<{ open: boolean; bookingId: string }>({ open: false, bookingId: "" });
+  const [reportReason, setReportReason] = useState("quality");
+  const [reportDesc, setReportDesc] = useState("");
+  const [reporting, setReporting] = useState(false);
 
   // Apr 21 NEW FLOW — rebook modal state.
   // When chef rejects, customer can book another chef with same date/time/address/guests.
@@ -404,6 +409,30 @@ export default function OrdersPanel() {
       toast.error(msg);
     } finally {
       setEmailingReceiptId(null);
+    }
+  }
+
+  // ─── Report an issue (dispute) ────────────────────────
+  async function submitReport() {
+    if (!reportDesc.trim() || reportDesc.trim().length < 5) {
+      toast.error("Please describe the issue (at least 5 characters).");
+      return;
+    }
+    setReporting(true);
+    try {
+      await disputesApi.raise({
+        booking_id: reportModal.bookingId,
+        reason: reportReason,
+        description: reportDesc.trim(),
+      });
+      toast.success("Issue reported. Our team will review it.");
+      setReportModal({ open: false, bookingId: "" });
+      setReportDesc("");
+      setReportReason("quality");
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Couldn't submit your report. Try again.");
+    } finally {
+      setReporting(false);
     }
   }
 
@@ -723,6 +752,17 @@ export default function OrdersPanel() {
                         )}
                       </button>
                     )}
+
+                    {/* Report an issue — completed or cancelled bookings */}
+                    {(status === "completed" || String(status).startsWith("cancelled")) && (
+                      <button
+                        onClick={() => setReportModal({ open: true, bookingId: b.id })}
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.82rem] font-semibold text-[var(--brown-800)] bg-[rgba(0,0,0,0.03)] border border-[rgba(0,0,0,0.08)] cursor-pointer transition-all hover:bg-[rgba(0,0,0,0.06)]"
+                        style={{ fontFamily: "var(--font-body)" }}>
+                        <AlertCircle className="w-3.5 h-3.5" />
+                        Report an issue
+                      </button>
+                    )}
                     {canEditReview && (
                       <>
                         <span className="flex items-center gap-1 text-[0.78rem] text-emerald-600 font-medium">
@@ -810,6 +850,38 @@ export default function OrdersPanel() {
             fetchBookings();
           }}
         />
+      )}
+
+      {/* Report an issue modal (disputes) */}
+      {reportModal.open && (
+        <div className="fixed inset-0 z-[200] bg-black/50 flex items-center justify-center p-4" onClick={() => !reporting && setReportModal({ open: false, bookingId: "" })}>
+          <div className="bg-white rounded-[16px] w-full max-w-md p-5" onClick={(e) => e.stopPropagation()}>
+            <div className="font-display text-[1.15rem] font-[900] text-[var(--brown-800)] mb-1">Report an issue</div>
+            <p className="text-[0.82rem] text-[var(--text-muted)] mb-4">Tell us what went wrong and our team will review it.</p>
+            <label className="block text-[0.82rem] font-semibold mb-1.5">Category</label>
+            <select value={reportReason} onChange={(e) => setReportReason(e.target.value)}
+              className="w-full mb-3 px-3 py-2.5 border-[1.5px] border-[var(--cream-300)] rounded-[10px] text-[0.9rem] bg-white outline-none focus:border-[var(--orange-500)]">
+              <option value="quality">Food quality</option>
+              <option value="no_show">Chef didn&apos;t show up</option>
+              <option value="payment">Payment / billing</option>
+              <option value="behaviour">Behaviour / conduct</option>
+              <option value="other">Other</option>
+            </select>
+            <label className="block text-[0.82rem] font-semibold mb-1.5">What happened?</label>
+            <textarea value={reportDesc} onChange={(e) => setReportDesc(e.target.value)} rows={4} placeholder="Describe the issue…"
+              className="w-full mb-4 px-3 py-2.5 border-[1.5px] border-[var(--cream-300)] rounded-[10px] text-[0.9rem] bg-white outline-none focus:border-[var(--orange-500)] resize-none placeholder:text-[#B0A090]" />
+            <div className="flex gap-2 justify-end">
+              <button onClick={() => setReportModal({ open: false, bookingId: "" })} disabled={reporting}
+                className="px-4 py-2 rounded-[10px] text-[0.85rem] font-semibold text-[var(--text-muted)] bg-[rgba(0,0,0,0.04)] border-none cursor-pointer disabled:opacity-60">
+                Cancel
+              </button>
+              <button onClick={submitReport} disabled={reporting}
+                className="px-4 py-2 rounded-[10px] text-[0.85rem] font-semibold text-white bg-[var(--orange-500)] border-none cursor-pointer hover:opacity-95 disabled:opacity-60 flex items-center gap-1.5">
+                {reporting && <Loader2 className="w-3.5 h-3.5 animate-spin" />} Submit report
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

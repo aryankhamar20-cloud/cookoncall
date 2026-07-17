@@ -468,6 +468,19 @@ export const subscriptionsApi = {
     api.get("/subscriptions/admin", withAdminAuth({ params })),
 };
 
+// === Disputes API (report an issue) — shared backend with app ===
+export const disputesApi = {
+  raise: (data: { booking_id: string; reason: string; description: string }) =>
+    api.post("/disputes", data),
+  mine: () => api.get("/disputes/me"),
+  adminList: (params?: { status?: string; page?: number; limit?: number }) =>
+    api.get("/disputes/admin", withAdminAuth({ params })),
+  resolve: (
+    id: string,
+    data: { status: string; resolution_note?: string; refund_amount?: number },
+  ) => api.patch(`/disputes/admin/${id}/resolve`, data, withAdminAuth()),
+};
+
 
 // === Notifications API ===
 export const notificationsApi = {

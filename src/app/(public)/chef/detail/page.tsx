@@ -343,6 +343,20 @@ function ChefDetailContent() {
                               {item.description && (
                                 <div className="text-[0.78rem] text-[var(--text-muted)] mt-0.5 line-clamp-1">{item.description}</div>
                               )}
+                              {Array.isArray(item.dietary_tags) && item.dietary_tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {item.dietary_tags.map((t: string) => (
+                                    <span key={t} className="text-[0.64rem] font-semibold px-1.5 py-0.5 rounded-full bg-green-50 text-green-700 capitalize">
+                                      {t.replace(/_/g, " ")}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                              {Array.isArray(item.allergens) && item.allergens.length > 0 && (
+                                <div className="text-[0.66rem] text-amber-700 mt-1 capitalize">
+                                  Contains: {item.allergens.map((a: string) => a.replace(/_/g, " ")).join(", ")}
+                                </div>
+                              )}
                             </div>
                           </div>
                           <div className="font-bold text-[0.92rem] text-[var(--orange-500)] shrink-0 ml-4">
