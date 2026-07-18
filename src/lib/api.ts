@@ -391,9 +391,6 @@ export const bookingsApi = {
 
   cancel: (id: string, reason?: string) =>
     api.patch(`/bookings/${id}/status`, { status: 'cancelled_by_user', cancellation_reason: reason }),
-  start: (id: string) => api.patch(`/bookings/${id}/start`),
-  complete: (id: string) => api.patch(`/bookings/${id}/complete`),
-
   // --- COOKING SESSION OTP ---------------------------
   sendStartOtp: (id: string) => api.post(`/bookings/${id}/start-otp`),
   verifyStartOtp: (id: string, otp: string) =>
