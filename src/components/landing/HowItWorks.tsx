@@ -36,7 +36,7 @@ const steps = [
   {
     number: 4,
     title: "Enjoy Fresh Meals",
-    desc: "Your chef arrives andcooks fresh in your kitchen, with ingredients you've kept ready. Just sit back and enjoy!",
+    desc: "Your chef arrives and cooks fresh in your kitchen, with ingredients you've kept ready. Just sit back and enjoy!",
     icon: (
       <svg className="w-12 h-12 mx-auto mb-4" viewBox="0 0 48 48" fill="none">
         <ellipse cx="24" cy="36" rx="16" ry="3" fill="rgba(212,114,26,0.15)" />

@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Book a Home Chef in Ahmedabad | CookOnCall",
+  // The root layout applies template "%s | CookOnCall", so this must NOT
+  // repeat the brand — otherwise the tag renders as
+  // "... | CookOnCall | CookOnCall" and wastes ~14 chars of the ~60 Google shows.
+  title: "Book a Home Chef in Ahmedabad",
   description:
     "Ahmedabad's first home chef booking platform. Restaurant-quality meals cooked in your kitchen. Starting at ₹49. Book a verified chef in minutes.",
   alternates: { canonical: "https://thecookoncall.com" },
