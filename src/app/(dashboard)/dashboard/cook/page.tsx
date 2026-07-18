@@ -1869,7 +1869,7 @@ function BankDetailsPanel() {
         <div className="grid gap-4">
           <div>
             <label className={labelCls}>Account Holder Name</label>
-            <input className={inputCls} placeholder="e.g. Aryan Khamar"
+            <input className={inputCls} placeholder="Name exactly as on your bank passbook"
               value={form.account_holder_name}
               onChange={(e) => setForm((f) => ({ ...f, account_holder_name: e.target.value }))} />
           </div>
@@ -1913,7 +1913,7 @@ function BankDetailsPanel() {
         <h3 className="font-bold text-[0.95rem] text-[var(--brown-800)] mb-4">UPI ID</h3>
         <div>
           <label className={labelCls}>UPI ID</label>
-          <input className={inputCls} placeholder="e.g. aryan@upi or 9081444326@upi"
+          <input className={inputCls} placeholder="e.g. yourname@okhdfcbank or 9876543210@ybl"
             value={form.upi_id}
             onChange={(e) => setForm((f) => ({ ...f, upi_id: e.target.value }))} />
         </div>
