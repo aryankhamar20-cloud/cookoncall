@@ -43,11 +43,13 @@ async function getChef(slug: string): Promise<Cook | null> {
 
 export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
   const chef = await getChef(params.slug);
-  if (!chef) return { title: "Chef Not Found | CookOnCall" };
+  if (!chef) return { title: "Chef Not Found" };
   const name = chef.user?.name ?? "Home Chef";
   const cuisines = (chef.cuisines ?? []).join(", ");
   const reviews = chef.total_reviews ?? chef.totalReviews ?? 0;
-  const title = name + " - Home Chef in Ahmedabad | CookOnCall";
+  // Root layout applies template "%s | CookOnCall" — do NOT repeat the
+  // brand here or the tag renders "... | CookOnCall | CookOnCall".
+  const title = name + " - Home Chef in Ahmedabad";
   const description = chef.bio ?? "Book " + name + ", a verified home chef in Ahmedabad. Starting at ₹600/session.";
   const canonical = "https://thecookoncall.com/chef/" + params.slug;
   const ogImage = chef.user?.profile_photo ?? "/og-default.png";
