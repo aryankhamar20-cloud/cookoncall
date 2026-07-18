@@ -16,6 +16,7 @@ import StatsBar from "@/components/landing/StatsBar";
 import HowItWorks from "@/components/landing/HowItWorks";
 import ForChefs from "@/components/landing/ForChefs";
 import FounderSection from "@/components/landing/FounderSection";
+import FaqSection from "@/components/landing/FaqSection";
 import CTASection from "@/components/landing/CTASection";
 
 export default function HomePage() {
@@ -28,6 +29,7 @@ export default function HomePage() {
         <HowItWorks />
         <ForChefs />
         <FounderSection />
+        <FaqSection />
         <CTASection />
       </main>
       <Footer />
