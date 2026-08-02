@@ -1,0 +1,37 @@
+name: Web CI
+
+# `next build` performs the full type-check, so a passing build means the
+# production bundle compiles and types are sound. Cloudflare Pages deploys
+# from main, so this gate is what stands between a bad commit and prod.
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Vitest + Testing Library. Runs before build so a logic failure
+      # surfaces faster than a full static export.
+      - name: Run tests
+        run: npm test
+
+      # `output: 'export'` — this produces the static bundle that ships.
+      - name: Build (static export + type-check)
+        run: npm run build

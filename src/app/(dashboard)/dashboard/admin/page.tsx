@@ -68,6 +68,7 @@ interface AdminCook {
   bank_account_holder?: string | null;
   city?: string | null;
   pincode?: string | null;
+  home_area_slug?: string | null;
   user: { id: string; name: string; email: string; phone: string; role: string; is_active: boolean; created_at: string };
 }
 
@@ -353,6 +354,7 @@ function ReviewChefModal({
             <div className="grid grid-cols-2 gap-3 bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-[12px] p-4">
               <InfoRow icon={<Phone className="w-3.5 h-3.5" />} label="Phone" value={cook.user?.phone || "—"} />
               <InfoRow icon={<MapPin className="w-3.5 h-3.5" />} label="City" value={cook.city ? `${cook.city}${cook.pincode ? ` · ${cook.pincode}` : ""}` : "—"} />
+              <InfoRow icon={<MapPin className="w-3.5 h-3.5" />} label="Home Area" value={formatAreaSlug(cook.home_area_slug)} />
               {/* Batch B2: "Price / session" row removed. Flat ₹49 visit fee model — no per-chef rate. */}
               <InfoRow label="Cuisines" value={(cook.cuisines || []).join(", ") || "—"} />
             </div>
@@ -522,6 +524,20 @@ function maskAccount(acc: string) {
   const s = String(acc || "");
   if (s.length <= 4) return s;
   return "••••" + s.slice(-4);
+}
+
+// Seeded service-area slugs -> display name (see cookoncall-backend
+// migrations/legacy/2026-04-27_p16_service_areas.sql). Only the two
+// initialism areas need an override; everything else title-cases cleanly.
+const AREA_LABEL_OVERRIDES: Record<string, string> = {
+  "sg-highway": "SG Highway",
+  "cg-road": "C.G. Road",
+};
+
+function formatAreaSlug(slug?: string | null) {
+  if (!slug) return "—";
+  if (AREA_LABEL_OVERRIDES[slug]) return AREA_LABEL_OVERRIDES[slug];
+  return slug.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 }
 
 /* ═══ MAIN COMPONENT ═══ */
@@ -1271,13 +1287,14 @@ export default function AdminDashboardPage() {
               </div>
               <div className="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-[14px] overflow-x-auto">
                 <table className="w-full text-left text-[0.85rem]">
-                  <thead><tr className="border-b border-[rgba(255,255,255,0.06)]">{["Chef Name","Email","Cuisines","Rating","Bookings","Verification","Actions"].map(h=><th key={h} className="px-4 py-3 text-[0.75rem] text-[rgba(255,255,255,0.3)] uppercase tracking-wider font-semibold">{h}</th>)}</tr></thead>
+                  <thead><tr className="border-b border-[rgba(255,255,255,0.06)]">{["Chef Name","Email","Area","Cuisines","Rating","Bookings","Verification","Actions"].map(h=><th key={h} className="px-4 py-3 text-[0.75rem] text-[rgba(255,255,255,0.3)] uppercase tracking-wider font-semibold">{h}</th>)}</tr></thead>
                   <tbody>
-                    {cooks.length===0 ? <tr><td colSpan={7} className="px-4 py-8 text-center text-[rgba(255,255,255,0.3)]">No cooks found</td></tr> :
+                    {cooks.length===0 ? <tr><td colSpan={8} className="px-4 py-8 text-center text-[rgba(255,255,255,0.3)]">No cooks found</td></tr> :
                     cooks.map(c=>(
                       <tr key={c.id} className="border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)]">
                         <td className="px-4 py-3 text-white font-medium">{c.user?.name||"—"}</td>
                         <td className="px-4 py-3 text-[rgba(255,255,255,0.5)]">{c.user?.email||"—"}</td>
+                        <td className="px-4 py-3 text-[rgba(255,255,255,0.5)]">{formatAreaSlug(c.home_area_slug)}</td>
                         <td className="px-4 py-3"><div className="flex flex-wrap gap-1">{(c.cuisines||[]).map(cu=><span key={cu} className="px-2 py-0.5 bg-[rgba(255,255,255,0.06)] rounded text-[0.72rem] text-[rgba(255,255,255,0.5)]">{cu}</span>)}</div></td>
                         {/* Batch B2: "Rate" column removed from admin cooks table. */}
                         <td className="px-4 py-3 text-[rgba(255,255,255,0.5)]">{parseFloat(c.rating).toFixed(1)}</td>

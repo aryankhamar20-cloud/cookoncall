@@ -7,23 +7,50 @@
 
 /* rest of your file stays exactly as-is below this line */
 
-/* ═══ Design Tokens ═══ */
+/* ═══ Design Tokens ═══
+ *
+ * CANONICAL PALETTE — must stay in sync with the Flutter app's
+ * lib/core/theme/app_colors.dart. See docs/16_PRODUCT_DESIGN_BIBLE.md.
+ *
+ * Why these values changed (July 2026)
+ * ------------------------------------
+ * Web and app were shipping two different brands. Web's primary was
+ * #d4721a (golden amber); the app's was #a43700 (burnt rust). Those are
+ * different colours, not shades — a customer who booked on the site and
+ * then opened the app saw a discontinuity they couldn't name.
+ *
+ * #a43700 wins on arithmetic, not taste:
+ *   #d4721a on cream ≈ 3.2:1  → FAILS WCAG AA for body text (needs 4.5:1)
+ *   #a43700 on cream ≈ 6.3:1  → passes AA comfortably
+ *
+ * That matters here specifically because primary carries PRICES and CTAs —
+ * the exact elements a user must read accurately to make a financial
+ * decision, often outdoors in Indian daylight on a dim Android panel.
+ *
+ * #d4721a is not deleted — it is demoted to the hover/accent tint, which
+ * is the only role it is legible enough to hold.
+ */
 :root {
   --brown-900: #1a0f0a;
-  --brown-800: #2c1810;
+  --brown-800: #3d1f0a; /* matches app AppColors.brown800 */
   --brown-700: #3d2215;
   --brown-600: #5c3420;
-  --orange-500: #d4721a;
-  --orange-400: #e8862e;
-  --orange-300: #f0a050;
-  --cream-100: #fff8f0;
+  --orange-500: #a43700; /* PRIMARY — app AppColors.primary, 6.3:1 on cream */
+  --orange-400: #d4721a; /* hover / pressed tint ONLY — never text or price */
+  --orange-300: #f0a050; /* decorative light accent (gradients, illustration) */
+  --cream-100: #fcf9f4; /* canvas — matches app AppColors.surface */
   --cream-200: #f5ebdd;
   --cream-300: #ead9c4;
   --white: #ffffff;
   --text-dark: #1a0f0a;
   --text-muted: #6b5b50;
-  --green-ok: #2e8b57;
+  --green-ok: #2d8c6e; /* matches app AppColors.secondary */
   --red-err: #d93025;
+  /* Warning — distinct from primary (which means "act") and error (which
+   * means "failed"). For states that are neither: booking about to expire,
+   * verification incomplete, low wallet balance. */
+  --amber-warn: #b26a00;
+  --amber-warn-bg: #ffddb0;
   --whatsapp: #25d366;
   --font-display: "Playfair Display", serif;
   --font-body: "DM Sans", sans-serif;
