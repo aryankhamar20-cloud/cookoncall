@@ -20,6 +20,7 @@ import {
   Repeat,
   Gift,
   Wallet,
+  Crown,
 } from "lucide-react";
 import AuditLogPanel from "@/components/dashboard/AuditLogPanel";
 import AnalyticsPanel from "@/components/dashboard/AnalyticsPanel";
@@ -69,6 +70,9 @@ interface AdminCook {
   city?: string | null;
   pincode?: string | null;
   home_area_slug?: string | null;
+  // Phase 2 — founding cooks recognition program
+  is_founding_cook?: boolean;
+  founding_cook_number?: number | null;
   user: { id: string; name: string; email: string; phone: string; role: string; is_active: boolean; created_at: string };
 }
 
@@ -337,6 +341,11 @@ function ReviewChefModal({
             {verificationStatusBadge(cook.verification_status)}
             {cook.verified_at && (
               <span className="text-[0.74rem] text-[rgba(255,255,255,0.35)]">verified {new Date(cook.verified_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
+            )}
+            {cook.is_founding_cook && (
+              <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-500/15 text-amber-400 rounded text-[0.74rem] font-semibold">
+                <Crown className="w-3.5 h-3.5" />Founding Chef #{cook.founding_cook_number ?? "?"}
+              </span>
             )}
           </div>
 
@@ -873,6 +882,14 @@ export default function AdminDashboardPage() {
     finally { setActionLoading(null); }
   }
 
+  // Phase 2 — founding cooks recognition program toggle.
+  async function handleToggleFoundingCook(cookId: string, isFounding: boolean) {
+    setActionLoading(cookId);
+    try { await api.patch(`/admin/cooks/${cookId}/founding`, { is_founding_cook: isFounding }, ah()); await fetchCooks(); }
+    catch (e: any) { alert(e?.response?.data?.message || "Action failed"); }
+    finally { setActionLoading(null); }
+  }
+
   async function handleApproveCook() {
     if (!reviewCook) return;
     setReviewLoading(true);
@@ -1292,7 +1309,17 @@ export default function AdminDashboardPage() {
                     {cooks.length===0 ? <tr><td colSpan={8} className="px-4 py-8 text-center text-[rgba(255,255,255,0.3)]">No cooks found</td></tr> :
                     cooks.map(c=>(
                       <tr key={c.id} className="border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)]">
-                        <td className="px-4 py-3 text-white font-medium">{c.user?.name||"—"}</td>
+                        <td className="px-4 py-3 text-white font-medium">
+                          <div className="flex items-center gap-1.5">
+                            {c.user?.name||"—"}
+                            {c.is_founding_cook && (
+                              <span title={`Founding Chef #${c.founding_cook_number ?? "?"}`}
+                                className="flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-500/15 text-amber-400 rounded text-[0.68rem] font-semibold">
+                                <Crown className="w-3 h-3" />#{c.founding_cook_number ?? "?"}
+                              </span>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-4 py-3 text-[rgba(255,255,255,0.5)]">{c.user?.email||"—"}</td>
                         <td className="px-4 py-3 text-[rgba(255,255,255,0.5)]">{formatAreaSlug(c.home_area_slug)}</td>
                         <td className="px-4 py-3"><div className="flex flex-wrap gap-1">{(c.cuisines||[]).map(cu=><span key={cu} className="px-2 py-0.5 bg-[rgba(255,255,255,0.06)] rounded text-[0.72rem] text-[rgba(255,255,255,0.5)]">{cu}</span>)}</div></td>
@@ -1316,6 +1343,13 @@ export default function AdminDashboardPage() {
                                 {actionLoading===c.id?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:<ShieldX className="w-3.5 h-3.5"/>}
                               </button>
                             )}
+                            <button onClick={()=>handleToggleFoundingCook(c.id, !c.is_founding_cook)} disabled={actionLoading===c.id}
+                              title={c.is_founding_cook ? "Remove Founding Cook badge" : "Mark as Founding Cook"}
+                              className={cn("p-1.5 rounded-lg border-none cursor-pointer transition-all disabled:opacity-50",
+                                c.is_founding_cook ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30" : "bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.35)] hover:bg-[rgba(255,255,255,0.1)]"
+                              )} style={{fontFamily:"var(--font-body)"}}>
+                              {actionLoading===c.id?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:<Crown className="w-3.5 h-3.5"/>}
+                            </button>
                             <button onClick={()=>setDeleteConfirm({ type:"cook", id:c.id, name:c.user?.name||"Cook" })} title="Delete cook profile"
                               className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg border-none cursor-pointer transition-all"
                               style={{fontFamily:"var(--font-body)"}}>
