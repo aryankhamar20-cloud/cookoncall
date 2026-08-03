@@ -87,9 +87,19 @@ type DailyRevenuePoint = {
 };
 
 type StatusSlice = { status: string; count: number };
+type CancellationCategorySlice = { category: string; count: number };
 type SignupPoint = { date: string; count: number };
 type CityRow = { city: string; bookings: number; revenue: number };
-type TopChef = { id: string; name: string; revenue?: number; bookings_in_range?: number; rating?: number };
+type TopChef = {
+  id: string;
+  name: string;
+  revenue?: number;
+  bookings_in_range?: number;
+  rating?: number;
+  avg_nps_score?: number | null;
+  total_nps_responses?: number;
+};
+type NpsSummary = { avg_score: number | null; responses: number };
 
 const RANGE_OPTIONS: { value: AnalyticsRange; label: string }[] = [
   { value: "24h", label: "24h" },
@@ -111,6 +121,36 @@ const STATUS_COLORS: Record<string, string> = {
   expired: "#6b7280",
 };
 const PIE_FALLBACK = "#94a3b8";
+
+// Phase 1 — cancellation root-cause labels/colors. "uncategorized" covers
+// cancellations that predate this column, or came through a path that
+// doesn't send a category yet (e.g. admin manual override).
+const CANCELLATION_CATEGORY_LABELS: Record<string, string> = {
+  change_of_plans: "Change of plans",
+  personal_emergency: "Personal emergency",
+  incorrect_order: "Incorrect order",
+  found_another_chef: "Found another chef",
+  price_concern: "Price concern",
+  chef_unresponsive: "Chef unresponsive",
+  chef_no_show: "Chef no-show",
+  customer_no_show: "Customer no-show",
+  app_issue: "App issue",
+  other: "Other",
+  uncategorized: "Uncategorized",
+};
+const CANCELLATION_CATEGORY_COLORS: Record<string, string> = {
+  change_of_plans: "#3b82f6",
+  personal_emergency: "#f59e0b",
+  incorrect_order: "#f97316",
+  found_another_chef: "#8b5cf6",
+  price_concern: "#ec4899",
+  chef_unresponsive: "#dc2626",
+  chef_no_show: "#991b1b",
+  customer_no_show: "#7c2d12",
+  app_issue: "#6366f1",
+  other: "#64748b",
+  uncategorized: "#334155",
+};
 
 function fmtINR(v: number): string {
   if (v >= 10_000_000) return `₹${(v / 10_000_000).toFixed(1)}Cr`;
@@ -135,10 +175,13 @@ export default function AnalyticsPanel() {
   const [bookingDaily, setBookingDaily] = useState<DailyBookingPoint[]>([]);
   const [bookingStatus, setBookingStatus] = useState<StatusSlice[]>([]);
   const [peakHours, setPeakHours] = useState<{ hour: number; count: number }[]>([]);
+  const [cancellationCategories, setCancellationCategories] = useState<CancellationCategorySlice[]>([]);
   const [revenueDaily, setRevenueDaily] = useState<DailyRevenuePoint[]>([]);
   const [topCities, setTopCities] = useState<CityRow[]>([]);
   const [signups, setSignups] = useState<SignupPoint[]>([]);
   const [topChefs, setTopChefs] = useState<TopChef[]>([]);
+  const [topRatedChefs, setTopRatedChefs] = useState<TopChef[]>([]);
+  const [nps, setNps] = useState<NpsSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
@@ -163,15 +206,19 @@ export default function AnalyticsPanel() {
 
       const [ov, bk, rv, ch, lo, us] = await Promise.all([
         safe<Overview>("overview", adminApi.getAnalyticsOverview(params)),
-        safe<{ daily: DailyBookingPoint[]; by_status: StatusSlice[]; peak_hours: { hour: number; count: number }[] }>(
-          "bookings",
-          adminApi.getAnalyticsBookings(params),
-        ),
+        safe<{
+          daily: DailyBookingPoint[];
+          by_status: StatusSlice[];
+          peak_hours: { hour: number; count: number }[];
+          by_cancellation_category: CancellationCategorySlice[];
+        }>("bookings", adminApi.getAnalyticsBookings(params)),
         safe<{ daily: DailyRevenuePoint[]; by_city: CityRow[] }>("revenue", adminApi.getAnalyticsRevenue(params)),
-        safe<{ top_by_revenue: TopChef[]; top_by_bookings: TopChef[]; top_by_rating: TopChef[] }>(
-          "chefs",
-          adminApi.getAnalyticsChefs(params),
-        ),
+        safe<{
+          top_by_revenue: TopChef[];
+          top_by_bookings: TopChef[];
+          top_by_rating: TopChef[];
+          nps: NpsSummary;
+        }>("chefs", adminApi.getAnalyticsChefs(params)),
         safe<{ by_city: CityRow[] }>("locations", adminApi.getAnalyticsLocations(params)),
         safe<{ signups: SignupPoint[] }>("users", adminApi.getAnalyticsUsers(params)),
       ]);
@@ -181,12 +228,17 @@ export default function AnalyticsPanel() {
         setBookingDaily(bk.daily ?? []);
         setBookingStatus(bk.by_status ?? []);
         setPeakHours(bk.peak_hours ?? []);
+        setCancellationCategories(bk.by_cancellation_category ?? []);
       }
       if (rv) {
         setRevenueDaily(rv.daily ?? []);
         setTopCities(rv.by_city ?? []);
       }
-      if (ch) setTopChefs(ch.top_by_revenue ?? []);
+      if (ch) {
+        setTopChefs(ch.top_by_revenue ?? []);
+        setTopRatedChefs(ch.top_by_rating ?? []);
+        setNps(ch.nps ?? null);
+      }
       if (lo && (!rv || !rv.by_city?.length)) setTopCities(lo.by_city ?? []);
       if (us) setSignups(us.signups ?? []);
 
@@ -312,8 +364,15 @@ export default function AnalyticsPanel() {
         sub: `${overview.bookings.cancelled} cancellations`,
         color: "from-red-500/15 to-red-500/5",
       },
+      {
+        label: "Avg NPS",
+        value: nps && nps.avg_score !== null ? `${nps.avg_score}/10` : "—",
+        icon: <TrendingUp className="w-4 h-4" />,
+        sub: nps && nps.responses > 0 ? `${fmtNum(nps.responses)} responses` : "No responses yet",
+        color: "from-teal-500/15 to-teal-500/5",
+      },
     ];
-  }, [overview]);
+  }, [overview, nps]);
 
   if (loading) {
     return (
@@ -539,6 +598,44 @@ export default function AnalyticsPanel() {
           )}
         </ChartShell>
 
+        {/* Cancellation root cause (Phase 1 — Aug 3, 2026) */}
+        <ChartShell
+          title="Cancellation reasons"
+          subtitle="Root-cause tags on cancelled bookings in this window"
+        >
+          {cancellationCategories.length === 0 ? (
+            <Empty />
+          ) : (
+            <ResponsiveContainer width="100%" height={260}>
+              <BarChart
+                data={cancellationCategories.map((c) => ({
+                  ...c,
+                  label: CANCELLATION_CATEGORY_LABELS[c.category] ?? c.category,
+                }))}
+                layout="vertical"
+                margin={{ top: 10, right: 16, left: 8, bottom: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+                <XAxis type="number" allowDecimals={false} tick={{ fill: "rgba(255,255,255,0.5)", fontSize: 11 }} />
+                <YAxis
+                  type="category"
+                  dataKey="label"
+                  width={130}
+                  tick={{ fill: "rgba(255,255,255,0.6)", fontSize: 11 }}
+                />
+                <Tooltip
+                  contentStyle={{ background: "#1a1209", border: "1px solid rgba(255,255,255,0.1)", borderRadius: 8, color: "#fff" }}
+                />
+                <Bar dataKey="count" radius={[0, 4, 4, 0]}>
+                  {cancellationCategories.map((c) => (
+                    <Cell key={c.category} fill={CANCELLATION_CATEGORY_COLORS[c.category] ?? PIE_FALLBACK} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+          )}
+        </ChartShell>
+
         {/* Daily signups */}
         <ChartShell
           title="Daily signups"
@@ -623,6 +720,43 @@ export default function AnalyticsPanel() {
                 <span className="text-[var(--orange-500)] font-bold text-[0.86rem] shrink-0">
                   {fmtINR(Number(c.revenue ?? 0))}
                 </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Top-rated chefs — star rating + NPS side by side (Phase 1) */}
+      <div className="rounded-[14px] border border-[rgba(255,255,255,0.08)] bg-[rgba(255,255,255,0.02)] p-5">
+        <div className="mb-4">
+          <h3 className="font-bold text-white text-[0.95rem]">Top-rated chefs</h3>
+          <p className="text-[0.78rem] text-[rgba(255,255,255,0.45)]">
+            Star rating and recommend-to-a-friend score (min. 5 reviews) — not time-windowed
+          </p>
+        </div>
+        {topRatedChefs.length === 0 ? (
+          <div className="text-[rgba(255,255,255,0.45)] text-[0.85rem] py-8 text-center">
+            No chefs have 5+ reviews yet.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {topRatedChefs.slice(0, 10).map((c, i) => (
+              <div
+                key={c.id}
+                className="flex items-center justify-between px-3 py-2 rounded-[10px] bg-[rgba(255,255,255,0.03)]"
+              >
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-7 h-7 shrink-0 rounded-full bg-[var(--orange-500)]/20 text-[var(--orange-500)] font-bold text-[0.78rem] flex items-center justify-center">
+                    {i + 1}
+                  </div>
+                  <span className="text-white text-[0.86rem] font-semibold truncate">{c.name}</span>
+                </div>
+                <div className="flex items-center gap-3 shrink-0 text-[0.8rem]">
+                  <span className="text-amber-400 font-bold">★ {Number(c.rating ?? 0).toFixed(1)}</span>
+                  <span className="text-teal-400 font-bold">
+                    {c.avg_nps_score != null ? `NPS ${Number(c.avg_nps_score).toFixed(1)}` : "NPS —"}
+                  </span>
+                </div>
               </div>
             ))}
           </div>

@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   },
 
   description:
-    "Hire verified home chefs in Ahmedabad for daily cooking, parties & events. 50+ chefs available. Book in minutes, cancel anytime. Starting ₹600/session.",
+    "Hire verified home chefs in Ahmedabad for daily cooking, parties & events. Book in minutes, cancel anytime. Starting ₹600/session.",
 
   keywords: [
     "home chef Ahmedabad",
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
     siteName: "CookOnCall",
     title: "Book a Home Chef in Ahmedabad | CookOnCall",
     description:
-      "Hire verified home chefs in Ahmedabad for daily cooking, parties & events. 50+ chefs. Book in minutes. Starting ₹600/session.",
+      "Hire verified home chefs in Ahmedabad for daily cooking, parties & events. Book in minutes. Starting ₹600/session.",
     url: "https://thecookoncall.com/",
     type: "website",
     locale: "en_IN",

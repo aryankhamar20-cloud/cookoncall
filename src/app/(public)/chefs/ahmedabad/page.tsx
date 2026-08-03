@@ -109,13 +109,22 @@ export default async function ChefsAhmedabadPage() {
       {/* Chef Grid */}
       <section className="py-16 px-6 md:px-12 max-w-[1200px] mx-auto">
         <h2 className="font-display font-[900] text-[clamp(1.6rem,3vw,2.2rem)] text-[var(--brown-800)] mb-10">
-          Browse Verified Chefs ({chefs.length > 0 ? chefs.length : "50+"})
+          {chefs.length > 0 ? `Browse Verified Chefs (${chefs.length})` : "Browse Verified Chefs"}
         </h2>
+        {/* This is a server component — getChefs() has already resolved by the
+            time this renders, so an empty array here is a real zero-result
+            state (API error or genuinely no chefs matched), never a client-side
+            "still loading" moment. The old copy said "Loading chefs..." and
+            inflated the header count to a fake "50+" to paper over it — both
+            actively misleading. Say what's actually true instead: we're a new,
+            growing platform, and inviting signup is still the honest CTA. */}
         {chefs.length === 0 ? (
           <div className="text-center py-20 text-[var(--text-muted)]">
-            <p className="text-lg mb-4">Loading chefs...</p>
+            <p className="text-lg mb-4">
+              We&apos;re onboarding verified chefs in Ahmedabad right now — check back soon, or sign up to be notified the moment one&apos;s available near you.
+            </p>
             <Link href="/login?tab=signup" className="text-[var(--orange-500)] font-semibold hover:underline">
-              Sign up to browse all chefs →
+              Sign up to get notified →
             </Link>
           </div>
         ) : (
