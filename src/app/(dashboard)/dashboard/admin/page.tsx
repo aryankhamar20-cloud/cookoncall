@@ -296,21 +296,52 @@ function DocPreview({ label, url }: { label: string; url?: string | null }) {
 
 /* ═══ REVIEW CHEF MODAL ═══ */
 
+interface CookScorecard {
+  total_bookings_received: number;
+  accepted: number;
+  completed: number;
+  rejected_before_accept: number;
+  cancelled_after_accept: number;
+  acceptance_rate_pct: number | null;
+  completion_rate_pct: number | null;
+  cancellation_after_accept_rate_pct: number | null;
+  avg_rating: number;
+  total_reviews: number;
+  avg_nps_score: number | null;
+}
+
 function ReviewChefModal({
-  open, cook, onApprove, onReject, onCancel, loading,
+  open, cook, onApprove, onReject, onCancel, loading, token,
 }: {
   open: boolean; cook: AdminCook | null;
   onApprove: () => void;
   onReject: (reason: string) => void;
   onCancel: () => void;
   loading?: boolean;
+  token: string;
 }) {
   const [mode, setMode] = useState<"view" | "reject" | "approve">("view");
   const [reason, setReason] = useState("");
+  const [scorecard, setScorecard] = useState<CookScorecard | null>(null);
+  const [scorecardLoading, setScorecardLoading] = useState(false);
 
   useEffect(() => {
     if (open) { setMode("view"); setReason(""); }
   }, [open, cook?.id]);
+
+  // Phase 3 — internal chef quality scorecard, fetched fresh each time
+  // the modal opens for a chef (booking history changes over time, so
+  // this shouldn't be cached alongside the cook row itself).
+  useEffect(() => {
+    if (!open || !cook?.id || !token) { setScorecard(null); return; }
+    let cancelled = false;
+    setScorecardLoading(true);
+    api.get(`/admin/cooks/${cook.id}/scorecard`, { headers: { Authorization: `Bearer ${token}` } })
+      .then((res) => { if (!cancelled) setScorecard(res.data?.data ?? res.data ?? null); })
+      .catch(() => { if (!cancelled) setScorecard(null); })
+      .finally(() => { if (!cancelled) setScorecardLoading(false); });
+    return () => { cancelled = true; };
+  }, [open, cook?.id, token]);
 
   if (!open || !cook) return null;
 
@@ -347,6 +378,44 @@ function ReviewChefModal({
                 <Crown className="w-3.5 h-3.5" />Founding Chef #{cook.founding_cook_number ?? "?"}
               </span>
             )}
+          </div>
+
+          {/* Chef quality scorecard (Phase 3) — internal only, computed
+              directly from booking history + existing rating/NPS columns. */}
+          <div>
+            <div className="text-[0.75rem] text-[rgba(255,255,255,0.4)] uppercase tracking-wider font-semibold mb-2">Quality Scorecard</div>
+            <div className="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-[12px] p-4">
+              {scorecardLoading ? (
+                <div className="flex items-center gap-2 text-[rgba(255,255,255,0.4)] text-[0.82rem]">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />Loading scorecard…
+                </div>
+              ) : !scorecard || scorecard.total_bookings_received === 0 ? (
+                <p className="text-[0.82rem] text-[rgba(255,255,255,0.4)]" style={{ fontFamily: "var(--font-body)" }}>
+                  No booking history yet — scorecard fills in after the first booking request for this chef.
+                </p>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  <ScoreStat label="Bookings received" value={String(scorecard.total_bookings_received)} />
+                  <ScoreStat
+                    label="Acceptance rate"
+                    value={scorecard.acceptance_rate_pct != null ? `${scorecard.acceptance_rate_pct}%` : "—"}
+                    warn={scorecard.acceptance_rate_pct != null && scorecard.acceptance_rate_pct < 60}
+                  />
+                  <ScoreStat
+                    label="Completion rate"
+                    value={scorecard.completion_rate_pct != null ? `${scorecard.completion_rate_pct}%` : "—"}
+                    warn={scorecard.completion_rate_pct != null && scorecard.completion_rate_pct < 80}
+                  />
+                  <ScoreStat
+                    label="Cancelled after accept"
+                    value={scorecard.cancellation_after_accept_rate_pct != null ? `${scorecard.cancellation_after_accept_rate_pct}%` : "—"}
+                    warn={scorecard.cancellation_after_accept_rate_pct != null && scorecard.cancellation_after_accept_rate_pct > 10}
+                  />
+                  <ScoreStat label="Avg rating" value={`${scorecard.avg_rating.toFixed(1)} ★ (${scorecard.total_reviews})`} />
+                  <ScoreStat label="Avg NPS" value={scorecard.avg_nps_score != null ? scorecard.avg_nps_score.toFixed(1) : "—"} />
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Existing rejection reason */}
@@ -525,6 +594,15 @@ function InfoRow({ icon, label, value, full }: { icon?: React.ReactNode; label: 
     <div className={full ? "col-span-2" : ""}>
       <div className="text-[0.7rem] text-[rgba(255,255,255,0.35)] uppercase tracking-wider font-semibold mb-0.5 flex items-center gap-1">{icon}{label}</div>
       <div className="text-[0.88rem] text-white break-words" style={{ fontFamily: "var(--font-body)" }}>{value}</div>
+    </div>
+  );
+}
+
+function ScoreStat({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
+  return (
+    <div className={cn("rounded-[8px] px-3 py-2 border", warn ? "bg-amber-500/10 border-amber-500/20" : "bg-white/[0.03] border-white/[0.06]")}>
+      <div className="text-[0.68rem] text-[rgba(255,255,255,0.4)] uppercase tracking-wider font-semibold mb-0.5">{label}</div>
+      <div className={cn("text-[0.92rem] font-bold", warn ? "text-amber-400" : "text-white")}>{value}</div>
     </div>
   );
 }
@@ -1034,6 +1112,7 @@ export default function AdminDashboardPage() {
         onReject={handleRejectCook}
         onCancel={() => !reviewLoading && setReviewCook(null)}
         loading={reviewLoading}
+        token={adminToken}
       />
 
       {/* Sidebar */}
