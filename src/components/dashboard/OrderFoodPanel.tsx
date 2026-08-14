@@ -67,8 +67,8 @@ function ChefMenuCard({
     if (next) loadMenu();
   }
 
-  function getItemQty(itemName: string): number {
-    return cartItems.find((i) => i.name === itemName)?.qty ?? 0;
+  function getItemQty(menuItemId: string): number {
+    return cartItems.find((i) => i.menuItemId === menuItemId)?.qty ?? 0;
   }
 
   const categories: Record<string, MenuItem[]> = {};
@@ -136,7 +136,7 @@ function ChefMenuCard({
                   <h4 className="text-[0.75rem] font-bold uppercase tracking-wider text-[var(--text-muted)] mb-2 capitalize">{category}</h4>
                   <div className="space-y-3">
                     {catItems.map((item) => {
-                      const qty = getItemQty(item.name);
+                      const qty = getItemQty(item.id);
                       return (
                         <div key={item.id} className="flex items-center gap-3">
                           <div className="flex-1 min-w-0">
@@ -161,7 +161,7 @@ function ChefMenuCard({
                           ) : (
                             <div className="flex items-center gap-1.5">
                               <button
-                                onClick={() => useCartStore.getState().changeQty(item.name, -1)}
+                                onClick={() => useCartStore.getState().changeQty(item.id, -1)}
                                 className="w-7 h-7 rounded-full border border-[rgba(212,114,26,0.15)] bg-transparent flex items-center justify-center cursor-pointer transition-all hover:bg-[var(--orange-500)] hover:text-white hover:border-[var(--orange-500)]">
                                 <Minus className="w-3.5 h-3.5" />
                               </button>

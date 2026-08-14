@@ -16,7 +16,7 @@ interface CartState {
     chefName: string,
     chefId: string,
   ) => void;
-  changeQty: (name: string, delta: number) => void;
+  changeQty: (menuItemId: string, delta: number) => void;
   clearCart: () => void;
   openCart: () => void;
   closeCart: () => void;
@@ -68,10 +68,13 @@ export const useCartStore = create<CartState>((set, get) => ({
     });
   },
 
-  changeQty: (name, delta) => {
+  changeQty: (menuItemId, delta) => {
     set((s) => {
+      // Match by menuItemId (unique), not name — two distinct menu items
+      // can share a display name, and matching by name would bump/remove
+      // the wrong item's quantity.
       const updated = s.items
-        .map((i) => (i.name === name ? { ...i, qty: i.qty + delta } : i))
+        .map((i) => (i.menuItemId === menuItemId ? { ...i, qty: i.qty + delta } : i))
         .filter((i) => i.qty > 0);
       return {
         items: updated,

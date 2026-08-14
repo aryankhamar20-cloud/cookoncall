@@ -210,14 +210,14 @@ export default function CartDrawer() {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <button
-                          onClick={() => changeQty(item.name, -1)}
+                          onClick={() => changeQty(item.menuItemId, -1)}
                           className="w-7 h-7 rounded-full border border-[rgba(212,114,26,0.1)] bg-transparent flex items-center justify-center cursor-pointer transition-all hover:bg-[var(--orange-500)] hover:text-white hover:border-[var(--orange-500)]"
                         >
                           <Minus className="w-3.5 h-3.5" />
                         </button>
                         <span className="font-bold text-[0.9rem] min-w-[20px] text-center">{item.qty}</span>
                         <button
-                          onClick={() => changeQty(item.name, 1)}
+                          onClick={() => changeQty(item.menuItemId, 1)}
                           className="w-7 h-7 rounded-full border border-[rgba(212,114,26,0.1)] bg-transparent flex items-center justify-center cursor-pointer transition-all hover:bg-[var(--orange-500)] hover:text-white hover:border-[var(--orange-500)]"
                         >
                           <Plus className="w-3.5 h-3.5" />
