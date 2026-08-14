@@ -1707,7 +1707,7 @@ export default function AdminDashboardPage() {
           <div onClick={(e) => e.stopPropagation()} className="bg-[#1A1209] border border-[rgba(255,255,255,0.1)] rounded-[16px] p-6 w-full max-w-[460px]">
             <h3 className="font-bold text-[1.05rem] text-white mb-1">Reject area request</h3>
             <p className="text-[0.82rem] text-[rgba(255,255,255,0.5)] mb-4">
-              Tell the requester why <span className="text-white font-semibold">{rejectTarget.name}</span> isn't being added. They'll see this reason.
+              Tell the requester why <span className="text-white font-semibold">{rejectTarget.name}</span> isn&apos;t being added. They&apos;ll see this reason.
             </p>
             <textarea
               value={rejectReason}

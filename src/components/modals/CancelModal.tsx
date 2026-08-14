@@ -134,7 +134,7 @@ export default function CancelModal({
 
         {estimateError && !loadingEstimate && (
           <div className="text-[var(--red-err)] text-[0.85rem] py-2">
-            Couldn't load refund estimate. You can still cancel — the exact
+            Couldn&apos;t load refund estimate. You can still cancel — the exact
             refund will be confirmed by our team.
           </div>
         )}

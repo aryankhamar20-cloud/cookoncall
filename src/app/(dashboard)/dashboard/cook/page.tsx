@@ -1374,7 +1374,7 @@ export default function CookDashboardPage() {
                               className="text-[0.78rem] font-semibold text-[var(--orange-500)] hover:underline cursor-pointer bg-transparent border-none p-0"
                               style={{ fontFamily: "var(--font-body)" }}
                             >
-                              + My area isn't listed (request to add)
+                              + My area isn&apos;t listed (request to add)
                             </button>
                           ) : (
                             <div className="space-y-2 p-3 bg-orange-50 border border-orange-200 rounded-[12px]">
@@ -1418,7 +1418,7 @@ export default function CookDashboardPage() {
 
                   {!profileForm.serves_all_city && profileForm.service_area_slugs.length === 0 && (
                     <div className="mt-2 text-[0.74rem] text-amber-700">
-                      ⚠️ Pick at least one area, or tick "Serve all of Ahmedabad". Without this, customers can't see your profile.
+                      ⚠️ Pick at least one area, or tick &quot;Serve all of Ahmedabad&quot;. Without this, customers can&apos;t see your profile.
                     </div>
                   )}
                 </div>
@@ -1697,7 +1697,7 @@ export default function CookDashboardPage() {
               <div>
                 <h3 className="font-bold text-[1.05rem] mb-0.5">Reject this booking?</h3>
                 <p className="text-[0.82rem] text-[var(--text-muted)]">
-                  {rejectModal.customerName} will be notified that you can't take it. They'll be offered another chef.
+                  {rejectModal.customerName} will be notified that you can&apos;t take it. They&apos;ll be offered another chef.
                 </p>
               </div>
             </div>

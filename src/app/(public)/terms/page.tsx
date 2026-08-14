@@ -23,7 +23,7 @@ export default function TermsPage() {
               <p>
                 CookOnCall is a home chef marketplace platform operated in Ahmedabad, Gujarat, India.
                 We connect customers who want freshly cooked meals at their home with verified home chefs
-                ("Cook Partners"). CookOnCall acts as an intermediary platform — we are not a restaurant,
+                (&quot;Cook Partners&quot;). CookOnCall acts as an intermediary platform — we are not a restaurant,
                 catering company, or food delivery service.
               </p>
             </section>

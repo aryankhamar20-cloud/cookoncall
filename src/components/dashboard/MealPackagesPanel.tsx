@@ -746,7 +746,7 @@ function AddonsSection({ pkg, onRefresh }: { pkg: MealPackage; onRefresh: () => 
 
       {(pkg.addons ?? []).length === 0 && (
         <p className="text-[0.82rem] text-[var(--text-muted)] italic">
-          No add-ons yet. E.g., "Extra Roti ₹20", "Papad & Pickle ₹30".
+          No add-ons yet. E.g., &quot;Extra Roti ₹20&quot;, &quot;Papad &amp; Pickle ₹30&quot;.
         </p>
       )}
 

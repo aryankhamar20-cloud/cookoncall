@@ -769,7 +769,7 @@ export default function BookChefPanel() {
             </p>
             <p className="text-[0.85rem] text-[var(--text-muted)] mb-4">
               Your chef has <strong>3 hours</strong> to accept.
-              We'll email you the moment they respond. Once confirmed, you can
+              We&apos;ll email you the moment they respond. Once confirmed, you can
               pay any time before your session — see <strong>My Orders</strong>.
             </p>
             <div className="text-left bg-[var(--cream-100)] rounded-[12px] p-4 mb-5 space-y-1.5 text-[0.85rem]">

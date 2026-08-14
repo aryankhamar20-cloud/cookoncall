@@ -91,7 +91,7 @@ export default function PricingPage() {
               How a typical bill looks
             </h2>
             <p className="text-[0.9rem] text-[var(--text-muted)] mb-4">
-              Each chef sets their own dish prices. Here's what your final bill structure looks like.
+              Each chef sets their own dish prices. Here&apos;s what your final bill structure looks like.
             </p>
 
             <div className="bg-white rounded-[14px] p-5 space-y-2 text-[0.92rem]">

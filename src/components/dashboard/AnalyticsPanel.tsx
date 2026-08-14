@@ -457,7 +457,7 @@ export default function AnalyticsPanel() {
       {errors.length > 0 && (
         <div className="rounded-[10px] border border-red-500/30 bg-red-500/10 px-3 py-2 text-[0.82rem] text-red-300 flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
-          Some metrics couldn't load: <span className="font-semibold">{errors.join(", ")}</span>.
+          Some metrics couldn&apos;t load: <span className="font-semibold">{errors.join(", ")}</span>.
           Other charts are unaffected.
         </div>
       )}

@@ -405,7 +405,7 @@ export default function AddressModal({
             ) : (
               <div className="space-y-2 p-3 bg-orange-50 border-2 border-orange-200 rounded-lg">
                 <p className="text-xs text-gray-700">
-                  Type your area name below. We'll review and add it within 24 hours.
+                  Type your area name below. We&apos;ll review and add it within 24 hours.
                   You can still save this address and book chefs in the meantime.
                 </p>
                 <input

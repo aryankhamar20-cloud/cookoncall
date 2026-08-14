@@ -275,7 +275,7 @@ export default function CustomerHome() {
       {/* ═══ 4. OCCASION CHIPS ══════════════════════════════ */}
       <div className="mb-6">
         <div className="font-bold text-[0.95rem] text-[var(--brown-800)] mb-3">
-          What's the occasion?
+          What&apos;s the occasion?
         </div>
         <div className="flex gap-2.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
           {OCCASIONS.map((o) => (
@@ -326,7 +326,7 @@ export default function CustomerHome() {
               Chefs are coming soon to your area
             </div>
             <div className="text-[0.8rem] text-[var(--text-muted)] mt-1">
-              We're onboarding verified chefs across Ahmedabad
+              We&apos;re onboarding verified chefs across Ahmedabad
             </div>
           </div>
         ) : (

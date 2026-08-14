@@ -652,7 +652,7 @@ export default function OrdersPanel() {
                       <div className="text-[0.85rem] text-red-700">
                         <div className="font-semibold mb-0.5">Chef unavailable</div>
                         <div className="text-[0.8rem] text-red-600">
-                          {chefName} couldn't take this booking. You have two options.
+                          {chefName} couldn&apos;t take this booking. You have two options.
                         </div>
                       </div>
                     </div>
@@ -1031,7 +1031,7 @@ function RebookModal({
           <div>
             <h3 className="font-bold text-[1.05rem]">Book Another Chef</h3>
             <p className="text-[0.8rem] text-[var(--text-muted)]">
-              Same date, time &amp; address. {originalChefName} couldn't take it.
+              Same date, time &amp; address. {originalChefName} couldn&apos;t take it.
             </p>
           </div>
           <button
@@ -1158,7 +1158,7 @@ function RebookModal({
                 )}
                 {!menuLoading && chefMenu.length === 0 && (
                   <div className="text-center py-4 text-[var(--text-muted)] text-[0.85rem]">
-                    This chef hasn't added any dishes yet.
+                    This chef hasn&apos;t added any dishes yet.
                   </div>
                 )}
                 {!menuLoading && chefMenu.length > 0 && (

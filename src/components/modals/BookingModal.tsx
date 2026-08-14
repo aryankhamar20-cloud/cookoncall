@@ -603,7 +603,7 @@ if (isPackageMode && preselectedPackage) {
           <div className="mb-4 p-3 rounded-[12px] border border-amber-300 bg-amber-50 flex items-start gap-2">
             <span className="text-amber-600 text-[1rem] leading-none mt-0.5">⚠️</span>
             <div className="text-[0.82rem] text-amber-900 leading-relaxed">
-              <span className="font-semibold">Heads up:</span> {chef?.user?.name || "This chef"} hasn't
+              <span className="font-semibold">Heads up:</span> {chef?.user?.name || "This chef"} hasn&apos;t
               listed <span className="font-semibold">{selectedAddress?.area || "your area"}</span> as
               one of their service areas. The booking will go through and the chef will see your full
               address — they may accept or decline based on travel time.

@@ -79,7 +79,6 @@ describe("api.ts — request interceptor (Authorization header precedence)", () 
     // The interceptor is registered as a use() callback on the singleton
     // axios instance. Drive it directly via the public handlers list rather
     // than firing a real network request.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handlers = (api.interceptors.request as any).handlers as Array<{
       fulfilled?: (c: any) => any;
     }>;
@@ -103,7 +102,6 @@ describe("api.ts — request interceptor (Authorization header precedence)", () 
       headers: {},
     } as any;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handlers = (api.interceptors.request as any).handlers as Array<{
       fulfilled?: (c: any) => any;
     }>;
@@ -122,7 +120,6 @@ describe("api.ts — request interceptor (Authorization header precedence)", () 
       headers: {},
     } as any;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handlers = (api.interceptors.request as any).handlers as Array<{
       fulfilled?: (c: any) => any;
     }>;
@@ -142,7 +139,6 @@ describe("api.ts — request interceptor (Authorization header precedence)", () 
       },
     } as any;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const handlers = (api.interceptors.request as any).handlers as Array<{
       fulfilled?: (c: any) => any;
     }>;
@@ -192,7 +188,6 @@ describe("api.ts — response interceptor (admin 401 escape hatch)", () => {
         },
       } as any;
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const handlers = (api.interceptors.response as any).handlers as Array<{
         rejected?: (e: any) => Promise<any>;
       }>;
