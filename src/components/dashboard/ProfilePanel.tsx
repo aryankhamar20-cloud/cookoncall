@@ -3,34 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuthStore } from "@/stores/authStore";
 import { usersApi, authApi, uploadsApi, addressesApi } from "@/lib/api";
-import { getInitials } from "@/lib/utils";
+import { getInitials, compressImage } from "@/lib/utils";
 import { Phone, AlertCircle, Edit3, Save, X, Mail, ShieldCheck, ShieldAlert, RefreshCw, Camera, Loader2, MapPin, Plus } from "lucide-react";
 import { ProfileCardSkeleton } from "@/components/ui/Skeleton";
 import AddressCard from "@/components/ui/AddressCard";
 import AddressModal from "@/components/modals/AddressModal";
 import type { Address } from "@/types";
 import toast from "react-hot-toast";
-
-// Image compression helper
-async function compressImage(file: File, maxWidth = 400, quality = 0.75): Promise<File> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      let w = img.width, h = img.height;
-      if (w > maxWidth) { h = Math.round((h * maxWidth) / w); w = maxWidth; }
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, w, h);
-      canvas.toBlob((blob) => {
-        if (blob) resolve(new File([blob], file.name, { type: "image/jpeg" }));
-        else resolve(file);
-      }, "image/jpeg", quality);
-    };
-    img.src = URL.createObjectURL(file);
-  });
-}
 
 export default function ProfilePanel() {
   const { user, isLoading, setUser } = useAuthStore();

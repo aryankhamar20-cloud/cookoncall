@@ -15,7 +15,7 @@ import EarningsHistoryPanel from "@/components/dashboard/EarningsHistoryPanel";
 import { useUIStore } from "@/stores/uiStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useAuth } from "@/hooks/useAuth";
-import { getGreeting, formatCurrency } from "@/lib/utils";
+import { getGreeting, formatCurrency, compressImage } from "@/lib/utils";
 import api, { cooksApi, bookingsApi, uploadsApi } from "@/lib/api";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
@@ -90,27 +90,6 @@ function formatDate(dateStr: string) {
 }
 function formatTime(dateStr: string) {
   return new Date(dateStr).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
-}
-
-// ─── IMAGE COMPRESSION HELPER ────────────────────────────
-async function compressImage(file: File, maxWidth = 800, quality = 0.75): Promise<File> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      let w = img.width, h = img.height;
-      if (w > maxWidth) { h = Math.round((h * maxWidth) / w); w = maxWidth; }
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext("2d")!;
-      ctx.drawImage(img, 0, 0, w, h);
-      canvas.toBlob((blob) => {
-        if (blob) resolve(new File([blob], file.name, { type: "image/jpeg" }));
-        else resolve(file);
-      }, "image/jpeg", quality);
-    };
-    img.src = URL.createObjectURL(file);
-  });
 }
 
 export default function CookDashboardPage() {
