@@ -198,12 +198,6 @@ export const authApi = {
   googleAuth: (data: { token: string; role?: "user" | "cook" }) =>
     api.post("/auth/google", data),
 
-  sendOtp: (data: { phone: string }) =>
-    api.post("/auth/send-otp", data),
-
-  verifyOtp: (data: { phone: string; otp: string }) =>
-    api.post("/auth/verify-otp", data),
-
   sendEmailOtp: (data: { email: string }) =>
     api.post("/auth/send-email-otp", data),
 
@@ -226,8 +220,6 @@ export const authApi = {
   changePassword: (data: { current_password: string; new_password: string }) =>
     api.post("/auth/change-password", data),
 
-  logout: () => api.post("/auth/logout"),
-
   getMe: () => api.get("/auth/me"),
 };
 
@@ -242,7 +234,6 @@ export const usersApi = {
     latitude: number;
     longitude: number;
   }>) => api.patch("/users/me", data),
-  getMyStats: () => api.get("/users/me/stats"),
 
   // ─── ROUND 4: NOTIFICATION PREFERENCES ─────────────────────
   // Slim payload (just the three booleans) so the Settings screen
@@ -268,24 +259,6 @@ export const cooksApi = {
     api.get("/cooks", { params }),
   getById: (id: string) => api.get(`/cooks/${id}`),
   getMenu: (id: string) => api.get(`/cooks/${id}/menu`),
-  updateMe: (data: Record<string, unknown>) => api.patch("/cooks/me", data),
-  toggleAvailability: (isAvailable: boolean) =>
-    api.patch("/cooks/me/availability", { isAvailable }),
-  getMyProfile: () => api.get("/cooks/me/profile"),
-  getMyMenu: () => api.get("/cooks/me/menu"),
-  addMenuItem: (data: {
-    name: string;
-    price: number;
-    type: "veg" | "nonveg";
-    category: string;
-    description?: string;
-    image?: string;
-  }) => api.post("/cooks/me/menu", data),
-  updateMenuItem: (id: string, data: Record<string, unknown>) =>
-    api.patch(`/cooks/me/menu/${id}`, data),
-  deleteMenuItem: (id: string) => api.delete(`/cooks/me/menu/${id}`),
-  getMyStats: () => api.get("/cooks/me/stats"),
-  getMyEarnings: () => api.get("/cooks/me/earnings"),
 
   // ─── ROUND 3: PAYOUT HISTORY ───────────────────────────────
   // Paginated list of completed bookings with the per-booking payment
@@ -363,13 +336,6 @@ export const bookingsApi = {
   getAll: (params?: { status?: string; page?: number; limit?: number }) =>
     api.get("/bookings", { params }),
 
-  getById: (id: string) => api.get(`/bookings/${id}`),
-
-  /** Customer reschedules a booking to a new time (ISO). Shared backend
-   *  endpoint (PATCH /bookings/:id/reschedule) with the mobile app. */
-  reschedule: (id: string, scheduled_at: string) =>
-    api.patch(`/bookings/${id}/reschedule`, { scheduled_at }),
-
   // --- NEW FLOW (Apr 21, 2026) — backend uses POST, not PATCH --
   /** Chef accepts -> booking becomes CONFIRMED. Customer can pay any
    *  time before the session-end OTP (May 29, 2026 flow — see backend
@@ -413,14 +379,6 @@ export const bookingsApi = {
 
 // === Payments API ===
 export const paymentsApi = {
-  createOrder: (data: { booking_id: string }) =>
-    api.post("/payments/create-order", data),
-  verify: (data: {
-    razorpay_order_id: string;
-    razorpay_payment_id: string;
-    razorpay_signature: string;
-  }) => api.post("/payments/verify", data),
-
   // Pay a booking entirely from wallet balance (no Razorpay). Backend
   // POST /payments/wallet — debits the wallet and records a CAPTURED
   // payment. Throws 400 if the balance is insufficient. Same endpoint
@@ -438,7 +396,6 @@ export const reviewsApi = {
   }) => api.post("/reviews", data),
   getByCook: (cookId: string, params?: { page?: number; limit?: number }) =>
     api.get(`/reviews/cook/${cookId}`, { params }),
-  getMyReviews: () => api.get("/reviews/me"),
 };
 
 // === Referrals API (Refer & Earn) ===
@@ -482,15 +439,12 @@ export const subscriptionsApi = {
 export const walletApi = {
   get: () =>
     api.get<{ balance: number; transactions: any[] }>("/wallet"),
-  transactions: (limit?: number) =>
-    api.get("/wallet/transactions", { params: limit ? { limit } : {} }),
 };
 
 // === Disputes API (report an issue) — shared backend with app ===
 export const disputesApi = {
   raise: (data: { booking_id: string; reason: string; description: string }) =>
     api.post("/disputes", data),
-  mine: () => api.get("/disputes/me"),
   adminList: (params?: { status?: string; page?: number; limit?: number }) =>
     api.get("/disputes/admin", withAdminAuth({ params })),
   resolve: (
@@ -568,10 +522,6 @@ export const adminApi = {
   getStats: () => api.get("/admin/stats", withAdminAuth()),
   getUsers: (params?: { search?: string; page?: number; limit?: number }) =>
     api.get("/admin/users", withAdminAuth({ params })),
-  getCooks: (params?: { verified?: string; page?: number; limit?: number }) =>
-    api.get("/admin/cooks", withAdminAuth({ params })),
-  getPendingCooks: (params?: { page?: number; limit?: number }) =>
-    api.get("/admin/cooks/pending", withAdminAuth({ params })),
   verifyCook: (cookId: string, verified: boolean, rejectionReason?: string) =>
     api.patch(
       `/admin/cooks/${cookId}/verify`,
@@ -580,12 +530,6 @@ export const adminApi = {
     ),
   toggleUserActive: (userId: string) =>
     api.patch(`/admin/users/${userId}/toggle-active`, undefined, withAdminAuth()),
-  getBookings: (params?: { status?: string; search?: string; page?: number; limit?: number }) =>
-    api.get("/admin/bookings", withAdminAuth({ params })),
-  updateBookingStatus: (bookingId: string, status: string) =>
-    api.patch(`/admin/bookings/${bookingId}/status`, { status }, withAdminAuth()),
-  getRecentUsers: () => api.get("/admin/recent-users", withAdminAuth()),
-  getRecentBookings: () => api.get("/admin/recent-bookings", withAdminAuth()),
 
   // --- AUDIT LOG (NEW Apr 24) ------------------------
   getAuditLog: (params?: {
@@ -640,14 +584,6 @@ export const adminApi = {
         responseType: "blob",
       }),
     ),
-
-  /** Phase 3 — peek at the daily digest payload without sending email. */
-  previewDigest: () => api.get("/admin/analytics/digest/preview", withAdminAuth()),
-
-  /** Phase 3 — fire the daily digest right now (still respects per-admin
-   *  email_enabled and the ANALYTICS_DIGEST_DISABLED env flag). */
-  runDigestNow: () =>
-    api.post("/admin/analytics/digest/run-now", undefined, withAdminAuth()),
 
   // ─── ROUND 3: BROADCAST PUSH ────────────────────────────────
   // POST a broadcast — title 1-65 chars, body 1-240 chars, audience
@@ -707,25 +643,13 @@ export const adminApi = {
     api.post(`/wallet/admin/${userId}/adjust`, data, withAdminAuth()),
 
   // ─── ROUND 4: PROMO CODE MANAGER ────────────────────────────
-  // Backend mounts these under /promo-codes. `validate` is customer-facing
-  // (regular coc_token auth); the rest are admin-only via @Roles.
+  // Backend mounts these under /promo-codes. Admin-only via @Roles.
+  // (Customer-facing validation of a promo code lives inline in
+  // BookingModal, which posts to /promo-codes/validate directly.)
   promos: {
-    /**
-     * CUSTOMER — validate a promo code against an order amount before
-     * booking. Returns { discount, final_amount, message }. Same endpoint
-     * the mobile app calls, so web + app stay in parity.
-     */
-    validate: (data: { code: string; order_amount: number }) =>
-      api.post<{ discount: number; final_amount: number; message: string }>(
-        "/promo-codes/validate",
-        data,
-      ),
-
     /** List promos. status filter: active|inactive|expired|exhausted. */
     list: (status?: "active" | "inactive" | "expired" | "exhausted") =>
       api.get("/promo-codes", withAdminAuth({ params: status ? { status } : {} })),
-
-    get: (id: string) => api.get(`/promo-codes/${id}`, withAdminAuth()),
 
     create: (data: {
       code: string;
@@ -780,13 +704,6 @@ export interface AnalyticsRangeParams {
 
 // === Uploads API ===
 export const uploadsApi = {
-  uploadImage: (file: File) => {
-    const formData = new FormData();
-    formData.append("file", file);          // OK was "image", backend expects "file"
-    return api.post("/uploads/image", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-  },
   uploadAvatar: (file: File) => {
     const formData = new FormData();
     formData.append("file", file);
@@ -845,8 +762,7 @@ export const mealPackagesApi = {
     api.delete(`/meal-packages/${pkgId}/addons/${addonId}`),
 
   // Public (customer view — used in P1.5c)
-  getCookPackages: (cookId: string) => api.get(`/meal-packages/cook/${cookId}`),
-  getPublicByCook: (cookId: string) => api.get(`/meal-packages/cook/${cookId}`),  
+  getPublicByCook: (cookId: string) => api.get(`/meal-packages/cook/${cookId}`),
 };
 
 
@@ -939,19 +855,9 @@ export const areasApi = {
   request: (data: { name: string; city?: string }) =>
     api.post('/areas/request', data),
 
-  // Admin — list all area requests, filterable by status
-  adminListRequests: (status?: 'pending' | 'approved' | 'rejected') =>
-    api.get<{ data: AreaRequestDto[] }>('/areas/admin/requests', {
-      params: status ? { status } : undefined,
-    }),
-
-  // Admin — approve a request, must specify slug + region
-  adminApprove: (id: string, data: { slug: string; region: string }) =>
-    api.patch(`/areas/admin/requests/${id}/approve`, data),
-
-  // Admin — reject a request with a reason
-  adminReject: (id: string, reason: string) =>
-    api.patch(`/areas/admin/requests/${id}/reject`, { reject_reason: reason }),
+  // Admin list/approve/reject of area requests is implemented inline in
+  // the admin dashboard page (raw api.get/patch calls with its own `ah()`
+  // admin-auth helper) rather than through this object.
 };
 
 // === Pincode Lookup (India Post API — free, no key) ===

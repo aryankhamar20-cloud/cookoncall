@@ -90,6 +90,10 @@ export default function NotificationBell() {
         prev.map((n) => (n.id === item.id ? { ...n, is_read: true } : n)),
       );
       setUnreadCount((prev) => Math.max(0, prev - 1));
+      // Persist the read state server-side. recordClick below is CTR-only
+      // (analytics) and does NOT flip is_read on the backend — without this
+      // call the item reverts to "unread" on the next fetch/poll/login.
+      notificationsApi.markRead(item.id).catch(() => undefined);
     }
     // Fire-and-forget the click — never block the UI on this.
     notificationsApi.recordClick(item.id).catch(() => undefined);
