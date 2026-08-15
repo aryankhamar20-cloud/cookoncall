@@ -185,6 +185,11 @@ export const authApi = {
     experience?: string;
     rate?: number;
     address?: string;
+    // Area multiselect (Aug 15, 2026) — required for both roles at
+    // signup. Array of `service_areas.slug` values from GET /areas,
+    // sent as checkbox pills on the signup form. Matches the backend's
+    // RegisterDto.area_slugs exactly (see register.dto.ts).
+    area_slugs?: string[];
   }) => api.post("/auth/register", data),
 
   login: (data: { email: string; password: string }) =>

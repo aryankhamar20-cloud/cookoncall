@@ -6,7 +6,7 @@ import Link from "next/link";
 import Cookies from "js-cookie";
 import { cn } from "@/lib/utils";
 import { useAuthStore } from "@/stores/authStore";
-import { authApi, referralsApi } from "@/lib/api";
+import { authApi, referralsApi, areasApi, ServiceAreaDto } from "@/lib/api";
 import { Eye, EyeOff, ArrowLeft, UtensilsCrossed, ChefHat, Mail, ShieldCheck, KeyRound } from "lucide-react";
 import toast from "react-hot-toast";
 import PasswordStrength, { evaluatePassword } from "@/components/ui/PasswordStrength";
@@ -67,6 +67,16 @@ function LoginPage() {
   const [customCuisine, setCustomCuisine] = useState("");
   const [experience, setExperience] = useState("");
 
+  // Area multiselect (Aug 15, 2026) — required for BOTH roles at signup.
+  // Checkbox pills sourced from GET /areas, same visual/interaction
+  // pattern as the chef cuisine pills above but a genuine multiselect
+  // for either role (customers pick where they live/book from, chefs
+  // pick where they're willing to serve).
+  const [areas, setAreas] = useState<ServiceAreaDto[]>([]);
+  const [areasLoading, setAreasLoading] = useState(false);
+  const [areasError, setAreasError] = useState<string | null>(null);
+  const [selectedAreas, setSelectedAreas] = useState<string[]>([]);
+
   // Forgot password fields
   const [forgotEmail, setForgotEmail] = useState("");
   const [forgotOtp, setForgotOtp] = useState("");
@@ -107,6 +117,48 @@ function LoginPage() {
     const interval = setInterval(() => setOtpTimer((t) => t - 1), 1000);
     return () => clearInterval(interval);
   }, [otpTimer]);
+
+  // Area multiselect — fetch the active area list once when the signup
+  // tab is first shown (both Customer and Chef flows need it). Re-fetch
+  // is intentionally skipped on every tab flip back to signup — the list
+  // rarely changes mid-session and we don't want to spam /areas.
+  useEffect(() => {
+    if (tab !== "signup" || areas.length > 0 || areasLoading) return;
+    let cancelled = false;
+    setAreasLoading(true);
+    setAreasError(null);
+    areasApi
+      .list("Ahmedabad")
+      .then((res) => {
+        if (cancelled) return;
+        const list = (res.data as any)?.data ?? res.data ?? [];
+        setAreas(Array.isArray(list) ? list : []);
+      })
+      .catch(() => {
+        if (!cancelled) setAreasError("Couldn't load areas. Please retry.");
+      })
+      .finally(() => {
+        if (!cancelled) setAreasLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab]);
+
+  async function retryLoadAreas() {
+    setAreasLoading(true);
+    setAreasError(null);
+    try {
+      const res = await areasApi.list("Ahmedabad");
+      const list = (res.data as any)?.data ?? res.data ?? [];
+      setAreas(Array.isArray(list) ? list : []);
+    } catch {
+      setAreasError("Couldn't load areas. Please retry.");
+    } finally {
+      setAreasLoading(false);
+    }
+  }
 
   function saveAuth(data: { accessToken: string; refreshToken?: string; user: any }) {
     Cookies.set("coc_token", data.accessToken, { expires: 1 / 96 });
@@ -249,6 +301,12 @@ function LoginPage() {
       }
     }
 
+    // Area multiselect (Aug 15, 2026): required for BOTH roles.
+    if (selectedAreas.length === 0) {
+      toast.error("Please select at least one area to continue.");
+      return;
+    }
+
     setLoading(true);
     try {
       const body: any = {
@@ -257,6 +315,7 @@ function LoginPage() {
         email: signupEmail,
         password: signupPass,
         role: role === "Chef" ? "cook" : "user",
+        area_slugs: selectedAreas,
       };
       if (role === "Chef") {
         // Combine checkbox selections + optional custom cuisine into one CSV string.
@@ -851,6 +910,67 @@ function LoginPage() {
                   </button>
                 </div>
                 <PasswordStrength value={signupPass} />
+              </div>
+
+              {/* Area multiselect (Aug 15, 2026) — required for BOTH roles.
+                  Same checkbox-pill visual/interaction pattern as the chef
+                  cuisine pills below, but a genuine multiselect for either
+                  role: customers pick where they book from, chefs pick
+                  every area they're willing to serve. */}
+              <div className="mb-5">
+                <label className="block font-semibold text-[0.88rem] mb-2">
+                  {role === "Chef" ? "Areas You'll Serve" : "Your Area(s)"}{" "}
+                  <span className="text-[var(--orange-500)]">*</span>
+                </label>
+                {areasLoading ? (
+                  <div className="text-[0.85rem] text-[var(--text-muted)] py-2">
+                    Loading areas...
+                  </div>
+                ) : areasError ? (
+                  <div className="flex items-center gap-3 text-[0.85rem] text-[var(--text-muted)] py-2">
+                    <span>{areasError}</span>
+                    <button
+                      type="button"
+                      onClick={retryLoadAreas}
+                      className="font-semibold text-[var(--orange-500)] bg-transparent border-none cursor-pointer"
+                      style={{ fontFamily: "var(--font-body)" }}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : areas.length === 0 ? (
+                  <div className="text-[0.85rem] text-[var(--text-muted)] py-2">
+                    No service areas available right now. Please try again later.
+                  </div>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    {areas.map((a) => {
+                      const checked = selectedAreas.includes(a.slug);
+                      return (
+                        <button
+                          key={a.slug}
+                          type="button"
+                          onClick={() =>
+                            setSelectedAreas((prev) =>
+                              prev.includes(a.slug)
+                                ? prev.filter((x) => x !== a.slug)
+                                : [...prev, a.slug]
+                            )
+                          }
+                          className={cn(
+                            "px-3.5 py-2 rounded-full border-[1.5px] text-[0.82rem] font-medium cursor-pointer transition-all",
+                            checked
+                              ? "border-[var(--orange-500)] bg-[var(--orange-500)] text-white"
+                              : "border-[var(--cream-300)] bg-white text-[var(--text-muted)] hover:border-[var(--orange-500)] hover:text-[var(--orange-500)]"
+                          )}
+                          style={{ fontFamily: "var(--font-body)" }}
+                        >
+                          {a.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
 
               {role === "Chef" && (
