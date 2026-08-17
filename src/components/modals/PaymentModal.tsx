@@ -165,11 +165,49 @@ export default function PaymentModal({
         throw new Error("Session expired. Please refresh the page and try again.");
       }
 
+      // Step 1.5: Has this booking already been paid? This covers the
+      // "retry after a dropped connection" case: a previous attempt's
+      // /payments/verify call (or the Razorpay webhook) may have already
+      // captured the payment server-side even though this browser never
+      // saw a success response. Without this check, retrying would hit
+      // /payments/create-order's "Payment already completed" guard and
+      // show the customer a scary error for a booking they already paid
+      // for successfully.
+      try {
+        const { data: existing } = await paymentsApi.getByBooking(bookingId);
+        const existingPayment = (existing as any)?.data ?? existing;
+        if (existingPayment?.status === "captured") {
+          toast.success("Payment already completed! Booking confirmed.");
+          onPaymentSuccess(selectedMethod);
+          return;
+        }
+      } catch {
+        // Non-fatal — if the status check itself fails, fall through to
+        // the normal checkout flow below.
+      }
+
       // Step 2: Create Razorpay order on backend
       setStatus("Creating payment order...");
-      const { data: orderData } = await api.post("/payments/create-order", {
-        booking_id: bookingId,
-      });
+      let orderData: any;
+      try {
+        ({ data: orderData } = await api.post("/payments/create-order", {
+          booking_id: bookingId,
+        }));
+      } catch (err: any) {
+        // Same race, closed at the source: the payment captured (webhook
+        // or a concurrent verify) in the gap between the check above and
+        // this call. Treat the backend's "already completed" guard as a
+        // success, not a failure.
+        const backendMsg = err?.response?.data?.message;
+        if (typeof backendMsg === "string" && /already completed/i.test(backendMsg)) {
+          toast.success("Payment already completed! Booking confirmed.");
+          onPaymentSuccess(selectedMethod);
+          return;
+        }
+        throw new Error(
+          backendMsg || err?.message || "Could not start payment. Please try again.",
+        );
+      }
 
       const order = orderData?.data?.data ?? orderData?.data ?? orderData;
 
@@ -218,8 +256,12 @@ export default function PaymentModal({
               onPaymentSuccess(selectedMethod);
               resolve();
             } catch (err: any) {
-              toast.error(err.message || "Payment verification failed.");
-              reject(err);
+              const msg =
+                err?.response?.data?.message ||
+                err?.message ||
+                "Payment verification failed.";
+              toast.error(msg);
+              reject(new Error(msg));
             }
           },
           prefill: {
