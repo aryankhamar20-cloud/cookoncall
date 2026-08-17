@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import Cookies from "js-cookie";
 import { cn } from "@/lib/utils";
@@ -1120,8 +1121,20 @@ export default function AdminDashboardPage() {
         <div className="px-5 pt-6 pb-5 border-b border-[rgba(255,255,255,0.06)]">
           <div className="flex items-center justify-between">
             <div>
+              {/* Transparent PNG: sidebar bg is near-black, an opaque asset
+                  would show a white box. Wordmark matches the site's
+                  established two-tone "COOK"/"ONCALL" logotype (Navbar,
+                  DashboardLayout) instead of the previous flat single-color
+                  caps text. */}
               <div className="font-display font-[900] text-base flex items-center gap-2">
-                <Shield className="w-5 h-5 text-[var(--orange-500)]" />COOKONCALL
+                <Image
+                  src="/cookoncall_logo_icon-removebg-preview.png"
+                  alt="CookOnCall logo"
+                  width={20}
+                  height={20}
+                  className="h-5 w-5 object-contain"
+                />
+                COOK<span className="text-[var(--orange-500)]">ONCALL</span>
               </div>
               <span className="block text-[0.65rem] font-normal text-[rgba(255,255,255,0.4)] mt-0.5 tracking-wider ml-7">Admin Panel</span>
             </div>

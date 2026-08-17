@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import Link from "next/link";
 import Cookies from "js-cookie";
 import { cn } from "@/lib/utils";
@@ -630,7 +631,15 @@ function LoginPage() {
       {/* Left panel */}
       <div className="hidden lg:flex flex-1 bg-[var(--brown-800)] flex-col justify-center items-center p-[60px] relative overflow-hidden">
         <div className="absolute w-[500px] h-[500px] bg-[radial-gradient(circle,rgba(212,114,26,0.15)_0%,transparent_70%)] rounded-full top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
-        <Link href="/" className="font-display font-[900] text-[1.8rem] text-white no-underline mb-12 relative z-[1]">
+        {/* Transparent PNG: panel bg is dark brown, not white. */}
+        <Link href="/" className="flex items-center gap-2.5 font-display font-[900] text-[1.8rem] text-white no-underline mb-12 relative z-[1]">
+          <Image
+            src="/cookoncall_logo_icon-removebg-preview.png"
+            alt="CookOnCall logo"
+            width={44}
+            height={44}
+            className="h-11 w-11 object-contain"
+          />
           COOK<span className="text-[var(--orange-500)]">ONCALL</span>
         </Link>
         <div className="relative z-[1] text-center max-w-[400px]">
@@ -656,7 +665,14 @@ function LoginPage() {
       {/* Right panel */}
       <div className="flex-1 flex items-center justify-center p-6 md:p-10 min-h-screen bg-[var(--cream-100)]">
         <div className="w-full max-w-[440px]">
-          <div className="lg:hidden font-display font-[900] text-[1.5rem] text-[var(--brown-800)] text-center mb-8">
+          <div className="lg:hidden flex items-center justify-center gap-2 font-display font-[900] text-[1.5rem] text-[var(--brown-800)] text-center mb-8">
+            <Image
+              src="/cookoncall_logo_icon-removebg-preview.png"
+              alt="CookOnCall logo"
+              width={36}
+              height={36}
+              className="h-9 w-9 object-contain"
+            />
             COOK<span className="text-[var(--orange-500)]">ONCALL</span>
           </div>
           <button

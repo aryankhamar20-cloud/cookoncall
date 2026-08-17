@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useUIStore } from "@/stores/uiStore";
 import { useAuthStore } from "@/stores/authStore";
@@ -65,10 +66,19 @@ export default function DashboardLayout({
       >
         {/* Header */}
         <div className="px-[22px] pt-6 pb-5 border-b border-[rgba(255,255,255,0.06)]">
+          {/* Transparent PNG: sidebar is near-black brown, an opaque asset
+              would show a white box. */}
           <Link
             href="/"
-            className="font-display text-2xl font-[900] text-white no-underline block"
+            className="flex items-center gap-2 font-display text-2xl font-[900] text-white no-underline"
           >
+            <Image
+              src="/cookoncall_logo_icon-removebg-preview.png"
+              alt="CookOnCall logo"
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain"
+            />
             COOK<span className="text-[var(--orange-500)]">ONCALL</span>
           </Link>
           <div className="flex items-center gap-3 mt-[18px]">

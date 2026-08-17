@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -38,11 +39,21 @@ export default function Navbar() {
         scrolled && "shadow-[0_2px_24px_rgba(26,15,10,0.08)]"
       )}
     >
-      {/* Logo */}
+      {/* Logo — transparent PNG variant: the navbar background is a
+          translucent cream blur, not flat white, so an opaque asset would
+          show a visible box behind it. */}
       <Link
         href="/"
-        className="font-display font-[900] text-2xl text-[var(--brown-800)] no-underline tracking-tight"
+        className="flex items-center gap-2 font-display font-[900] text-2xl text-[var(--brown-800)] no-underline tracking-tight"
       >
+        <Image
+          src="/cookoncall_logo_icon-removebg-preview.png"
+          alt="CookOnCall logo"
+          width={36}
+          height={36}
+          className="h-9 w-9 object-contain"
+          priority
+        />
         COOK<span className="text-[var(--orange-500)]">ONCALL</span>
       </Link>
 

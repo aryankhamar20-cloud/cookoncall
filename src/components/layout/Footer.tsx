@@ -1,6 +1,7 @@
 // src/components/layout/Footer.tsx
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { APP_CONFIG } from "@/lib/utils";
 
@@ -29,10 +30,18 @@ export default function Footer() {
       <div className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr] gap-12 md:gap-12 mb-12">
         {/* Brand */}
         <div>
+          {/* Transparent PNG: footer bg is dark brown, not white. */}
           <Link
             href="/"
-            className="font-display font-[900] text-xl text-white no-underline block mb-3"
+            className="flex items-center gap-2 font-display font-[900] text-xl text-white no-underline mb-3"
           >
+            <Image
+              src="/cookoncall_logo_icon-removebg-preview.png"
+              alt="CookOnCall logo"
+              width={30}
+              height={30}
+              className="h-[30px] w-[30px] object-contain"
+            />
             COOK<span className="text-[var(--orange-500)]">ONCALL</span>
           </Link>
           <p className="text-[0.88rem] leading-relaxed max-w-[280px] mb-5">
