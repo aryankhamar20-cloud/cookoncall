@@ -390,6 +390,14 @@ export const paymentsApi = {
   // the Flutter app uses.
   payFromWallet: (data: { booking_id: string }) =>
     api.post("/payments/wallet", data),
+  // GET /payments/booking/:bookingId — ownership-gated read of a booking's
+  // current payment row (or null if none exists yet). Used to detect a
+  // payment that already succeeded (e.g. the webhook or a previous /verify
+  // call landed after the client lost the response) before re-running
+  // checkout, so a retry never shows "Payment already completed" as an
+  // error when the customer was, in fact, already charged successfully.
+  getByBooking: (bookingId: string) =>
+    api.get(`/payments/booking/${bookingId}`),
 };
 
 // === Reviews API ===
