@@ -150,13 +150,14 @@ const localBusinessSchema = {
     },
   ],
   sameAs: [],
-  aggregateRating: {
-    "@type": "AggregateRating",
-    ratingValue: "4.8",
-    reviewCount: "50",
-    bestRating: "5",
-    worstRating: "1",
-  },
+  // Deliberately no `aggregateRating` here. It previously hardcoded a
+  // fabricated 4.8★/50-reviews claim with no real review data behind it
+  // (docs/29 + docs/30 audits). Google's structured-data guidelines treat
+  // fabricated review/rating markup as a policy violation, and it's an
+  // integrity problem independent of Google. Add this back — computed
+  // from real review data, never a literal — once genuine review volume
+  // exists (see `reviews.service.ts` for the per-chef aggregate query
+  // this would need to be extended into a platform-wide one).
 };
 
 const websiteSchema = {
