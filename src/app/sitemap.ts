@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { CITY_SLUG, getServiceAreas } from "@/lib/serviceAreas";
 export const dynamic = "force-static";
 
 const BASE_URL = "https://thecookoncall.com";
@@ -23,7 +24,7 @@ async function getChefIds(): Promise<string[]> {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const chefIds = await getChefIds();
+  const [chefIds, areas] = await Promise.all([getChefIds(), getServiceAreas()]);
 
   const staticPages: MetadataRoute.Sitemap = [
     {
@@ -33,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 1.0,
     },
      {
-      url: `${BASE_URL}/chefs/ahmedabad`,
+      url: `${BASE_URL}/chefs/${CITY_SLUG}`,
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.9,
@@ -89,5 +90,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.85,
   }));
 
-  return [...staticPages, ...chefPages];
+  // One entry per real, active service_areas row — /chefs/ahmedabad above
+  // stays the city-wide page; areas.length is expected to be ~30+ once the
+  // /chefs/[area] route is templated across all of them.
+  const areaPages: MetadataRoute.Sitemap = areas
+    .filter((a) => a.slug !== CITY_SLUG)
+    .map((a) => ({
+      url: `${BASE_URL}/chefs/${a.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    }));
+
+  return [...staticPages, ...areaPages, ...chefPages];
 }
