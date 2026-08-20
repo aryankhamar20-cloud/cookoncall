@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import Cookies from "js-cookie";
 import { cn } from "@/lib/utils";
 import api, { authApi } from "@/lib/api";
@@ -23,17 +24,33 @@ import {
   Wallet,
   Crown,
 } from "lucide-react";
-import AuditLogPanel from "@/components/dashboard/AuditLogPanel";
-import AnalyticsPanel from "@/components/dashboard/AnalyticsPanel";
-import BroadcastPanel from "@/components/dashboard/BroadcastPanel";
-import PromosPanel from "@/components/dashboard/PromosPanel";
-import ReviewsPanel from "@/components/dashboard/ReviewsPanel";
-import PayoutsPanel from "@/components/dashboard/PayoutsPanel";
-import AdminSubscriptionsPanel from "@/components/dashboard/AdminSubscriptionsPanel";
-import AdminDisputesPanel from "@/components/dashboard/AdminDisputesPanel";
-import AdminReferralsPanel from "@/components/dashboard/AdminReferralsPanel";
-import AdminWalletPanel from "@/components/dashboard/AdminWalletPanel";
-import AdminAccountPanel from "@/components/dashboard/AdminAccountPanel";
+// Every one of these tabs is a full, independent panel (AnalyticsPanel
+// alone pulls in recharts) that most admin sessions never open — they
+// were previously static imports, so all ~10 were downloaded and parsed
+// before the admin picked a single tab (measured: /dashboard/admin was
+// the heaviest route in the app, 297 kB First Load JS). next/dynamic
+// defers each to when its tab is actually opened, and doubles as the
+// loading-state seam this file was missing for these panels — the
+// shimmer fallback matches AdminTableSkeleton below rather than a bare
+// spinner.
+function PanelLoadingFallback() {
+  return (
+    <div role="status" aria-label="Loading panel">
+      <AdminTableSkeleton rows={5} cols={4} />
+    </div>
+  );
+}
+const AuditLogPanel = dynamic(() => import("@/components/dashboard/AuditLogPanel"), { loading: PanelLoadingFallback, ssr: false });
+const AnalyticsPanel = dynamic(() => import("@/components/dashboard/AnalyticsPanel"), { loading: PanelLoadingFallback, ssr: false });
+const BroadcastPanel = dynamic(() => import("@/components/dashboard/BroadcastPanel"), { loading: PanelLoadingFallback, ssr: false });
+const PromosPanel = dynamic(() => import("@/components/dashboard/PromosPanel"), { loading: PanelLoadingFallback, ssr: false });
+const ReviewsPanel = dynamic(() => import("@/components/dashboard/ReviewsPanel"), { loading: PanelLoadingFallback, ssr: false });
+const PayoutsPanel = dynamic(() => import("@/components/dashboard/PayoutsPanel"), { loading: PanelLoadingFallback, ssr: false });
+const AdminSubscriptionsPanel = dynamic(() => import("@/components/dashboard/AdminSubscriptionsPanel"), { loading: PanelLoadingFallback, ssr: false });
+const AdminDisputesPanel = dynamic(() => import("@/components/dashboard/AdminDisputesPanel"), { loading: PanelLoadingFallback, ssr: false });
+const AdminReferralsPanel = dynamic(() => import("@/components/dashboard/AdminReferralsPanel"), { loading: PanelLoadingFallback, ssr: false });
+const AdminWalletPanel = dynamic(() => import("@/components/dashboard/AdminWalletPanel"), { loading: PanelLoadingFallback, ssr: false });
+const AdminAccountPanel = dynamic(() => import("@/components/dashboard/AdminAccountPanel"), { loading: PanelLoadingFallback, ssr: false });
 
 /* ═══ TYPES ═══ */
 
