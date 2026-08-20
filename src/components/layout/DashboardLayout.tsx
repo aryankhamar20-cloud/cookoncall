@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useUIStore } from "@/stores/uiStore";
@@ -38,6 +38,17 @@ export default function DashboardLayout({
   const { sidebarOpen, toggleSidebar, closeSidebar, activePanel, setPanel } =
     useUIStore();
   const { user, logout } = useAuthStore();
+
+  // Escape-to-close for the mobile sidebar drawer — previously only the
+  // overlay click closed it, with no keyboard equivalent.
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    function handler(e: KeyboardEvent) {
+      if (e.key === "Escape") closeSidebar();
+    }
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [sidebarOpen, closeSidebar]);
 
   const initials = user
     ? getInitials(user.name)
@@ -156,6 +167,8 @@ export default function DashboardLayout({
           <div className="flex items-center gap-3.5">
             <button
               onClick={toggleSidebar}
+              aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+              aria-expanded={sidebarOpen}
               className="lg:hidden bg-transparent border-none cursor-pointer p-1"
             >
               <Menu className="w-6 h-6 text-[var(--brown-800)]" />
