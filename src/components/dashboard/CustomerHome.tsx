@@ -30,10 +30,15 @@ const OCCASIONS: {
   icon: React.ReactNode;
   accent: string;
 }[] = [
-  { key: "birthday", label: "Birthday", icon: <Cake className="w-4 h-4" />, accent: "bg-pink-50 text-pink-700 border-pink-100" },
-  { key: "daily", label: "Daily Cook", icon: <Utensils className="w-4 h-4" />, accent: "bg-amber-50 text-amber-700 border-amber-100" },
-  { key: "weekend", label: "Weekend Feast", icon: <Calendar className="w-4 h-4" />, accent: "bg-emerald-50 text-emerald-700 border-emerald-100" },
-  { key: "party", label: "Party / Event", icon: <PartyPopper className="w-4 h-4" />, accent: "bg-violet-50 text-violet-700 border-violet-100" },
+  // Four brand-token hues for visual distinction across the four occasion
+  // chips — birthday/party previously used raw Tailwind pink/violet with
+  // no relationship to the design system; orange-300 (documented in
+  // globals.css as "decorative light accent") and info-500 give distinct
+  // hues without inventing new colors.
+  { key: "birthday", label: "Birthday", icon: <Cake className="w-4 h-4" />, accent: "bg-[var(--orange-300)]/20 text-[var(--orange-500)] border-[var(--orange-300)]/50" },
+  { key: "daily", label: "Daily Cook", icon: <Utensils className="w-4 h-4" />, accent: "bg-[var(--amber-warn-bg)] text-[var(--amber-warn)] border-[var(--amber-warn)]/40" },
+  { key: "weekend", label: "Weekend Feast", icon: <Calendar className="w-4 h-4" />, accent: "bg-[var(--green-ok)]/10 text-[var(--green-ok)] border-[var(--green-ok)]/30" },
+  { key: "party", label: "Party / Event", icon: <PartyPopper className="w-4 h-4" />, accent: "bg-[var(--info-bg)] text-[var(--info-500)] border-[var(--info-500)]/30" },
 ];
 
 // ─── Helpers (tolerant of dual naming) ────────────────────

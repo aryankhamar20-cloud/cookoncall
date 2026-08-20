@@ -303,7 +303,7 @@ export default function PromosPanel() {
 
       {/* Banners */}
       {error && (
-        <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-red-500/10 border border-red-500/30 text-red-300 text-[0.82rem]">
+        <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-[var(--red-err)]/10 border border-[var(--red-err)]/30 text-[var(--red-err)] text-[0.82rem]">
           <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <div className="flex-1">{error}</div>
           <button onClick={() => setError(null)} className="opacity-60 hover:opacity-100">
@@ -312,7 +312,7 @@ export default function PromosPanel() {
         </div>
       )}
       {success && (
-        <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[0.82rem]">
+        <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-[var(--green-ok)]/10 border border-[var(--green-ok)]/30 text-[var(--green-ok)] text-[0.82rem]">
           <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <span>{success}</span>
         </div>
@@ -449,10 +449,10 @@ function KpiTile({
   // chip so the colour reads against the dark card.
   const toneClass = {
     orange: "text-[var(--orange-400)] bg-[var(--orange-500)]/15",
-    emerald: "text-emerald-400 bg-emerald-500/15",
-    gray: "text-gray-400 bg-white/8",
-    amber: "text-amber-400 bg-amber-500/15",
-    red: "text-red-400 bg-red-500/15",
+    emerald: "text-[var(--green-ok)] bg-[var(--green-ok)]/15",
+    gray: "text-white/40 bg-white/8",
+    amber: "text-[var(--amber-warn)] bg-[var(--amber-warn)]/15",
+    red: "text-[var(--red-err)] bg-[var(--red-err)]/15",
   }[tone];
 
   return (
@@ -500,9 +500,9 @@ function PromoRow({
   // admin shell — semi-transparent backgrounds + lighter text so the
   // pill reads against the dark row.
   const statusPill = (() => {
-    if (expired) return { text: "Expired", cls: "bg-amber-500/15 text-amber-300" };
-    if (exhausted) return { text: "Exhausted", cls: "bg-red-500/15 text-red-300" };
-    if (live) return { text: "Live", cls: "bg-emerald-500/15 text-emerald-300" };
+    if (expired) return { text: "Expired", cls: "bg-[var(--amber-warn)]/15 text-[var(--amber-warn)]" };
+    if (exhausted) return { text: "Exhausted", cls: "bg-[var(--red-err)]/15 text-[var(--red-err)]" };
+    if (live) return { text: "Live", cls: "bg-[var(--green-ok)]/15 text-[var(--green-ok)]" };
     return { text: "Inactive", cls: "bg-white/8 text-gray-400" };
   })();
 
@@ -541,7 +541,7 @@ function PromoRow({
             {TYPE_LABEL[p.type]}
           </span>
           {p.single_use && (
-            <span className="px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 text-[0.7rem] font-semibold uppercase tracking-wide">
+            <span className="px-2 py-0.5 rounded-full bg-[var(--info-500)]/15 text-[var(--info-500)] text-[0.7rem] font-semibold uppercase tracking-wide">
               1 / user
             </span>
           )}
@@ -574,10 +574,10 @@ function PromoRow({
               <div
                 className={`h-full ${
                   usagePct >= 100
-                    ? "bg-red-500"
+                    ? "bg-[var(--red-err)]"
                     : usagePct >= 80
-                      ? "bg-amber-500"
-                      : "bg-emerald-500"
+                      ? "bg-[var(--amber-warn)]"
+                      : "bg-[var(--green-ok)]"
                 }`}
                 style={{ width: `${usagePct}%` }}
               />
@@ -593,7 +593,7 @@ function PromoRow({
         </IconBtn>
         <IconBtn title={p.is_active ? "Deactivate" : "Activate"} onClick={onToggle}>
           {p.is_active ? (
-            <ToggleRight className="w-4 h-4 text-emerald-400" />
+            <ToggleRight className="w-4 h-4 text-[var(--green-ok)]" />
           ) : (
             <ToggleLeft className="w-4 h-4 text-gray-500" />
           )}
@@ -626,7 +626,7 @@ function IconBtn({
       title={title}
       className={`p-2 rounded-[8px] transition-colors ${
         danger
-          ? "text-red-400 hover:bg-red-500/10 hover:text-red-300"
+          ? "text-[var(--red-err)] hover:bg-[var(--red-err)]/10 hover:text-[var(--red-err)]"
           : "text-[rgba(255,255,255,0.5)] hover:bg-white/5 hover:text-white"
       }`}
     >
@@ -945,13 +945,13 @@ function PromoComposer({
 
           {/* Validation / API error */}
           {!validation.ok && validation.msg && (
-            <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-amber-50 border border-amber-200 text-amber-800 text-[0.82rem]">
+            <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-[var(--amber-warn-bg)] border border-[var(--amber-warn)]/30 text-[var(--amber-warn)] text-[0.82rem]">
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>{validation.msg}</span>
             </div>
           )}
           {err && (
-            <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-red-50 border border-red-200 text-red-800 text-[0.82rem]">
+            <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-[var(--red-err)]/10 border border-[var(--red-err)]/30 text-[var(--red-err)] text-[0.82rem]">
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>{err}</span>
             </div>
@@ -1103,7 +1103,7 @@ function UsagesDrawer({ promo, onClose }: { promo: Promo; onClose: () => void })
               Loading…
             </div>
           ) : error ? (
-            <div className="px-3 py-2 rounded-[8px] bg-red-50 border border-red-200 text-red-800 text-[0.82rem]">
+            <div className="px-3 py-2 rounded-[8px] bg-[var(--red-err)]/10 border border-[var(--red-err)]/30 text-[var(--red-err)] text-[0.82rem]">
               {error}
             </div>
           ) : usages.length === 0 ? (
@@ -1128,7 +1128,7 @@ function UsagesDrawer({ promo, onClose }: { promo: Promo; onClose: () => void })
                         </div>
                       )}
                     </div>
-                    <span className="font-bold text-[0.88rem] text-emerald-600 whitespace-nowrap">
+                    <span className="font-bold text-[0.88rem] text-[var(--green-ok)] whitespace-nowrap">
                       −{fmtINR(u.discount_applied)}
                     </span>
                   </div>

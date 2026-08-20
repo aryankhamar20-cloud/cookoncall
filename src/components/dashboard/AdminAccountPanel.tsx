@@ -169,7 +169,7 @@ export default function AdminAccountPanel({
         {error && (
           <div
             role="alert"
-            className="flex items-start gap-2 bg-red-500/10 border border-red-500/30 rounded-[10px] px-3 py-2.5 mb-3 text-red-300 text-[0.85rem]"
+            className="flex items-start gap-2 bg-[var(--red-err)]/10 border border-[var(--red-err)]/30 rounded-[10px] px-3 py-2.5 mb-3 text-[var(--red-err)] text-[0.85rem]"
           >
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{error}</span>
@@ -178,7 +178,7 @@ export default function AdminAccountPanel({
         {success && (
           <div
             role="status"
-            className="flex items-start gap-2 bg-emerald-500/10 border border-emerald-500/30 rounded-[10px] px-3 py-2.5 mb-3 text-emerald-300 text-[0.85rem]"
+            className="flex items-start gap-2 bg-[var(--green-ok)]/10 border border-[var(--green-ok)]/30 rounded-[10px] px-3 py-2.5 mb-3 text-[var(--green-ok)] text-[0.85rem]"
           >
             <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
             <span>{success}</span>

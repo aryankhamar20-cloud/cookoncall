@@ -79,7 +79,7 @@ export default function HelpSupportPanel() {
           href={`mailto:${SUPPORT.email}`}
           className="bg-white rounded-[16px] p-4 border border-[rgba(212,114,26,0.06)] text-center hover:-translate-y-0.5 transition-transform no-underline"
         >
-          <div className="w-11 h-11 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center mx-auto mb-2">
+          <div className="w-11 h-11 rounded-full bg-[var(--info-bg)] text-[var(--info-500)] flex items-center justify-center mx-auto mb-2">
             <Mail className="w-5 h-5" />
           </div>
           <div className="font-semibold text-[0.88rem] text-[var(--brown-800)]">

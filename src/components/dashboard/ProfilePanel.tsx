@@ -218,25 +218,25 @@ export default function ProfilePanel() {
               <div className="text-[0.85rem] text-[var(--text-muted)] mt-1 flex items-center gap-1.5 justify-center">
                 <Mail className="w-3.5 h-3.5" /> {user.email || "—"}
                 {emailVerified ? (
-                  <ShieldCheck className="w-4 h-4 text-emerald-500 ml-1" />
+                  <ShieldCheck className="w-4 h-4 text-[var(--green-ok)] ml-1" />
                 ) : (
-                  <ShieldAlert className="w-4 h-4 text-yellow-500 ml-1" />
+                  <ShieldAlert className="w-4 h-4 text-[var(--amber-warn)] ml-1" />
                 )}
               </div>
               {user.phone && (
                 <div className="text-[0.82rem] text-[var(--text-muted)] mt-0.5 flex items-center gap-1.5 justify-center">
                   <Phone className="w-3.5 h-3.5" /> {user.phone}
-                  {phoneVerified && <ShieldCheck className="w-4 h-4 text-emerald-500 ml-1" />}
+                  {phoneVerified && <ShieldCheck className="w-4 h-4 text-[var(--green-ok)] ml-1" />}
                 </div>
               )}
 
               <div className="flex gap-2 justify-center mt-4">
                 {emailVerified ? (
-                  <span className="px-3 py-1 rounded-full text-[0.72rem] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  <span className="px-3 py-1 rounded-full text-[0.72rem] font-semibold bg-[var(--green-ok)]/10 text-[var(--green-ok)] border border-[var(--green-ok)]/25">
                     Email verified
                   </span>
                 ) : (
-                  <span className="px-3 py-1 rounded-full text-[0.72rem] font-semibold bg-yellow-50 text-yellow-700 border border-yellow-200">
+                  <span className="px-3 py-1 rounded-full text-[0.72rem] font-semibold bg-[var(--amber-warn-bg)] text-[var(--amber-warn)] border border-[var(--amber-warn)]">
                     Email not verified
                   </span>
                 )}
@@ -317,7 +317,7 @@ export default function ProfilePanel() {
           ))}
 
           <button onClick={handleLogout}
-            className="mt-6 w-full py-2.5 rounded-full border border-red-200 text-red-500 text-[0.85rem] font-semibold cursor-pointer hover:bg-red-50 transition-all bg-transparent">
+            className="mt-6 w-full py-2.5 rounded-full border border-[var(--red-err)] text-[var(--red-err)] text-[0.85rem] font-semibold cursor-pointer hover:bg-[var(--red-err)]/10 transition-all bg-transparent">
             Sign Out
           </button>
         </div>

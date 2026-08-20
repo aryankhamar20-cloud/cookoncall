@@ -73,11 +73,11 @@ const STATUS_LABEL: Record<PaymentStatus, string> = {
 };
 
 const STATUS_PILL: Record<PaymentStatus, string> = {
-  created: "bg-amber-100 text-amber-700",
-  authorized: "bg-blue-100 text-blue-700",
-  captured: "bg-emerald-100 text-emerald-700",
-  refunded: "bg-purple-100 text-purple-700",
-  failed: "bg-red-100 text-red-700",
+  created: "bg-[var(--amber-warn)]/15 text-[var(--amber-warn)]",
+  authorized: "bg-[var(--info-500)]/15 text-[var(--info-500)]",
+  captured: "bg-[var(--green-ok)]/15 text-[var(--green-ok)]",
+  refunded: "bg-[var(--info-500)]/15 text-[var(--info-500)]",
+  failed: "bg-[var(--red-err)]/15 text-[var(--red-err)]",
 };
 
 const fmtINR = (n: number) =>
@@ -242,7 +242,7 @@ export default function EarningsHistoryPanel() {
 
       {/* Errors */}
       {error && (
-        <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-red-50 border border-red-200 text-red-800 text-[0.82rem]">
+        <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-[var(--red-err)]/10 border border-[var(--red-err)]/25 text-[var(--red-err)] text-[0.82rem]">
           <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <span>{error}</span>
         </div>
@@ -315,9 +315,9 @@ function SummaryTile({
   tone: "emerald" | "blue" | "amber";
 }) {
   const cls = {
-    emerald: "text-emerald-600 bg-emerald-100",
-    blue: "text-blue-600 bg-blue-100",
-    amber: "text-amber-600 bg-amber-100",
+    emerald: "text-[var(--green-ok)] bg-[var(--green-ok)]/12",
+    blue: "text-[var(--info-500)] bg-[var(--info-500)]/12",
+    amber: "text-[var(--amber-warn)] bg-[var(--amber-warn)]/12",
   }[tone];
   return (
     <div className="bg-white rounded-[14px] border border-[rgba(0,0,0,0.06)] p-4 flex items-center gap-3">
@@ -386,9 +386,9 @@ function PayoutRow({
           <div
             className={`font-display font-[800] text-[1.05rem] ${
               isPaid
-                ? "text-emerald-600"
+                ? "text-[var(--green-ok)]"
                 : isRefund
-                  ? "text-purple-600"
+                  ? "text-[var(--info-500)]"
                   : "text-[var(--brown-800)]"
             }`}
           >
@@ -476,9 +476,9 @@ function Cell({
 }) {
   const valueCls =
     tone === "positive"
-      ? "text-emerald-600 font-bold"
+      ? "text-[var(--green-ok)] font-bold"
       : tone === "negative"
-        ? "text-red-500 font-bold"
+        ? "text-[var(--red-err)] font-bold"
         : "text-[var(--brown-800)] font-semibold";
   return (
     <div className={wide ? "col-span-2 sm:col-span-3" : ""}>

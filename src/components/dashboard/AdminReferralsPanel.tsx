@@ -84,7 +84,7 @@ export default function AdminReferralsPanel() {
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-[0.85rem] text-red-300 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mb-4">
+        <div className="flex items-center gap-2 text-[0.85rem] text-[var(--red-err)] bg-[var(--red-err)]/10 border border-[var(--red-err)]/20 rounded-lg px-3 py-2 mb-4">
           <AlertCircle className="w-4 h-4" /> {error}
         </div>
       )}
@@ -107,7 +107,7 @@ export default function AdminReferralsPanel() {
                   {fmt(r.created_at)} · referrer {money(r.referrer_reward)} / referee {money(r.referee_reward)}
                 </div>
               </div>
-              <span className={`text-[0.72rem] px-2 py-1 rounded-full font-semibold ${r.status === "rewarded" ? "bg-emerald-500/15 text-emerald-300" : "bg-amber-500/15 text-amber-300"}`}>
+              <span className={`text-[0.72rem] px-2 py-1 rounded-full font-semibold ${r.status === "rewarded" ? "bg-[var(--green-ok)]/15 text-[var(--green-ok)]" : "bg-[var(--amber-warn)]/15 text-[var(--amber-warn)]"}`}>
                 {r.status}
               </span>
             </div>

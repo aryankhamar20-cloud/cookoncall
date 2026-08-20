@@ -169,7 +169,7 @@ export default function PayoutsPanel() {
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-[0.85rem] text-red-300 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mb-4">
+        <div className="flex items-center gap-2 text-[0.85rem] text-[var(--red-err)] bg-[var(--red-err)]/10 border border-[var(--red-err)]/20 rounded-lg px-3 py-2 mb-4">
           <AlertCircle className="w-4 h-4" /> {error}
         </div>
       )}
@@ -198,7 +198,7 @@ export default function PayoutsPanel() {
                   <div className="flex items-center gap-3">
                     <div className="text-right">
                       <div className="text-[0.68rem] text-white/40">Outstanding</div>
-                      <div className={cn2(b.outstanding > 0.01 ? "text-[var(--orange-400)]" : "text-emerald-400", "font-bold")}>
+                      <div className={cn2(b.outstanding > 0.01 ? "text-[var(--orange-400)]" : "text-[var(--green-ok)]", "font-bold")}>
                         {money(b.outstanding)}
                       </div>
                     </div>
@@ -264,7 +264,7 @@ export default function PayoutsPanel() {
                       <button
                         onClick={() => submitPayout(b.cook_id)}
                         disabled={busyId === b.cook_id}
-                        className="px-4 py-2 rounded-lg text-[0.82rem] font-semibold bg-emerald-500 text-white hover:opacity-90 cursor-pointer disabled:opacity-60 flex items-center gap-1.5"
+                        className="px-4 py-2 rounded-lg text-[0.82rem] font-semibold bg-[var(--green-ok)] text-white hover:opacity-90 cursor-pointer disabled:opacity-60 flex items-center gap-1.5"
                       >
                         {busyId === b.cook_id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                         Record as paid
@@ -296,9 +296,9 @@ export default function PayoutsPanel() {
                   <span
                     className={cn2(
                       "text-[0.72rem] px-2 py-1 rounded-full font-semibold",
-                      p.status === "paid" ? "bg-emerald-500/15 text-emerald-300" :
-                      p.status === "failed" ? "bg-red-500/15 text-red-300" :
-                      "bg-amber-500/15 text-amber-300",
+                      p.status === "paid" ? "bg-[var(--green-ok)]/15 text-[var(--green-ok)]" :
+                      p.status === "failed" ? "bg-[var(--red-err)]/15 text-[var(--red-err)]" :
+                      "bg-[var(--amber-warn)]/15 text-[var(--amber-warn)]",
                     )}
                   >
                     {p.status}

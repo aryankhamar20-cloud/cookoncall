@@ -105,7 +105,7 @@ export default function AdminWalletPanel() {
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-[0.85rem] text-red-300 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mb-4">
+        <div className="flex items-center gap-2 text-[0.85rem] text-[var(--red-err)] bg-[var(--red-err)]/10 border border-[var(--red-err)]/20 rounded-lg px-3 py-2 mb-4">
           <AlertCircle className="w-4 h-4" /> {error}
         </div>
       )}
@@ -130,10 +130,10 @@ export default function AdminWalletPanel() {
                 placeholder="Reason (optional)"
                 className="flex-1 min-w-[140px] bg-white/5 border border-white/15 rounded-lg px-3 py-2 text-white text-[0.85rem] outline-none focus:border-[var(--orange-400)] placeholder:text-white/30"
               />
-              <button onClick={() => adjust(1)} disabled={adjusting} className="flex items-center gap-1 px-3 py-2 rounded-lg text-[0.82rem] font-semibold bg-emerald-500/90 text-white cursor-pointer hover:opacity-90 disabled:opacity-60">
+              <button onClick={() => adjust(1)} disabled={adjusting} className="flex items-center gap-1 px-3 py-2 rounded-lg text-[0.82rem] font-semibold bg-[var(--green-ok)]/90 text-white cursor-pointer hover:opacity-90 disabled:opacity-60">
                 <Plus className="w-3.5 h-3.5" /> Credit
               </button>
-              <button onClick={() => adjust(-1)} disabled={adjusting} className="flex items-center gap-1 px-3 py-2 rounded-lg text-[0.82rem] font-semibold bg-red-500/80 text-white cursor-pointer hover:opacity-90 disabled:opacity-60">
+              <button onClick={() => adjust(-1)} disabled={adjusting} className="flex items-center gap-1 px-3 py-2 rounded-lg text-[0.82rem] font-semibold bg-[var(--red-err)]/80 text-white cursor-pointer hover:opacity-90 disabled:opacity-60">
                 <Minus className="w-3.5 h-3.5" /> Debit
               </button>
             </div>
@@ -153,7 +153,7 @@ export default function AdminWalletPanel() {
                       <div className="font-semibold text-[0.85rem]">{TYPE_LABEL[t.type] || t.type}</div>
                       <div className="text-[0.72rem] text-white/50">{t.description || fmt(t.created_at)}</div>
                     </div>
-                    <div className={`font-bold text-[0.88rem] ${credit ? "text-emerald-300" : "text-white/70"}`}>
+                    <div className={`font-bold text-[0.88rem] ${credit ? "text-[var(--green-ok)]" : "text-white/70"}`}>
                       {credit ? "+" : "−"}{money(t.amount)}
                     </div>
                   </div>

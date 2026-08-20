@@ -455,7 +455,7 @@ export default function AnalyticsPanel() {
 
       {/* ─── Per-endpoint error notice (non-blocking) ────────── */}
       {errors.length > 0 && (
-        <div className="rounded-[10px] border border-red-500/30 bg-red-500/10 px-3 py-2 text-[0.82rem] text-red-300 flex items-center gap-2">
+        <div className="rounded-[10px] border border-[var(--red-err)]/30 bg-[var(--red-err)]/10 px-3 py-2 text-[0.82rem] text-[var(--red-err)] flex items-center gap-2">
           <AlertCircle className="w-4 h-4" />
           Some metrics couldn&apos;t load: <span className="font-semibold">{errors.join(", ")}</span>.
           Other charts are unaffected.
@@ -752,8 +752,8 @@ export default function AnalyticsPanel() {
                   <span className="text-white text-[0.86rem] font-semibold truncate">{c.name}</span>
                 </div>
                 <div className="flex items-center gap-3 shrink-0 text-[0.8rem]">
-                  <span className="text-amber-400 font-bold">★ {Number(c.rating ?? 0).toFixed(1)}</span>
-                  <span className="text-teal-400 font-bold">
+                  <span className="text-[var(--amber-warn)] font-bold">★ {Number(c.rating ?? 0).toFixed(1)}</span>
+                  <span className="text-[var(--green-ok)] font-bold">
                     {c.avg_nps_score != null ? `NPS ${Number(c.avg_nps_score).toFixed(1)}` : "NPS —"}
                   </span>
                 </div>

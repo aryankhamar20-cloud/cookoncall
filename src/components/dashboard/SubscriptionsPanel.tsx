@@ -117,14 +117,14 @@ export default function SubscriptionsPanel() {
 
   return (
     <div className="max-w-3xl mx-auto">
-      {error && <div className="text-[0.85rem] text-red-600 mb-4">{error}</div>}
+      {error && <div className="text-[0.85rem] text-[var(--red-err)] mb-4">{error}</div>}
       <div className="space-y-3">
         {subs.map((s) => {
           const days = [...s.days_of_week].sort().map((d) => DAY_LABELS[d]).join(", ");
           const cadence = s.cadence.charAt(0).toUpperCase() + s.cadence.slice(1);
           const statusColor =
-            s.status === "active" ? "text-emerald-600 bg-emerald-50" :
-            s.status === "paused" ? "text-amber-600 bg-amber-50" :
+            s.status === "active" ? "text-[var(--green-ok)] bg-[var(--green-ok)]/10" :
+            s.status === "paused" ? "text-[var(--amber-warn)] bg-[var(--amber-warn-bg)]" :
             "text-[var(--text-muted)] bg-[rgba(0,0,0,0.04)]";
           return (
             <div key={s.id} className="bg-white rounded-[16px] p-5 border border-[rgba(212,114,26,0.06)]">
@@ -151,12 +151,12 @@ export default function SubscriptionsPanel() {
                 </div>
                 <div className="flex items-center gap-2">
                   {s.status === "active" && (
-                    <button onClick={() => act(s.id, "pause")} disabled={busyId === s.id} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[0.8rem] font-semibold text-amber-700 bg-amber-50 border-none cursor-pointer hover:bg-amber-100 disabled:opacity-60">
+                    <button onClick={() => act(s.id, "pause")} disabled={busyId === s.id} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[0.8rem] font-semibold text-[var(--amber-warn)] bg-[var(--amber-warn-bg)] border-none cursor-pointer hover:opacity-80 disabled:opacity-60">
                       <Pause className="w-3.5 h-3.5" /> Pause
                     </button>
                   )}
                   {s.status === "paused" && (
-                    <button onClick={() => act(s.id, "resume")} disabled={busyId === s.id} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[0.8rem] font-semibold text-emerald-700 bg-emerald-50 border-none cursor-pointer hover:bg-emerald-100 disabled:opacity-60">
+                    <button onClick={() => act(s.id, "resume")} disabled={busyId === s.id} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[0.8rem] font-semibold text-[var(--green-ok)] bg-[var(--green-ok)]/10 border-none cursor-pointer hover:bg-[var(--green-ok)]/20 disabled:opacity-60">
                       <Play className="w-3.5 h-3.5" /> Resume
                     </button>
                   )}

@@ -86,6 +86,17 @@
    * ratings are a positive/neutral signal, warn is a caution signal — same
    * hue family would read as "this 5-star chef is a warning." */
   --star-gold: #f5a623;
+  /* Admin console dark-surface elevation scale — the admin dashboard is
+   * intentionally dark (data-dense operator console, distinct from the
+   * light customer/cook surfaces), but it had hand-rolled FOUR near-
+   * duplicate near-black hexes (#0C0705 / #120B07 / #1A120D / #1A1209)
+   * across its own file — drifting exactly the way this stylesheet's own
+   * history warns against, and not even internally consistent with each
+   * other. Consolidated to one named 3-step scale off --brown-900 so admin
+   * screens reuse it instead of re-inventing another near-black hex. */
+  --admin-surface-0: #0c0705; /* page canvas */
+  --admin-surface-1: #120b07; /* sidebar / sticky header */
+  --admin-surface-2: #1a120d; /* cards, modals — same family as --brown-900 */
   --font-display: "Plus Jakarta Sans", sans-serif;
   --font-body: "Be Vietnam Pro", sans-serif;
   --nav-height: 72px;

@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import Cookies from "js-cookie";
 import { cn } from "@/lib/utils";
 import api, { authApi } from "@/lib/api";
@@ -23,17 +24,33 @@ import {
   Wallet,
   Crown,
 } from "lucide-react";
-import AuditLogPanel from "@/components/dashboard/AuditLogPanel";
-import AnalyticsPanel from "@/components/dashboard/AnalyticsPanel";
-import BroadcastPanel from "@/components/dashboard/BroadcastPanel";
-import PromosPanel from "@/components/dashboard/PromosPanel";
-import ReviewsPanel from "@/components/dashboard/ReviewsPanel";
-import PayoutsPanel from "@/components/dashboard/PayoutsPanel";
-import AdminSubscriptionsPanel from "@/components/dashboard/AdminSubscriptionsPanel";
-import AdminDisputesPanel from "@/components/dashboard/AdminDisputesPanel";
-import AdminReferralsPanel from "@/components/dashboard/AdminReferralsPanel";
-import AdminWalletPanel from "@/components/dashboard/AdminWalletPanel";
-import AdminAccountPanel from "@/components/dashboard/AdminAccountPanel";
+// Every one of these tabs is a full, independent panel (AnalyticsPanel
+// alone pulls in recharts) that most admin sessions never open — they
+// were previously static imports, so all ~10 were downloaded and parsed
+// before the admin picked a single tab (measured: /dashboard/admin was
+// the heaviest route in the app, 297 kB First Load JS). next/dynamic
+// defers each to when its tab is actually opened, and doubles as the
+// loading-state seam this file was missing for these panels — the
+// shimmer fallback matches AdminTableSkeleton below rather than a bare
+// spinner.
+function PanelLoadingFallback() {
+  return (
+    <div role="status" aria-label="Loading panel">
+      <AdminTableSkeleton rows={5} cols={4} />
+    </div>
+  );
+}
+const AuditLogPanel = dynamic(() => import("@/components/dashboard/AuditLogPanel"), { loading: PanelLoadingFallback, ssr: false });
+const AnalyticsPanel = dynamic(() => import("@/components/dashboard/AnalyticsPanel"), { loading: PanelLoadingFallback, ssr: false });
+const BroadcastPanel = dynamic(() => import("@/components/dashboard/BroadcastPanel"), { loading: PanelLoadingFallback, ssr: false });
+const PromosPanel = dynamic(() => import("@/components/dashboard/PromosPanel"), { loading: PanelLoadingFallback, ssr: false });
+const ReviewsPanel = dynamic(() => import("@/components/dashboard/ReviewsPanel"), { loading: PanelLoadingFallback, ssr: false });
+const PayoutsPanel = dynamic(() => import("@/components/dashboard/PayoutsPanel"), { loading: PanelLoadingFallback, ssr: false });
+const AdminSubscriptionsPanel = dynamic(() => import("@/components/dashboard/AdminSubscriptionsPanel"), { loading: PanelLoadingFallback, ssr: false });
+const AdminDisputesPanel = dynamic(() => import("@/components/dashboard/AdminDisputesPanel"), { loading: PanelLoadingFallback, ssr: false });
+const AdminReferralsPanel = dynamic(() => import("@/components/dashboard/AdminReferralsPanel"), { loading: PanelLoadingFallback, ssr: false });
+const AdminWalletPanel = dynamic(() => import("@/components/dashboard/AdminWalletPanel"), { loading: PanelLoadingFallback, ssr: false });
+const AdminAccountPanel = dynamic(() => import("@/components/dashboard/AdminAccountPanel"), { loading: PanelLoadingFallback, ssr: false });
 
 /* ═══ TYPES ═══ */
 
@@ -119,23 +136,74 @@ function fmtCurrency(val: number | string) {
   return isNaN(n) ? "₹0" : "₹" + n.toLocaleString("en-IN");
 }
 
+// Brand-token status colors — every hue here traces to a :root custom
+// property in globals.css (never a raw Tailwind palette color), so admin
+// badges stay in sync with the same semantic meanings customer/cook use:
+// amber-warn = pending/needs-attention, info-500 = in-progress/neutral-info,
+// green-ok = success/complete, red-err = failure/cancelled.
+const STATUS_TONE: Record<string, string> = {
+  pending: "bg-[var(--amber-warn)]/15 text-[var(--amber-warn)]",
+  confirmed: "bg-[var(--info-500)]/15 text-[var(--info-500)]",
+  in_progress: "bg-[var(--info-500)]/15 text-[var(--info-500)]",
+  completed: "bg-[var(--green-ok)]/15 text-[var(--green-ok)]",
+  cancelled_by_user: "bg-[var(--red-err)]/15 text-[var(--red-err)]",
+  cancelled_by_cook: "bg-[var(--red-err)]/15 text-[var(--red-err)]",
+  expired: "bg-white/10 text-white/40",
+};
+
 function statusBadge(status: string) {
-  const c: Record<string, string> = {
-    pending: "bg-yellow-500/15 text-yellow-400", confirmed: "bg-blue-500/15 text-blue-400",
-    in_progress: "bg-purple-500/15 text-purple-400", completed: "bg-green-500/15 text-green-400",
-    cancelled_by_user: "bg-red-500/15 text-red-400", cancelled_by_cook: "bg-red-500/15 text-red-400",
-    expired: "bg-gray-500/15 text-gray-400",
-    PENDING: "bg-yellow-500/15 text-yellow-400", CONFIRMED: "bg-blue-500/15 text-blue-400",
-    IN_PROGRESS: "bg-purple-500/15 text-purple-400", COMPLETED: "bg-green-500/15 text-green-400",
-    CANCELLED_BY_USER: "bg-red-500/15 text-red-400", CANCELLED_BY_COOK: "bg-red-500/15 text-red-400",
-    EXPIRED: "bg-gray-500/15 text-gray-400",
-  };
-  return <span className={cn("px-2.5 py-1 rounded-full text-[0.72rem] font-semibold uppercase tracking-wide", c[status] || "bg-gray-500/15 text-gray-400")}>{status.replace(/_/g, " ")}</span>;
+  const key = status.toLowerCase();
+  const cls = STATUS_TONE[key] || "bg-white/10 text-white/40";
+  return <span className={cn("px-2.5 py-1 rounded-full text-[0.72rem] font-semibold uppercase tracking-wide", cls)}>{status.replace(/_/g, " ")}</span>;
 }
 
 function roleBadge(role: string) {
-  const c = role === "admin" ? "bg-purple-500/15 text-purple-400" : role === "cook" ? "bg-orange-500/15 text-orange-400" : "bg-blue-500/15 text-blue-400";
+  // No brand token maps to "admin" specifically — reuse info-500 (neutral/
+  // system role) rather than inventing a purple. Cook uses the primary
+  // brand orange since chef-badging elsewhere in the app already does.
+  const c = role === "admin" ? "bg-[var(--info-500)]/15 text-[var(--info-500)]" : role === "cook" ? "bg-[var(--orange-500)]/15 text-[var(--orange-400)]" : "bg-white/10 text-white/60";
   return <span className={cn("px-2 py-0.5 rounded-full text-[0.72rem] font-semibold", c)}>{role}</span>;
+}
+
+/* ═══ ADMIN TABLE SKELETON ═══
+ * Admin's table panels (Overview/Users/Cooks/Bookings) previously showed
+ * a bare spinner while loading — every customer-side list has a shaped
+ * skeleton instead (see src/components/ui/Skeleton.tsx). Reuses the same
+ * `shimmer` keyframe already defined globally in globals.css, just with a
+ * dark-surface gradient instead of the light cream one, since the admin
+ * console is a deliberately dark surface. */
+function AdminTableSkeleton({ rows = 6, cols = 5 }: { rows?: number; cols?: number }) {
+  return (
+    <div className="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-[14px] overflow-hidden" aria-hidden="true">
+      <div className="border-b border-[rgba(255,255,255,0.06)] px-4 py-3 flex gap-4">
+        {Array.from({ length: cols }).map((_, i) => (
+          <div key={i} className="h-3 flex-1 rounded bg-gradient-to-r from-[rgba(255,255,255,0.04)] via-[rgba(255,255,255,0.1)] to-[rgba(255,255,255,0.04)] bg-[length:200%_100%] animate-[shimmer_1.5s_ease-in-out_infinite]" />
+        ))}
+      </div>
+      {Array.from({ length: rows }).map((_, r) => (
+        <div key={r} className="border-b border-[rgba(255,255,255,0.04)] px-4 py-3.5 flex gap-4">
+          {Array.from({ length: cols }).map((_, c) => (
+            <div key={c} className="h-3.5 flex-1 rounded bg-gradient-to-r from-[rgba(255,255,255,0.03)] via-[rgba(255,255,255,0.07)] to-[rgba(255,255,255,0.03)] bg-[length:200%_100%] animate-[shimmer_1.5s_ease-in-out_infinite]" style={{ animationDelay: `${r * 60}ms` }} />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ═══ A11Y: ESCAPE-TO-CLOSE ═══
+ * Shared by every admin modal below — none of them previously listened
+ * for Escape, so keyboard users had no way out except tabbing to a
+ * Cancel/Close button. */
+function useEscapeClose(active: boolean, onClose: () => void) {
+  useEffect(() => {
+    if (!active) return;
+    function handler(e: KeyboardEvent) {
+      if (e.key === "Escape") onClose();
+    }
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+  }, [active, onClose]);
 }
 
 /* ═══ CONFIRM DIALOG ═══ */
@@ -144,18 +212,19 @@ function ConfirmDialog({ open, title, message, onConfirm, onCancel, loading }: {
   open: boolean; title: string; message: string;
   onConfirm: () => void; onCancel: () => void; loading?: boolean;
 }) {
+  useEscapeClose(open, () => !loading && onCancel());
   if (!open) return null;
   return (
-    <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-5" onClick={onCancel}>
-      <div className="bg-[#1A120D] border border-[rgba(255,255,255,0.1)] rounded-[16px] p-6 max-w-[400px] w-full" onClick={(e) => e.stopPropagation()}>
-        <h3 className="text-white font-bold text-[1.05rem] mb-2">{title}</h3>
+    <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-5" onClick={onCancel} role="dialog" aria-modal="true" aria-labelledby="confirm-dialog-title">
+      <div className="bg-[var(--admin-surface-2)] border border-[rgba(255,255,255,0.1)] rounded-[16px] p-6 max-w-[400px] w-full" onClick={(e) => e.stopPropagation()}>
+        <h3 id="confirm-dialog-title" className="text-white font-bold text-[1.05rem] mb-2">{title}</h3>
         <p className="text-[rgba(255,255,255,0.5)] text-[0.88rem] mb-6">{message}</p>
         <div className="flex items-center justify-end gap-3">
           <button onClick={onCancel} disabled={loading}
             className="px-4 py-2.5 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-[rgba(255,255,255,0.6)] text-[0.85rem] font-medium cursor-pointer hover:bg-[rgba(255,255,255,0.1)] transition-all disabled:opacity-50"
             style={{ fontFamily: "var(--font-body)" }}>Cancel</button>
           <button onClick={onConfirm} disabled={loading}
-            className="px-4 py-2.5 bg-red-500/20 border border-red-500/30 rounded-[10px] text-red-400 text-[0.85rem] font-semibold cursor-pointer hover:bg-red-500/30 transition-all disabled:opacity-50 flex items-center gap-2"
+            className="px-4 py-2.5 bg-[var(--red-err)]/20 border border-[var(--red-err)]/30 rounded-[10px] text-[var(--red-err)] text-[0.85rem] font-semibold cursor-pointer hover:bg-[var(--red-err)]/30 transition-all disabled:opacity-50 flex items-center gap-2"
             style={{ fontFamily: "var(--font-body)" }}>
             {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
             {loading ? "Deleting..." : "Delete"}
@@ -187,13 +256,14 @@ function EditUserModal({ open, user, onSave, onCancel, loading }: {
     }
   }, [user]);
 
+  useEscapeClose(open, () => !loading && onCancel());
   if (!open || !user) return null;
 
   const inputCls = "w-full px-4 py-3 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-white text-[0.9rem] outline-none placeholder:text-[rgba(255,255,255,0.3)] focus:border-[var(--orange-500)]";
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-5" onClick={onCancel}>
-      <div className="bg-[#1A120D] border border-[rgba(255,255,255,0.1)] rounded-[16px] p-6 max-w-[450px] w-full" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center p-5" onClick={onCancel} role="dialog" aria-modal="true" aria-label="Edit user">
+      <div className="bg-[var(--admin-surface-2)] border border-[rgba(255,255,255,0.1)] rounded-[16px] p-6 max-w-[450px] w-full" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-5">
           <h3 className="text-white font-bold text-[1.05rem]">Edit User</h3>
           <button onClick={onCancel} className="text-[rgba(255,255,255,0.3)] hover:text-white bg-transparent border-none cursor-pointer"><X className="w-5 h-5" /></button>
@@ -245,10 +315,10 @@ function EditUserModal({ open, user, onSave, onCancel, loading }: {
 function verificationStatusBadge(status?: string) {
   const s = (status || "not_submitted").toLowerCase();
   const map: Record<string, { label: string; cls: string; icon: React.ReactNode }> = {
-    not_submitted: { label: "Not Submitted", cls: "bg-gray-500/15 text-gray-400", icon: <AlertCircle className="w-3 h-3" /> },
-    pending: { label: "Pending Review", cls: "bg-yellow-500/15 text-yellow-400", icon: <AlertCircle className="w-3 h-3" /> },
-    approved: { label: "Approved", cls: "bg-green-500/15 text-green-400", icon: <BadgeCheck className="w-3 h-3" /> },
-    rejected: { label: "Rejected", cls: "bg-red-500/15 text-red-400", icon: <XCircle className="w-3 h-3" /> },
+    not_submitted: { label: "Not Submitted", cls: "bg-white/10 text-white/40", icon: <AlertCircle className="w-3 h-3" /> },
+    pending: { label: "Pending Review", cls: "bg-[var(--amber-warn)]/15 text-[var(--amber-warn)]", icon: <AlertCircle className="w-3 h-3" /> },
+    approved: { label: "Approved", cls: "bg-[var(--green-ok)]/15 text-[var(--green-ok)]", icon: <BadgeCheck className="w-3 h-3" /> },
+    rejected: { label: "Rejected", cls: "bg-[var(--red-err)]/15 text-[var(--red-err)]", icon: <XCircle className="w-3 h-3" /> },
   };
   const m = map[s] || map.not_submitted;
   return (
@@ -344,19 +414,20 @@ function ReviewChefModal({
     return () => { cancelled = true; };
   }, [open, cook?.id, token]);
 
+  useEscapeClose(open, () => !loading && onCancel());
   if (!open || !cook) return null;
 
   const reasonTrimmed = reason.trim();
   const reasonValid = reasonTrimmed.length >= 10;
 
   return (
-    <div className="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center p-4 overflow-y-auto" onClick={onCancel}>
+    <div className="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center p-4 overflow-y-auto" onClick={onCancel} role="dialog" aria-modal="true" aria-label="Review chef application">
       <div
-        className="bg-[#1A120D] border border-[rgba(255,255,255,0.1)] rounded-[16px] w-full max-w-[780px] my-8 max-h-[92vh] overflow-y-auto"
+        className="bg-[var(--admin-surface-2)] border border-[rgba(255,255,255,0.1)] rounded-[16px] w-full max-w-[780px] my-8 max-h-[92vh] overflow-y-auto"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-[#1A120D] border-b border-[rgba(255,255,255,0.08)] px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-[var(--admin-surface-2)] border-b border-[rgba(255,255,255,0.08)] px-6 py-4 flex items-center justify-between z-10">
           <div>
             <h3 className="text-white font-bold text-[1.1rem]">Review Chef Application</h3>
             <p className="text-[rgba(255,255,255,0.45)] text-[0.82rem] mt-0.5">{cook.user?.name || "—"} · {cook.user?.email || "—"}</p>
@@ -375,7 +446,7 @@ function ReviewChefModal({
               <span className="text-[0.74rem] text-[rgba(255,255,255,0.35)]">verified {new Date(cook.verified_at).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</span>
             )}
             {cook.is_founding_cook && (
-              <span className="flex items-center gap-1 px-2 py-0.5 bg-amber-500/15 text-amber-400 rounded text-[0.74rem] font-semibold">
+              <span className="flex items-center gap-1 px-2 py-0.5 bg-[var(--amber-warn)]/15 text-[var(--amber-warn)] rounded text-[0.74rem] font-semibold">
                 <Crown className="w-3.5 h-3.5" />Founding Chef #{cook.founding_cook_number ?? "?"}
               </span>
             )}
@@ -421,8 +492,8 @@ function ReviewChefModal({
 
           {/* Existing rejection reason */}
           {cook.verification_status === "rejected" && cook.verification_rejection_reason && (
-            <div className="bg-red-500/10 border border-red-500/20 rounded-[10px] px-4 py-3">
-              <div className="text-[0.72rem] text-red-400 uppercase tracking-wider font-semibold mb-1">Previously rejected for</div>
+            <div className="bg-[var(--red-err)]/10 border border-[var(--red-err)]/20 rounded-[10px] px-4 py-3">
+              <div className="text-[0.72rem] text-[var(--red-err)] uppercase tracking-wider font-semibold mb-1">Previously rejected for</div>
               <div className="text-[0.86rem] text-[rgba(255,255,255,0.8)]" style={{ fontFamily: "var(--font-body)" }}>{cook.verification_rejection_reason}</div>
             </div>
           )}
@@ -484,19 +555,19 @@ function ReviewChefModal({
 
           {/* REJECT MODE */}
           {mode === "reject" && (
-            <div className="bg-red-500/5 border border-red-500/20 rounded-[12px] p-4 space-y-3">
+            <div className="bg-[var(--red-err)]/5 border border-[var(--red-err)]/20 rounded-[12px] p-4 space-y-3">
               <div>
-                <label className="block text-[0.75rem] text-red-400 mb-1.5 uppercase tracking-wider font-semibold">Rejection Reason (required, min 10 chars)</label>
+                <label className="block text-[0.75rem] text-[var(--red-err)] mb-1.5 uppercase tracking-wider font-semibold">Rejection Reason (required, min 10 chars)</label>
                 <textarea
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   rows={3}
                   placeholder="e.g. Aadhaar image is blurry — please re-upload a clearer photo where all four corners are visible."
-                  className="w-full px-4 py-3 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-white text-[0.9rem] outline-none placeholder:text-[rgba(255,255,255,0.3)] focus:border-red-500 resize-none"
+                  className="w-full px-4 py-3 bg-[rgba(255,255,255,0.06)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-white text-[0.9rem] outline-none placeholder:text-[rgba(255,255,255,0.3)] focus:border-[var(--red-err)] resize-none"
                   style={{ fontFamily: "var(--font-body)" }}
                 />
                 <div className="flex items-center justify-between mt-1.5">
-                  <span className={cn("text-[0.72rem]", reasonValid ? "text-green-400" : "text-[rgba(255,255,255,0.3)]")}>
+                  <span className={cn("text-[0.72rem]", reasonValid ? "text-[var(--green-ok)]" : "text-[rgba(255,255,255,0.3)]")}>
                     {reasonTrimmed.length}/10 minimum characters
                   </span>
                 </div>
@@ -509,7 +580,7 @@ function ReviewChefModal({
 
           {/* APPROVE CONFIRM */}
           {mode === "approve" && (
-            <div className="bg-green-500/5 border border-green-500/20 rounded-[12px] p-4">
+            <div className="bg-[var(--green-ok)]/5 border border-[var(--green-ok)]/20 rounded-[12px] p-4">
               <p className="text-white text-[0.92rem] font-semibold mb-1">Approve this chef?</p>
               <p className="text-[rgba(255,255,255,0.6)] text-[0.84rem]" style={{ fontFamily: "var(--font-body)" }}>
                 {cook.user?.name} will become publicly visible on the platform and start receiving bookings. They&apos;ll be notified immediately.
@@ -519,7 +590,7 @@ function ReviewChefModal({
         </div>
 
         {/* Footer Actions */}
-        <div className="sticky bottom-0 bg-[#1A120D] border-t border-[rgba(255,255,255,0.08)] px-6 py-4 flex items-center justify-end gap-3">
+        <div className="sticky bottom-0 bg-[var(--admin-surface-2)] border-t border-[rgba(255,255,255,0.08)] px-6 py-4 flex items-center justify-end gap-3">
           {mode === "view" && (
             <>
               <button
@@ -531,7 +602,7 @@ function ReviewChefModal({
               <button
                 onClick={() => setMode("reject")}
                 disabled={loading}
-                className="px-4 py-2.5 bg-red-500/15 border border-red-500/25 rounded-[10px] text-red-400 text-[0.85rem] font-semibold cursor-pointer hover:bg-red-500/25 transition-all disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2.5 bg-[var(--red-err)]/15 border border-[var(--red-err)]/25 rounded-[10px] text-[var(--red-err)] text-[0.85rem] font-semibold cursor-pointer hover:bg-[var(--red-err)]/25 transition-all disabled:opacity-50 flex items-center gap-2"
                 style={{ fontFamily: "var(--font-body)" }}
               >
                 <XCircle className="w-3.5 h-3.5" />Reject
@@ -539,7 +610,7 @@ function ReviewChefModal({
               <button
                 onClick={() => setMode("approve")}
                 disabled={loading}
-                className="px-4 py-2.5 bg-green-500/20 border border-green-500/30 rounded-[10px] text-green-400 text-[0.85rem] font-semibold cursor-pointer hover:bg-green-500/30 transition-all disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2.5 bg-[var(--green-ok)]/20 border border-[var(--green-ok)]/30 rounded-[10px] text-[var(--green-ok)] text-[0.85rem] font-semibold cursor-pointer hover:bg-[var(--green-ok)]/30 transition-all disabled:opacity-50 flex items-center gap-2"
                 style={{ fontFamily: "var(--font-body)" }}
               >
                 <CheckCircle2 className="w-3.5 h-3.5" />Approve
@@ -557,7 +628,7 @@ function ReviewChefModal({
               <button
                 onClick={() => reasonValid && onReject(reasonTrimmed)}
                 disabled={loading || !reasonValid}
-                className="px-4 py-2.5 bg-red-500/25 border border-red-500/40 rounded-[10px] text-red-400 text-[0.85rem] font-semibold cursor-pointer hover:bg-red-500/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                className="px-4 py-2.5 bg-[var(--red-err)]/25 border border-[var(--red-err)]/40 rounded-[10px] text-[var(--red-err)] text-[0.85rem] font-semibold cursor-pointer hover:bg-[var(--red-err)]/35 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
                 style={{ fontFamily: "var(--font-body)" }}
               >
                 {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
@@ -576,7 +647,7 @@ function ReviewChefModal({
               <button
                 onClick={onApprove}
                 disabled={loading}
-                className="px-4 py-2.5 bg-green-500/25 border border-green-500/40 rounded-[10px] text-green-400 text-[0.85rem] font-semibold cursor-pointer hover:bg-green-500/35 transition-all disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2.5 bg-[var(--green-ok)]/25 border border-[var(--green-ok)]/40 rounded-[10px] text-[var(--green-ok)] text-[0.85rem] font-semibold cursor-pointer hover:bg-[var(--green-ok)]/35 transition-all disabled:opacity-50 flex items-center gap-2"
                 style={{ fontFamily: "var(--font-body)" }}
               >
                 {loading && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
@@ -601,9 +672,9 @@ function InfoRow({ icon, label, value, full }: { icon?: React.ReactNode; label: 
 
 function ScoreStat({ label, value, warn }: { label: string; value: string; warn?: boolean }) {
   return (
-    <div className={cn("rounded-[8px] px-3 py-2 border", warn ? "bg-amber-500/10 border-amber-500/20" : "bg-white/[0.03] border-white/[0.06]")}>
+    <div className={cn("rounded-[8px] px-3 py-2 border", warn ? "bg-[var(--amber-warn)]/10 border-[var(--amber-warn)]/20" : "bg-white/[0.03] border-white/[0.06]")}>
       <div className="text-[0.68rem] text-[rgba(255,255,255,0.4)] uppercase tracking-wider font-semibold mb-0.5">{label}</div>
-      <div className={cn("text-[0.92rem] font-bold", warn ? "text-amber-400" : "text-white")}>{value}</div>
+      <div className={cn("text-[0.92rem] font-bold", warn ? "text-[var(--amber-warn)]" : "text-white")}>{value}</div>
     </div>
   );
 }
@@ -703,6 +774,11 @@ export default function AdminDashboardPage() {
       return () => clearTimeout(timer);
     }
   }, [successMsg]);
+
+  // Escape-to-close for the two inline area-request modals (not separate
+  // components, so they use the shared hook directly here).
+  useEscapeClose(!!approveTarget, () => !approveSubmitting && setApproveTarget(null));
+  useEscapeClose(!!rejectTarget, () => !rejectSubmitting && setRejectTarget(null));
 
   const ah = useCallback(() => ({ headers: { Authorization: `Bearer ${adminToken}` } }), [adminToken]);
 
@@ -1049,7 +1125,7 @@ export default function AdminDashboardPage() {
   /* ═══ LOGIN SCREEN ═══ */
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-[#0C0705] flex items-center justify-center p-5">
+      <div className="min-h-screen bg-[var(--admin-surface-0)] flex items-center justify-center p-5">
         <div className="w-full max-w-[400px] text-center">
           <div className="flex items-center justify-center gap-2 mb-6">
             <Shield className="w-8 h-8 text-[var(--orange-500)]" />
@@ -1058,7 +1134,7 @@ export default function AdminDashboardPage() {
           <h2 className="text-white text-xl font-bold mb-2">Admin Panel</h2>
           <p className="text-[rgba(255,255,255,0.4)] text-[0.9rem] mb-6">Enter your admin email and password.</p>
           {loginError && (
-            <div className="flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-[10px] px-4 py-3 mb-4 text-red-400 text-[0.85rem] text-left">
+            <div className="flex items-center gap-2 bg-[var(--red-err)]/10 border border-[var(--red-err)]/20 rounded-[10px] px-4 py-3 mb-4 text-[var(--red-err)] text-[0.85rem] text-left">
               <AlertCircle className="w-4 h-4 shrink-0" />{loginError}
             </div>
           )}
@@ -1087,7 +1163,7 @@ export default function AdminDashboardPage() {
 
   /* ═══ DASHBOARD ═══ */
   return (
-    <div className="flex min-h-screen bg-[#0C0705] text-white">
+    <div className="flex min-h-screen bg-[var(--admin-surface-0)] text-white">
       {sidebarOpen && <div className="fixed inset-0 bg-black/50 z-[99] lg:hidden" onClick={() => setSidebarOpen(false)} />}
 
       {/* Modals */}
@@ -1117,7 +1193,7 @@ export default function AdminDashboardPage() {
       />
 
       {/* Sidebar */}
-      <aside className={cn("w-[240px] fixed top-0 left-0 bottom-0 bg-[#120B07] z-[100] flex flex-col transition-transform duration-300 lg:translate-x-0 border-r border-[rgba(255,255,255,0.06)] shadow-[2px_0_24px_rgba(0,0,0,0.3)] lg:shadow-none", sidebarOpen ? "translate-x-0" : "-translate-x-full")}>
+      <aside className={cn("w-[240px] fixed top-0 left-0 bottom-0 bg-[var(--admin-surface-1)] z-[100] flex flex-col transition-transform duration-300 lg:translate-x-0 border-r border-[rgba(255,255,255,0.06)] shadow-[2px_0_24px_rgba(0,0,0,0.3)] lg:shadow-none", sidebarOpen ? "translate-x-0" : "-translate-x-full")}>
         <div className="px-5 pt-6 pb-5 border-b border-[rgba(255,255,255,0.06)]">
           <div className="flex items-center justify-between">
             <div>
@@ -1173,7 +1249,7 @@ export default function AdminDashboardPage() {
         <div className="px-5 py-4 border-t border-[rgba(255,255,255,0.06)]">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 text-[rgba(255,255,255,0.5)] text-[0.85rem] bg-transparent border-none cursor-pointer hover:text-red-400 transition-colors w-full"
+            className="flex items-center gap-2 text-[rgba(255,255,255,0.5)] text-[0.85rem] bg-transparent border-none cursor-pointer hover:text-[var(--red-err)] transition-colors w-full"
             style={{ fontFamily: "var(--font-body)" }}
           >
             <LogOut className="w-4 h-4" /> Sign out
@@ -1215,23 +1291,22 @@ export default function AdminDashboardPage() {
         <div className="p-5 md:p-7">
           {/* Success toast — fixed top-right so it doesn't shift content layout */}
           {successMsg && (
-            <div className="fixed top-[72px] right-5 z-[150] flex items-center gap-2 bg-green-500/15 border border-green-500/30 rounded-[10px] px-4 py-3 text-green-300 text-[0.85rem] shadow-[0_8px_24px_rgba(0,0,0,0.4)] animate-in fade-in slide-in-from-top-2">
+            <div className="fixed top-[72px] right-5 z-[150] flex items-center gap-2 bg-[var(--green-ok)]/15 border border-[var(--green-ok)]/30 rounded-[10px] px-4 py-3 text-[var(--green-ok)] text-[0.85rem] shadow-[0_8px_24px_rgba(0,0,0,0.4)] animate-in fade-in slide-in-from-top-2">
               <BadgeCheck className="w-4 h-4 shrink-0" />{successMsg}
             </div>
           )}
 
           {error && (
-            <div role="alert" className="flex items-start gap-2 bg-red-500/10 border border-red-500/20 rounded-[10px] px-4 py-3 mb-5 text-red-400 text-[0.85rem]">
+            <div role="alert" className="flex items-start gap-2 bg-[var(--red-err)]/10 border border-[var(--red-err)]/20 rounded-[10px] px-4 py-3 mb-5 text-[var(--red-err)] text-[0.85rem]">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span className="flex-1">{error}</span>
-              <button onClick={() => setError("")} aria-label="Dismiss error" className="text-red-400/60 hover:text-red-400 bg-transparent border-none cursor-pointer text-lg leading-none">&times;</button>
+              <button onClick={() => setError("")} aria-label="Dismiss error" className="text-[var(--red-err)]/60 hover:text-[var(--red-err)] bg-transparent border-none cursor-pointer text-lg leading-none">&times;</button>
             </div>
           )}
 
           {loading && (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 animate-spin text-[var(--orange-400)]" />
-              <span className="ml-2 text-[rgba(255,255,255,0.4)] text-[0.85rem]">Loading…</span>
+            <div role="status" aria-label="Loading">
+              <AdminTableSkeleton rows={6} cols={activePanel === "cooks" ? 6 : 5} />
             </div>
           )}
 
@@ -1241,13 +1316,13 @@ export default function AdminDashboardPage() {
               {stats && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3.5 mb-8">
                   {[
-                    { label: "Total Users", value: stats.total_users, icon: <Users className="w-4 h-4" />, accent: "text-blue-400", border: "hover:border-blue-500/30" },
-                    { label: "Total Cooks", value: stats.total_cooks, icon: <ChefHat className="w-4 h-4" />, accent: "text-orange-400", border: "hover:border-orange-500/30" },
-                    { label: "Verified Cooks", value: stats.verified_cooks, icon: <BadgeCheck className="w-4 h-4" />, accent: "text-green-400", border: "hover:border-green-500/30" },
-                    { label: "Pending Verification", value: stats.pending_cooks, icon: <Shield className="w-4 h-4" />, accent: "text-yellow-400", border: "hover:border-yellow-500/30" },
-                    { label: "Total Bookings", value: stats.total_bookings, icon: <FileText className="w-4 h-4" />, accent: "text-purple-400", border: "hover:border-purple-500/30" },
-                    { label: "Completed", value: stats.completed_bookings, icon: <CheckCircle2 className="w-4 h-4" />, accent: "text-emerald-400", border: "hover:border-emerald-500/30" },
-                    { label: "Active", value: stats.active_bookings, icon: <Activity className="w-4 h-4" />, accent: "text-sky-400", border: "hover:border-sky-500/30" },
+                    { label: "Total Users", value: stats.total_users, icon: <Users className="w-4 h-4" />, accent: "text-[var(--info-500)]", border: "hover:border-[var(--info-500)]/30" },
+                    { label: "Total Cooks", value: stats.total_cooks, icon: <ChefHat className="w-4 h-4" />, accent: "text-[var(--orange-400)]", border: "hover:border-[var(--orange-500)]/30" },
+                    { label: "Verified Cooks", value: stats.verified_cooks, icon: <BadgeCheck className="w-4 h-4" />, accent: "text-[var(--green-ok)]", border: "hover:border-[var(--green-ok)]/30" },
+                    { label: "Pending Verification", value: stats.pending_cooks, icon: <Shield className="w-4 h-4" />, accent: "text-[var(--amber-warn)]", border: "hover:border-[var(--amber-warn)]/30" },
+                    { label: "Total Bookings", value: stats.total_bookings, icon: <FileText className="w-4 h-4" />, accent: "text-[var(--info-500)]", border: "hover:border-[var(--info-500)]/30" },
+                    { label: "Completed", value: stats.completed_bookings, icon: <CheckCircle2 className="w-4 h-4" />, accent: "text-[var(--green-ok)]", border: "hover:border-[var(--green-ok)]/30" },
+                    { label: "Active", value: stats.active_bookings, icon: <Activity className="w-4 h-4" />, accent: "text-[var(--info-500)]", border: "hover:border-[var(--info-500)]/30" },
                     { label: "Revenue", value: fmtCurrency(stats.total_revenue), icon: <BarChart3 className="w-4 h-4" />, accent: "text-[var(--orange-400)]", border: "hover:border-[var(--orange-500)]/40" },
                   ].map((s) => (
                     <div
@@ -1313,45 +1388,50 @@ export default function AdminDashboardPage() {
             <div>
               <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
                 <h2 className="font-bold text-[1.05rem]">All Users ({usersPag?.total || 0})</h2>
-                <div className="flex items-center gap-3">
-                  <div className="relative">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <div className="relative flex-1 sm:flex-none">
                     <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(255,255,255,0.3)]" />
                     <input type="text" value={userSearch} onChange={e=>setUserSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&fetchUsers()}
-                      placeholder="Search by name..." className="pl-9 pr-4 py-2.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-[0.85rem] text-white outline-none w-[220px] placeholder:text-[rgba(255,255,255,0.3)] focus:border-[var(--orange-500)]" style={{fontFamily:"var(--font-body)"}} />
+                      placeholder="Search by name..." className="pl-9 pr-4 py-2.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-[0.85rem] text-white outline-none w-full sm:w-[220px] placeholder:text-[rgba(255,255,255,0.3)] focus:border-[var(--orange-500)]" style={{fontFamily:"var(--font-body)"}} />
                   </div>
-                  <button onClick={()=>fetchUsers()} className="p-2.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-[rgba(255,255,255,0.5)] hover:text-white cursor-pointer transition-colors"><RefreshCw className="w-4 h-4" /></button>
+                  <button onClick={()=>fetchUsers()} aria-label="Refresh users" className="p-2.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-[rgba(255,255,255,0.5)] hover:text-white cursor-pointer transition-colors"><RefreshCw className="w-4 h-4" /></button>
                 </div>
               </div>
               <div className="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-[14px] overflow-x-auto">
                 <table className="w-full text-left text-[0.85rem]">
                   <thead><tr className="border-b border-[rgba(255,255,255,0.06)]">{["Name","Email","Phone","Role","Status","Joined","Actions"].map(h=><th key={h} className="px-4 py-3 text-[0.75rem] text-[rgba(255,255,255,0.3)] uppercase tracking-wider font-semibold">{h}</th>)}</tr></thead>
                   <tbody>
-                    {users.length===0 ? <tr><td colSpan={7} className="px-4 py-8 text-center text-[rgba(255,255,255,0.3)]">No users found</td></tr> :
+                    {users.length===0 ? <tr><td colSpan={7} className="px-4 py-10 text-center">
+                      <Users className="w-6 h-6 mx-auto mb-2 text-[rgba(255,255,255,0.2)]" />
+                      <div className="text-[rgba(255,255,255,0.4)] text-[0.85rem]">{userSearch.trim() ? `No users match "${userSearch.trim()}"` : "No users yet"}</div>
+                      {userSearch.trim() && <button onClick={() => { setUserSearch(""); fetchUsers(); }} className="mt-2 text-[0.78rem] text-[var(--orange-400)] bg-transparent border-none cursor-pointer hover:underline">Clear search</button>}
+                    </td></tr> :
                     users.map(u=>(
                       <tr key={u.id} className="border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)]">
                         <td className="px-4 py-3 text-white font-medium">{u.name}</td>
                         <td className="px-4 py-3 text-[rgba(255,255,255,0.5)]">{u.email}</td>
                         <td className="px-4 py-3 text-[rgba(255,255,255,0.5)]">{u.phone||"—"}</td>
                         <td className="px-4 py-3">{roleBadge(u.role)}</td>
-                        <td className="px-4 py-3"><span className={cn("px-2 py-0.5 rounded-full text-[0.72rem] font-semibold",u.is_active?"bg-green-500/15 text-green-400":"bg-red-500/15 text-red-400")}>{u.is_active?"Active":"Blocked"}</span></td>
+                        <td className="px-4 py-3"><span className={cn("px-2 py-0.5 rounded-full text-[0.72rem] font-semibold",u.is_active?"bg-[var(--green-ok)]/15 text-[var(--green-ok)]":"bg-[var(--red-err)]/15 text-[var(--red-err)]")}>{u.is_active?"Active":"Blocked"}</span></td>
                         <td className="px-4 py-3 text-[rgba(255,255,255,0.4)]">{formatDate(u.created_at)}</td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
                             {u.role!=="admin"&&(
                               <>
-                                <button onClick={()=>setEditUser(u)} title="Edit user"
-                                  className="p-1.5 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-lg border-none cursor-pointer transition-all"
+                                <button onClick={()=>setEditUser(u)} title="Edit user" aria-label={`Edit ${u.name}`}
+                                  className="p-1.5 bg-[var(--info-500)]/10 text-[var(--info-500)] hover:bg-[var(--info-500)]/20 rounded-lg border-none cursor-pointer transition-all"
                                   style={{fontFamily:"var(--font-body)"}}>
                                   <Pencil className="w-3.5 h-3.5" />
                                 </button>
                                 <button onClick={()=>handleToggleUser(u.id)} disabled={actionLoading===u.id} title={u.is_active?"Block":"Unblock"}
+                                  aria-label={`${u.is_active ? "Block" : "Unblock"} ${u.name}`}
                                   className={cn("p-1.5 rounded-lg border-none cursor-pointer transition-all disabled:opacity-50",
-                                    u.is_active?"bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20":"bg-green-500/10 text-green-400 hover:bg-green-500/20"
+                                    u.is_active?"bg-[var(--amber-warn)]/10 text-[var(--amber-warn)] hover:bg-[var(--amber-warn)]/20":"bg-[var(--green-ok)]/10 text-[var(--green-ok)] hover:bg-[var(--green-ok)]/20"
                                   )} style={{fontFamily:"var(--font-body)"}}>
                                   {actionLoading===u.id?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:u.is_active?<Ban className="w-3.5 h-3.5"/>:<UserCheck className="w-3.5 h-3.5"/>}
                                 </button>
-                                <button onClick={()=>setDeleteConfirm({ type:"user", id:u.id, name:u.name })} title="Delete user"
-                                  className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg border-none cursor-pointer transition-all"
+                                <button onClick={()=>setDeleteConfirm({ type:"user", id:u.id, name:u.name })} title="Delete user" aria-label={`Delete ${u.name}`}
+                                  className="p-1.5 bg-[var(--red-err)]/10 text-[var(--red-err)] hover:bg-[var(--red-err)]/20 rounded-lg border-none cursor-pointer transition-all"
                                   style={{fontFamily:"var(--font-body)"}}>
                                   <Trash2 className="w-3.5 h-3.5" />
                                 </button>
@@ -1391,14 +1471,18 @@ export default function AdminDashboardPage() {
                         cookFilter===f.id?"bg-[var(--orange-500)] text-white":"bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.4)] hover:bg-[rgba(255,255,255,0.1)]"
                       )} style={{fontFamily:"var(--font-body)"}}>{f.label}</button>
                   ))}
-                  <button onClick={()=>fetchCooks()} className="p-2.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-[rgba(255,255,255,0.5)] hover:text-white cursor-pointer transition-colors ml-1"><RefreshCw className="w-4 h-4" /></button>
+                  <button onClick={()=>fetchCooks()} aria-label="Refresh cooks" className="p-2.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-[rgba(255,255,255,0.5)] hover:text-white cursor-pointer transition-colors ml-1"><RefreshCw className="w-4 h-4" /></button>
                 </div>
               </div>
               <div className="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-[14px] overflow-x-auto">
                 <table className="w-full text-left text-[0.85rem]">
                   <thead><tr className="border-b border-[rgba(255,255,255,0.06)]">{["Chef Name","Email","Area","Cuisines","Rating","Bookings","Verification","Actions"].map(h=><th key={h} className="px-4 py-3 text-[0.75rem] text-[rgba(255,255,255,0.3)] uppercase tracking-wider font-semibold">{h}</th>)}</tr></thead>
                   <tbody>
-                    {cooks.length===0 ? <tr><td colSpan={8} className="px-4 py-8 text-center text-[rgba(255,255,255,0.3)]">No cooks found</td></tr> :
+                    {cooks.length===0 ? <tr><td colSpan={8} className="px-4 py-10 text-center">
+                      <ChefHat className="w-6 h-6 mx-auto mb-2 text-[rgba(255,255,255,0.2)]" />
+                      <div className="text-[rgba(255,255,255,0.4)] text-[0.85rem]">{cookFilter !== "all" ? `No ${cookFilter.replace(/_/g, " ")} cooks` : "No cooks yet"}</div>
+                      {cookFilter !== "all" && <button onClick={() => setCookFilter("all")} className="mt-2 text-[0.78rem] text-[var(--orange-400)] bg-transparent border-none cursor-pointer hover:underline">Show all cooks</button>}
+                    </td></tr> :
                     cooks.map(c=>(
                       <tr key={c.id} className="border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)]">
                         <td className="px-4 py-3 text-white font-medium">
@@ -1406,7 +1490,7 @@ export default function AdminDashboardPage() {
                             {c.user?.name||"—"}
                             {c.is_founding_cook && (
                               <span title={`Founding Chef #${c.founding_cook_number ?? "?"}`}
-                                className="flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-500/15 text-amber-400 rounded text-[0.68rem] font-semibold">
+                                className="flex items-center gap-0.5 px-1.5 py-0.5 bg-[var(--amber-warn)]/15 text-[var(--amber-warn)] rounded text-[0.68rem] font-semibold">
                                 <Crown className="w-3 h-3" />#{c.founding_cook_number ?? "?"}
                               </span>
                             )}
@@ -1423,27 +1507,28 @@ export default function AdminDashboardPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-2">
-                            <button onClick={()=>setReviewCook(c)} title="Review chef"
-                              className="p-1.5 bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 rounded-lg border-none cursor-pointer transition-all"
+                            <button onClick={()=>setReviewCook(c)} title="Review chef" aria-label={`Review ${c.user?.name || "chef"}`}
+                              className="p-1.5 bg-[var(--info-500)]/10 text-[var(--info-500)] hover:bg-[var(--info-500)]/20 rounded-lg border-none cursor-pointer transition-all"
                               style={{fontFamily:"var(--font-body)"}}>
                               <Eye className="w-3.5 h-3.5" />
                             </button>
                             {c.is_verified && (
-                              <button onClick={()=>handleVerifyCook(c.id,false)} disabled={actionLoading===c.id} title="Quick unverify"
-                                className="p-1.5 rounded-lg border-none cursor-pointer transition-all disabled:opacity-50 bg-yellow-500/10 text-yellow-400 hover:bg-yellow-500/20"
+                              <button onClick={()=>handleVerifyCook(c.id,false)} disabled={actionLoading===c.id} title="Quick unverify" aria-label={`Unverify ${c.user?.name || "chef"}`}
+                                className="p-1.5 rounded-lg border-none cursor-pointer transition-all disabled:opacity-50 bg-[var(--amber-warn)]/10 text-[var(--amber-warn)] hover:bg-[var(--amber-warn)]/20"
                                 style={{fontFamily:"var(--font-body)"}}>
                                 {actionLoading===c.id?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:<ShieldX className="w-3.5 h-3.5"/>}
                               </button>
                             )}
                             <button onClick={()=>handleToggleFoundingCook(c.id, !c.is_founding_cook)} disabled={actionLoading===c.id}
                               title={c.is_founding_cook ? "Remove Founding Cook badge" : "Mark as Founding Cook"}
+                              aria-label={c.is_founding_cook ? `Remove Founding Cook badge from ${c.user?.name || "chef"}` : `Mark ${c.user?.name || "chef"} as Founding Cook`}
                               className={cn("p-1.5 rounded-lg border-none cursor-pointer transition-all disabled:opacity-50",
-                                c.is_founding_cook ? "bg-amber-500/20 text-amber-400 hover:bg-amber-500/30" : "bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.35)] hover:bg-[rgba(255,255,255,0.1)]"
+                                c.is_founding_cook ? "bg-[var(--amber-warn)]/20 text-[var(--amber-warn)] hover:bg-[var(--amber-warn)]/30" : "bg-[rgba(255,255,255,0.05)] text-[rgba(255,255,255,0.35)] hover:bg-[rgba(255,255,255,0.1)]"
                               )} style={{fontFamily:"var(--font-body)"}}>
                               {actionLoading===c.id?<Loader2 className="w-3.5 h-3.5 animate-spin"/>:<Crown className="w-3.5 h-3.5"/>}
                             </button>
-                            <button onClick={()=>setDeleteConfirm({ type:"cook", id:c.id, name:c.user?.name||"Cook" })} title="Delete cook profile"
-                              className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg border-none cursor-pointer transition-all"
+                            <button onClick={()=>setDeleteConfirm({ type:"cook", id:c.id, name:c.user?.name||"Cook" })} title="Delete cook profile" aria-label={`Delete ${c.user?.name || "cook"} profile`}
+                              className="p-1.5 bg-[var(--red-err)]/10 text-[var(--red-err)] hover:bg-[var(--red-err)]/20 rounded-lg border-none cursor-pointer transition-all"
                               style={{fontFamily:"var(--font-body)"}}>
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>
@@ -1469,20 +1554,24 @@ export default function AdminDashboardPage() {
             <div>
               <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
                 <h2 className="font-bold text-[1.05rem]">All Bookings ({bookingsPag?.total || 0})</h2>
-                <div className="flex items-center gap-3">
-                  <div className="relative">
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <div className="relative flex-1 sm:flex-none">
                     <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(255,255,255,0.3)]" />
                     <input type="text" value={bookingSearch} onChange={e=>setBookingSearch(e.target.value)} onKeyDown={e=>e.key==="Enter"&&fetchBookings()}
-                      placeholder="Search by name..." className="pl-9 pr-4 py-2.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-[0.85rem] text-white outline-none w-[220px] placeholder:text-[rgba(255,255,255,0.3)] focus:border-[var(--orange-500)]" style={{fontFamily:"var(--font-body)"}} />
+                      placeholder="Search by name..." className="pl-9 pr-4 py-2.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-[0.85rem] text-white outline-none w-full sm:w-[220px] placeholder:text-[rgba(255,255,255,0.3)] focus:border-[var(--orange-500)]" style={{fontFamily:"var(--font-body)"}} />
                   </div>
-                  <button onClick={()=>fetchBookings()} className="p-2.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-[rgba(255,255,255,0.5)] hover:text-white cursor-pointer transition-colors"><RefreshCw className="w-4 h-4" /></button>
+                  <button onClick={()=>fetchBookings()} aria-label="Refresh bookings" className="p-2.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-[rgba(255,255,255,0.5)] hover:text-white cursor-pointer transition-colors"><RefreshCw className="w-4 h-4" /></button>
                 </div>
               </div>
               <div className="bg-[rgba(255,255,255,0.03)] border border-[rgba(255,255,255,0.06)] rounded-[14px] overflow-x-auto">
                 <table className="w-full text-left text-[0.85rem]">
                   <thead><tr className="border-b border-[rgba(255,255,255,0.06)]">{["Customer","Chef","Type","Date","Amount","Status","Actions"].map(h=><th key={h} className="px-4 py-3 text-[0.75rem] text-[rgba(255,255,255,0.3)] uppercase tracking-wider font-semibold">{h}</th>)}</tr></thead>
                   <tbody>
-                    {bookings.length===0 ? <tr><td colSpan={7} className="px-4 py-8 text-center text-[rgba(255,255,255,0.3)]">No bookings found</td></tr> :
+                    {bookings.length===0 ? <tr><td colSpan={7} className="px-4 py-10 text-center">
+                      <FileText className="w-6 h-6 mx-auto mb-2 text-[rgba(255,255,255,0.2)]" />
+                      <div className="text-[rgba(255,255,255,0.4)] text-[0.85rem]">{bookingSearch.trim() ? `No bookings match "${bookingSearch.trim()}"` : "No bookings yet"}</div>
+                      {bookingSearch.trim() && <button onClick={() => { setBookingSearch(""); fetchBookings(); }} className="mt-2 text-[0.78rem] text-[var(--orange-400)] bg-transparent border-none cursor-pointer hover:underline">Clear search</button>}
+                    </td></tr> :
                     bookings.map(b=>(
                       <tr key={b.id} className="border-b border-[rgba(255,255,255,0.04)] hover:bg-[rgba(255,255,255,0.02)]">
                         <td className="px-4 py-3 text-white font-medium">{b.user?.name||"—"}</td>
@@ -1493,8 +1582,9 @@ export default function AdminDashboardPage() {
                         <td className="px-4 py-3">{statusBadge(b.status)}</td>
                         <td className="px-4 py-3">
                           <button onClick={()=>setDeleteConfirm({ type:"booking", id:b.id, name:`Booking by ${b.user?.name||"unknown"}` })} title="Delete booking"
-                            className="p-1.5 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg border-none cursor-pointer transition-all"
-                            style={{fontFamily:"var(--font-body)"}}>
+                            className="p-1.5 bg-[var(--red-err)]/10 text-[var(--red-err)] hover:bg-[var(--red-err)]/20 rounded-lg border-none cursor-pointer transition-all"
+                            style={{fontFamily:"var(--font-body)"}}
+                            aria-label={`Delete booking by ${b.user?.name || "unknown"}`}>
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
                         </td>
@@ -1541,6 +1631,7 @@ export default function AdminDashboardPage() {
                   ))}
                   <button
                     onClick={() => fetchAreaRequests()}
+                    aria-label="Refresh area requests"
                     className="p-2.5 bg-[rgba(255,255,255,0.05)] border border-[rgba(255,255,255,0.1)] rounded-[10px] text-[rgba(255,255,255,0.5)] hover:text-white cursor-pointer transition-colors"
                   >
                     <RefreshCw className="w-4 h-4" />
@@ -1578,9 +1669,9 @@ export default function AdminDashboardPage() {
                           </td>
                           <td className="px-4 py-3 text-[rgba(255,255,255,0.4)] text-[0.78rem]">{formatDate(r.created_at)}</td>
                           <td className="px-4 py-3">
-                            {r.status === "pending" && <span className="px-2 py-0.5 bg-yellow-500/15 text-yellow-400 rounded text-[0.72rem] font-semibold capitalize">Pending</span>}
-                            {r.status === "approved" && <span className="px-2 py-0.5 bg-emerald-500/15 text-emerald-400 rounded text-[0.72rem] font-semibold capitalize">Approved → {r.approved_slug}</span>}
-                            {r.status === "rejected" && <span className="px-2 py-0.5 bg-red-500/15 text-red-400 rounded text-[0.72rem] font-semibold capitalize">Rejected</span>}
+                            {r.status === "pending" && <span className="px-2 py-0.5 bg-[var(--amber-warn)]/15 text-[var(--amber-warn)] rounded text-[0.72rem] font-semibold capitalize">Pending</span>}
+                            {r.status === "approved" && <span className="px-2 py-0.5 bg-[var(--green-ok)]/15 text-[var(--green-ok)] rounded text-[0.72rem] font-semibold capitalize">Approved → {r.approved_slug}</span>}
+                            {r.status === "rejected" && <span className="px-2 py-0.5 bg-[var(--red-err)]/15 text-[var(--red-err)] rounded text-[0.72rem] font-semibold capitalize">Rejected</span>}
                           </td>
                           <td className="px-4 py-3">
                             {r.status === "pending" ? (
@@ -1591,7 +1682,7 @@ export default function AdminDashboardPage() {
                                     setApproveSlug(slugifyForApproval(r.name));
                                     setApproveRegion("west");
                                   }}
-                                  className="px-2.5 py-1 bg-emerald-500/15 text-emerald-400 hover:bg-emerald-500/25 rounded-lg border-none cursor-pointer text-[0.74rem] font-semibold transition-all flex items-center gap-1"
+                                  className="px-2.5 py-1 bg-[var(--green-ok)]/15 text-[var(--green-ok)] hover:bg-[var(--green-ok)]/25 rounded-lg border-none cursor-pointer text-[0.74rem] font-semibold transition-all flex items-center gap-1"
                                   style={{ fontFamily: "var(--font-body)" }}
                                   title="Approve and add to active areas"
                                 >
@@ -1599,7 +1690,7 @@ export default function AdminDashboardPage() {
                                 </button>
                                 <button
                                   onClick={() => { setRejectTarget(r); setRejectReason(""); }}
-                                  className="px-2.5 py-1 bg-red-500/10 text-red-400 hover:bg-red-500/20 rounded-lg border-none cursor-pointer text-[0.74rem] font-semibold transition-all flex items-center gap-1"
+                                  className="px-2.5 py-1 bg-[var(--red-err)]/10 text-[var(--red-err)] hover:bg-[var(--red-err)]/20 rounded-lg border-none cursor-pointer text-[0.74rem] font-semibold transition-all flex items-center gap-1"
                                   style={{ fontFamily: "var(--font-body)" }}
                                 >
                                   <XCircle className="w-3.5 h-3.5" /> Reject
@@ -1662,8 +1753,8 @@ export default function AdminDashboardPage() {
 
       {/* P1.6 — Approve area request modal */}
       {approveTarget && (
-        <div className="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center p-4" onClick={() => !approveSubmitting && setApproveTarget(null)}>
-          <div onClick={(e) => e.stopPropagation()} className="bg-[#1A1209] border border-[rgba(255,255,255,0.1)] rounded-[16px] p-6 w-full max-w-[460px]">
+        <div className="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center p-4" onClick={() => !approveSubmitting && setApproveTarget(null)} role="dialog" aria-modal="true" aria-label="Approve area request">
+          <div onClick={(e) => e.stopPropagation()} className="bg-[var(--admin-surface-2)] border border-[rgba(255,255,255,0.1)] rounded-[16px] p-6 w-full max-w-[460px]">
             <h3 className="font-bold text-[1.05rem] text-white mb-1">Approve area</h3>
             <p className="text-[0.82rem] text-[rgba(255,255,255,0.5)] mb-4">
               Add <span className="text-white font-semibold">{approveTarget.name}</span> to the active areas list. Set a slug and region. Once approved, customers and chefs will see this immediately.
@@ -1706,7 +1797,7 @@ export default function AdminDashboardPage() {
               <button
                 onClick={handleApproveAreaRequest}
                 disabled={approveSubmitting}
-                className="px-4 py-2 bg-emerald-500 text-white rounded-[10px] text-[0.85rem] font-semibold cursor-pointer border-none disabled:opacity-50 hover:opacity-90"
+                className="px-4 py-2 bg-[var(--green-ok)] text-white rounded-[10px] text-[0.85rem] font-semibold cursor-pointer border-none disabled:opacity-50 hover:opacity-90"
                 style={{ fontFamily: "var(--font-body)" }}
               >{approveSubmitting ? "Approving…" : "Approve & add"}</button>
             </div>
@@ -1716,8 +1807,8 @@ export default function AdminDashboardPage() {
 
       {/* P1.6 — Reject area request modal */}
       {rejectTarget && (
-        <div className="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center p-4" onClick={() => !rejectSubmitting && setRejectTarget(null)}>
-          <div onClick={(e) => e.stopPropagation()} className="bg-[#1A1209] border border-[rgba(255,255,255,0.1)] rounded-[16px] p-6 w-full max-w-[460px]">
+        <div className="fixed inset-0 bg-black/70 z-[200] flex items-center justify-center p-4" onClick={() => !rejectSubmitting && setRejectTarget(null)} role="dialog" aria-modal="true" aria-label="Reject area request">
+          <div onClick={(e) => e.stopPropagation()} className="bg-[var(--admin-surface-2)] border border-[rgba(255,255,255,0.1)] rounded-[16px] p-6 w-full max-w-[460px]">
             <h3 className="font-bold text-[1.05rem] text-white mb-1">Reject area request</h3>
             <p className="text-[0.82rem] text-[rgba(255,255,255,0.5)] mb-4">
               Tell the requester why <span className="text-white font-semibold">{rejectTarget.name}</span> isn&apos;t being added. They&apos;ll see this reason.
@@ -1741,7 +1832,7 @@ export default function AdminDashboardPage() {
               <button
                 onClick={handleRejectAreaRequest}
                 disabled={rejectSubmitting}
-                className="px-4 py-2 bg-red-500 text-white rounded-[10px] text-[0.85rem] font-semibold cursor-pointer border-none disabled:opacity-50 hover:opacity-90"
+                className="px-4 py-2 bg-[var(--red-err)] text-white rounded-[10px] text-[0.85rem] font-semibold cursor-pointer border-none disabled:opacity-50 hover:opacity-90"
                 style={{ fontFamily: "var(--font-body)" }}
               >{rejectSubmitting ? "Rejecting…" : "Reject"}</button>
             </div>

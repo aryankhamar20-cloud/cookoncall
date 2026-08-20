@@ -81,9 +81,9 @@ export default function LiveCountersStrip() {
             key={pulseKey}
             className={`w-2 h-2 rounded-full ${
               status === "live"
-                ? "bg-emerald-400 animate-pulse"
+                ? "bg-[var(--green-ok)] animate-pulse"
                 : status === "stale"
-                  ? "bg-amber-400"
+                  ? "bg-[var(--amber-warn)]"
                   : "bg-gray-500"
             }`}
             aria-hidden
@@ -95,9 +95,9 @@ export default function LiveCountersStrip() {
         <span
           className={`text-[0.7rem] font-semibold uppercase tracking-wide flex items-center gap-1 ${
             status === "live"
-              ? "text-emerald-400"
+              ? "text-[var(--green-ok)]"
               : status === "stale"
-                ? "text-amber-400"
+                ? "text-[var(--amber-warn)]"
                 : "text-[rgba(255,255,255,0.45)]"
           }`}
         >
@@ -179,10 +179,10 @@ function Tile({
   // Use translucent foreground colors so the tone reads on the dark
   // analytics surface — solid backgrounds would clash with the panel.
   const cls = {
-    emerald: "text-emerald-300 bg-emerald-500/10",
-    orange: "text-orange-300 bg-orange-500/10",
-    blue: "text-blue-300 bg-blue-500/10",
-    purple: "text-purple-300 bg-purple-500/10",
+    emerald: "text-[var(--green-ok)] bg-[var(--green-ok)]/10",
+    orange: "text-[var(--orange-500)] bg-[var(--orange-500)]/10",
+    blue: "text-[var(--info-500)] bg-[var(--info-500)]/10",
+    purple: "text-[var(--info-500)] bg-[var(--info-500)]/10",
   }[tone];
 
   // Format numbers with Indian locale separators; pass strings through.

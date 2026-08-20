@@ -93,7 +93,7 @@ function ChefMenuCard({
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-bold text-[1rem]">{chefName}</span>
               {chef.is_veg_only && (
-                <span className="text-[0.7rem] font-semibold px-2 py-0.5 rounded-full bg-green-50 text-green-600 flex items-center gap-1">
+                <span className="text-[0.7rem] font-semibold px-2 py-0.5 rounded-full bg-[var(--green-ok)]/10 text-[var(--green-ok)] flex items-center gap-1">
                   <Leaf className="w-3 h-3" /> Pure Veg
                 </span>
               )}
@@ -102,8 +102,8 @@ function ChefMenuCard({
               {chef.cuisines?.join(", ") || "Home Cooking"}
             </div>
             {rating > 0 ? (
-              <div className="flex items-center gap-1 text-[0.78rem] text-yellow-500 mt-0.5">
-                <Star className="w-3.5 h-3.5 fill-yellow-400" />
+              <div className="flex items-center gap-1 text-[0.78rem] text-[var(--amber-warn)] mt-0.5">
+                <Star className="w-3.5 h-3.5 fill-[var(--amber-warn)]" />
                 <span>{rating.toFixed(1)}</span>
                 <span className="text-[var(--text-muted)]">({chef.total_reviews ?? 0})</span>
               </div>
@@ -141,7 +141,7 @@ function ChefMenuCard({
                         <div key={item.id} className="flex items-center gap-3">
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1.5">
-                              <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", item.type === "veg" ? "bg-green-500" : "bg-red-500")} />
+                              <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", item.type === "veg" ? "bg-[var(--green-ok)]" : "bg-[var(--red-err)]")} />
                               <span className="font-semibold text-[0.9rem]">{item.name}</span>
                             </div>
                             {item.description && (
@@ -240,9 +240,9 @@ export default function OrderFoodPanel() {
       )}
 
       {error && (
-        <div className="bg-white rounded-[16px] p-12 border border-red-100 text-center mt-5">
-          <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-3" />
-          <p className="text-[0.9rem] text-red-400">Could not load chefs. Please try again.</p>
+        <div className="bg-white rounded-[16px] p-12 border border-[var(--red-err)] text-center mt-5">
+          <AlertCircle className="w-8 h-8 text-[var(--red-err)] mx-auto mb-3" />
+          <p className="text-[0.9rem] text-[var(--red-err)]">Could not load chefs. Please try again.</p>
         </div>
       )}
 
