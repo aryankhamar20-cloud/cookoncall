@@ -1,5 +1,12 @@
-/* THIS must be line 1 — before everything */
-@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap");
+/* Font loading moved to a <link rel="stylesheet"> in src/app/layout.tsx's
+ * <head> (Core Web Vitals / LCP fix) — a CSS @import here would force the
+ * browser to fetch and parse this whole stylesheet before it can even
+ * discover the font CSS URL, adding a fully sequential extra round trip
+ * ahead of the preconnect hints that already exist in layout.tsx. A <link>
+ * lets the browser discover and start that fetch in parallel with this
+ * stylesheet during the initial HTML parse instead. Keep this file's font
+ * family names (Plus Jakarta Sans / Be Vietnam Pro) in sync with the
+ * weights requested there if either changes. */
 
 @tailwind base;
 @tailwind components;

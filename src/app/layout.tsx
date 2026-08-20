@@ -241,6 +241,24 @@ export default function RootLayout({
           href="https://fonts.gstatic.com"
           crossOrigin="anonymous"
         />
+        {/*
+          Loaded as a <link> rather than a CSS @import (which used to live
+          at the top of globals.css) so the browser can discover and start
+          fetching it in parallel with the app's own stylesheet during the
+          initial HTML parse, instead of only after globals.css has been
+          fetched and parsed far enough to find the @import — a real,
+          measurable LCP win since both display and body text are almost
+          always part of the largest contentful paint on every page here.
+          This is *in* the root layout (app/layout.tsx), so — unlike the
+          Pages Router file this lint rule was written for — it already
+          applies to every route, not just one; the rule doesn't know App
+          Router puts shared <head> content here on purpose.
+        */}
+        {/* eslint-disable-next-line @next/next/no-page-custom-font */}
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap"
+        />
         <link
           rel="alternate"
           hrefLang="en-IN"
