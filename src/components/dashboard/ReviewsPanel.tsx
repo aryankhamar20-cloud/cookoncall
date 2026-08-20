@@ -82,7 +82,7 @@ export default function ReviewsPanel() {
             onClick={() => setLowOnly((v) => !v)}
             className={`px-3.5 py-2 rounded-[10px] text-[0.8rem] font-semibold border transition-all ${
               lowOnly
-                ? "bg-red-500/20 border-red-500/40 text-red-400"
+                ? "bg-[var(--red-err)]/20 border-[var(--red-err)]/40 text-[var(--red-err)]"
                 : "bg-[rgba(255,255,255,0.06)] border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.6)]"
             }`}
             style={{ fontFamily: "var(--font-body)" }}
@@ -100,7 +100,7 @@ export default function ReviewsPanel() {
       </div>
 
       {error && (
-        <div className="mb-4 flex items-center gap-2 bg-red-500/10 border border-red-500/20 rounded-[10px] px-4 py-3 text-red-400 text-[0.85rem]">
+        <div className="mb-4 flex items-center gap-2 bg-[var(--red-err)]/10 border border-[var(--red-err)]/20 rounded-[10px] px-4 py-3 text-[var(--red-err)] text-[0.85rem]">
           <AlertCircle className="w-4 h-4" /> {error}
         </div>
       )}
@@ -125,7 +125,7 @@ export default function ReviewsPanel() {
                   <Stars rating={r.rating} />
                   <span
                     className={`text-[0.78rem] font-semibold ${
-                      r.rating <= 3 ? "text-red-400" : "text-green-400"
+                      r.rating <= 3 ? "text-[var(--red-err)]" : "text-[var(--green-ok)]"
                     }`}
                   >
                     {r.rating}/5

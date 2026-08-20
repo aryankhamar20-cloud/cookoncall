@@ -88,7 +88,7 @@ export default function AdminSubscriptionsPanel() {
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-[0.85rem] text-red-300 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mb-4">
+        <div className="flex items-center gap-2 text-[0.85rem] text-[var(--red-err)] bg-[var(--red-err)]/10 border border-[var(--red-err)]/20 rounded-lg px-3 py-2 mb-4">
           <AlertCircle className="w-4 h-4" /> {error}
         </div>
       )}
@@ -102,8 +102,8 @@ export default function AdminSubscriptionsPanel() {
           {subs.map((s) => {
             const days = [...(s.days_of_week || [])].sort().map((d) => DAY_LABELS[d]).join(", ");
             const statusColor =
-              s.status === "active" ? "bg-emerald-500/15 text-emerald-300" :
-              s.status === "paused" ? "bg-amber-500/15 text-amber-300" :
+              s.status === "active" ? "bg-[var(--green-ok)]/15 text-[var(--green-ok)]" :
+              s.status === "paused" ? "bg-[var(--amber-warn)]/15 text-[var(--amber-warn)]" :
               "bg-white/10 text-white/50";
             return (
               <div key={s.id} className="bg-white/[0.03] border border-white/10 rounded-xl p-3.5 flex items-center justify-between flex-wrap gap-2">

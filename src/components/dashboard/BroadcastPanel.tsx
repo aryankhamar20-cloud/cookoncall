@@ -269,7 +269,7 @@ export default function BroadcastPanel() {
               <span
                 className={`text-[0.72rem] ${
                   title.length > TITLE_MAX
-                    ? "text-red-500"
+                    ? "text-[var(--red-err)]"
                     : "text-[var(--text-muted,#9ca3af)]"
                 }`}
               >
@@ -295,7 +295,7 @@ export default function BroadcastPanel() {
               <span
                 className={`text-[0.72rem] ${
                   body.length > BODY_MAX
-                    ? "text-red-500"
+                    ? "text-[var(--red-err)]"
                     : "text-[var(--text-muted,#9ca3af)]"
                 }`}
               >
@@ -364,7 +364,7 @@ export default function BroadcastPanel() {
                 ))}
               </select>
               {!areasLoading && areas.length === 0 && (
-                <p className="text-[0.72rem] text-amber-600 mt-1">
+                <p className="text-[0.72rem] text-[var(--amber-warn)] mt-1">
                   No active areas found. Approve an area request first.
                 </p>
               )}
@@ -391,19 +391,19 @@ export default function BroadcastPanel() {
 
           {/* Validation / status banners */}
           {!validation.ok && validation.msg && (
-            <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-amber-50 border border-amber-200 text-amber-800 text-[0.82rem]">
+            <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-[var(--amber-warn-bg)] border border-[var(--amber-warn)]/30 text-[var(--amber-warn)] text-[0.82rem]">
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>{validation.msg}</span>
             </div>
           )}
           {error && (
-            <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-red-50 border border-red-200 text-red-800 text-[0.82rem]">
+            <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-[var(--red-err)]/10 border border-[var(--red-err)]/30 text-[var(--red-err)] text-[0.82rem]">
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>{error}</span>
             </div>
           )}
           {success && (
-            <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-emerald-50 border border-emerald-200 text-emerald-800 text-[0.82rem]">
+            <div className="flex items-start gap-2 px-3 py-2 rounded-[8px] bg-[var(--green-ok)]/10 border border-[var(--green-ok)]/30 text-[var(--green-ok)] text-[0.82rem]">
               <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>{success}</span>
             </div>
@@ -531,7 +531,7 @@ function BroadcastHistoryRow({ row }: { row: BroadcastRow }) {
               {audienceLabel}
             </span>
             {row.fcm_dispatched ? (
-              <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 text-[0.7rem] font-semibold uppercase">
+              <span className="px-2 py-0.5 rounded-full bg-[var(--green-ok)]/15 text-[var(--green-ok)] text-[0.7rem] font-semibold uppercase">
                 FCM sent
               </span>
             ) : (
@@ -637,7 +637,7 @@ function CtrPanel({
   }
   if (error) {
     return (
-      <div className="mt-3 pt-3 border-t border-[rgba(0,0,0,0.06)] flex items-start gap-2 text-[0.78rem] text-red-700">
+      <div className="mt-3 pt-3 border-t border-[rgba(0,0,0,0.06)] flex items-start gap-2 text-[0.78rem] text-[var(--red-err)]">
         <AlertCircle className="w-3.5 h-3.5 mt-0.5" />
         {error}
       </div>
@@ -651,11 +651,11 @@ function CtrPanel({
   // 5–10%; campaign push regularly hits 20%+.
   const ctrTone =
     s.ctr_percent >= 20
-      ? "bg-emerald-100 text-emerald-700"
+      ? "bg-[var(--green-ok)]/15 text-[var(--green-ok)]"
       : s.ctr_percent >= 5
-        ? "bg-blue-100 text-blue-700"
+        ? "bg-[var(--info-bg)] text-[var(--info-500)]"
         : s.ctr_percent > 0
-          ? "bg-amber-100 text-amber-800"
+          ? "bg-[var(--amber-warn-bg)] text-[var(--amber-warn)]"
           : "bg-gray-100 text-gray-600";
 
   return (

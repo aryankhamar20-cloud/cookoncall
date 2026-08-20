@@ -67,10 +67,10 @@ export default function AdminDisputesPanel() {
   }
 
   const statusColor = (s: string) =>
-    s === "resolved" ? "bg-emerald-500/15 text-emerald-300" :
-    s === "rejected" ? "bg-red-500/15 text-red-300" :
-    s === "under_review" ? "bg-blue-500/15 text-blue-300" :
-    "bg-amber-500/15 text-amber-300";
+    s === "resolved" ? "bg-[var(--green-ok)]/15 text-[var(--green-ok)]" :
+    s === "rejected" ? "bg-[var(--red-err)]/15 text-[var(--red-err)]" :
+    s === "under_review" ? "bg-[var(--info-500)]/15 text-[var(--info-500)]" :
+    "bg-[var(--amber-warn)]/15 text-[var(--amber-warn)]";
 
   return (
     <div className="text-white">
@@ -101,7 +101,7 @@ export default function AdminDisputesPanel() {
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-[0.85rem] text-red-300 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 mb-4">
+        <div className="flex items-center gap-2 text-[0.85rem] text-[var(--red-err)] bg-[var(--red-err)]/10 border border-[var(--red-err)]/20 rounded-lg px-3 py-2 mb-4">
           <AlertCircle className="w-4 h-4" /> {error}
         </div>
       )}
@@ -152,14 +152,14 @@ export default function AdminDisputesPanel() {
                       />
                       <div className="flex-1" />
                       {d.status === "open" && (
-                        <button onClick={() => resolve(d.id, "under_review")} disabled={busyId === d.id} className="px-3 py-2 rounded-lg text-[0.8rem] font-semibold bg-blue-500/15 text-blue-300 border-none cursor-pointer hover:bg-blue-500/25 disabled:opacity-60">
+                        <button onClick={() => resolve(d.id, "under_review")} disabled={busyId === d.id} className="px-3 py-2 rounded-lg text-[0.8rem] font-semibold bg-[var(--info-500)]/15 text-[var(--info-500)] border-none cursor-pointer hover:bg-[var(--info-500)]/25 disabled:opacity-60">
                           Mark reviewing
                         </button>
                       )}
-                      <button onClick={() => resolve(d.id, "rejected")} disabled={busyId === d.id} className="flex items-center gap-1 px-3 py-2 rounded-lg text-[0.8rem] font-semibold bg-red-500/15 text-red-300 border-none cursor-pointer hover:bg-red-500/25 disabled:opacity-60">
+                      <button onClick={() => resolve(d.id, "rejected")} disabled={busyId === d.id} className="flex items-center gap-1 px-3 py-2 rounded-lg text-[0.8rem] font-semibold bg-[var(--red-err)]/15 text-[var(--red-err)] border-none cursor-pointer hover:bg-[var(--red-err)]/25 disabled:opacity-60">
                         <X className="w-3.5 h-3.5" /> Reject
                       </button>
-                      <button onClick={() => resolve(d.id, "resolved")} disabled={busyId === d.id} className="flex items-center gap-1 px-3 py-2 rounded-lg text-[0.8rem] font-semibold bg-emerald-500 text-white border-none cursor-pointer hover:opacity-90 disabled:opacity-60">
+                      <button onClick={() => resolve(d.id, "resolved")} disabled={busyId === d.id} className="flex items-center gap-1 px-3 py-2 rounded-lg text-[0.8rem] font-semibold bg-[var(--green-ok)] text-white border-none cursor-pointer hover:opacity-90 disabled:opacity-60">
                         {busyId === d.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />} Resolve
                       </button>
                     </div>
