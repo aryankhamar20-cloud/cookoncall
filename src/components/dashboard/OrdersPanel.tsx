@@ -1108,7 +1108,7 @@ function RebookModal({
                           </div>
                           {rating > 0 && (
                             <div className="flex items-center gap-0.5 text-[0.75rem] mt-0.5">
-                              <Star className="w-3 h-3 fill-[var(--star-gold)] text-[var(--star-gold)]" />
+                              <Star className="w-3 h-3 fill-[#F5A623] text-[#F5A623]" />
                               <span className="font-semibold">{rating.toFixed(1)}</span>
                               {chef.total_bookings != null && (
                                 <span className="text-[var(--text-muted)]">· {chef.total_bookings} bookings</span>
