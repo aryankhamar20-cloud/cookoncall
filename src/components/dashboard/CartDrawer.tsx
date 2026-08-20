@@ -126,6 +126,18 @@ export default function CartDrawer() {
     closeCart();
   }
 
+  // Escape-to-close — the drawer previously only closed via the overlay
+  // click or the X button, with no keyboard escape hatch.
+  useEffect(() => {
+    if (!isOpen) return;
+    function handler(e: KeyboardEvent) {
+      if (e.key === "Escape") handleClose();
+    }
+    document.addEventListener("keydown", handler);
+    return () => document.removeEventListener("keydown", handler);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, checkoutLoading]);
+
   return (
     <>
       {/* Overlay */}
@@ -135,6 +147,9 @@ export default function CartDrawer() {
 
       {/* Drawer */}
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-label="Cart"
         className={cn(
           "fixed top-0 right-0 w-[400px] max-w-[95vw] h-screen bg-white z-[301] shadow-[-8px_0_40px_rgba(0,0,0,0.15)] flex flex-col transition-transform duration-[350ms] ease-[cubic-bezier(0.4,0,0.2,1)]",
           isOpen ? "translate-x-0" : "translate-x-full"

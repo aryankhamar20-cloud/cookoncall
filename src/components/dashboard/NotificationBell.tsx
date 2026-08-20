@@ -75,6 +75,15 @@ export default function NotificationBell() {
     return () => document.removeEventListener("mousedown", handleClick);
   }, [open]);
 
+  // Close on Escape — previously only outside-click closed the dropdown.
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    if (open) document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, [open]);
+
   /**
    * Round 4 / Analytics Phase 2 — explicit click signal for CTR.
    *
@@ -125,6 +134,9 @@ export default function NotificationBell() {
     <div className="relative" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
+        aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} unread` : "Notifications"}
+        aria-haspopup="true"
+        aria-expanded={open}
         className="bg-transparent border-none cursor-pointer relative p-1.5"
       >
         <Bell className="w-[22px] h-[22px] text-[var(--brown-800)]" />
@@ -136,7 +148,7 @@ export default function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-[340px] max-h-[420px] bg-white rounded-[16px] border border-[rgba(212,114,26,0.08)] shadow-[0_8px_32px_rgba(26,15,10,0.12)] z-50 overflow-hidden">
+        <div role="menu" aria-label="Notifications" className="absolute right-0 top-full mt-2 w-[340px] max-w-[calc(100vw-2.5rem)] max-h-[420px] bg-white rounded-[16px] border border-[rgba(212,114,26,0.08)] shadow-[0_8px_32px_rgba(26,15,10,0.12)] z-50 overflow-hidden">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-[rgba(212,114,26,0.06)]">
             <div className="font-bold text-[0.92rem]">Notifications</div>
@@ -157,11 +169,12 @@ export default function NotificationBell() {
               </div>
             ) : (
               notifications.map((n) => (
-                <div
+                <button
                   key={n.id}
+                  role="menuitem"
                   onClick={() => handleClick(n)}
                   className={cn(
-                    "px-4 py-3 border-b border-[rgba(212,114,26,0.04)] cursor-pointer transition-colors hover:bg-[rgba(212,114,26,0.02)]",
+                    "w-full text-left px-4 py-3 border-b border-[rgba(212,114,26,0.04)] cursor-pointer transition-colors hover:bg-[rgba(212,114,26,0.02)] bg-transparent border-x-0 border-t-0",
                     !n.is_read && "bg-[rgba(212,114,26,0.03)]"
                   )}
                 >
@@ -175,7 +188,7 @@ export default function NotificationBell() {
                       <div className="text-[0.7rem] text-[var(--text-muted)] mt-1 opacity-60">{formatTime(n.created_at)}</div>
                     </div>
                   </div>
-                </div>
+                </button>
               ))
             )}
           </div>
