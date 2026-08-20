@@ -269,8 +269,10 @@ export default function PaymentModal({
             email: user?.email || "",
             contact: user?.phone || "",
           },
+          // Razorpay's checkout widget needs a literal hex (no CSS var support) —
+          // kept equal to the --orange-500 brand token in globals.css.
           theme: {
-            color: "#D4721A",
+            color: "#A43700",
           },
           modal: {
             ondismiss: () => {
@@ -375,6 +377,7 @@ export default function PaymentModal({
           <button
             key={method.id}
             onClick={() => !processing && setSelectedMethod(method.id)}
+            aria-pressed={selectedMethod === method.id}
             className={cn(
               "flex-1 py-3 rounded-[12px] border-[1.5px] bg-white cursor-pointer text-center transition-all",
               selectedMethod === method.id

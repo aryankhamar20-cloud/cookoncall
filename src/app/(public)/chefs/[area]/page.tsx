@@ -90,8 +90,13 @@ export async function generateMetadata({
   const canonical = `https://thecookoncall.com/chefs/${params.area}`;
 
   if (!isAreaResult(resolved)) {
+    // Root layout applies title.template "%s | CookOnCall" — the `title`
+    // field must NOT repeat the brand or the <title> tag renders
+    // "... | CookOnCall | CookOnCall" (see docs/30_GLOBAL_BRAND_AND_SEO_AUDIT.md).
+    // openGraph.title is set explicitly (not run through the template), so
+    // it keeps its own "| CookOnCall" suffix.
     return {
-      title: "Home Chefs in Ahmedabad | Book a Personal Chef | CookOnCall",
+      title: "Home Chefs in Ahmedabad | Book a Personal Chef",
       description:
         "Browse verified home chefs in Ahmedabad. Book a personal chef for daily meals, dinner parties, or events. Gujarati, Punjabi, South Indian cuisines. Starting ₹600.",
       alternates: { canonical },
@@ -106,14 +111,17 @@ export async function generateMetadata({
   }
 
   const { area } = resolved;
-  const title = `Home Chefs in ${area.name}, ${CITY_NAME} | CookOnCall`;
+  // Same rule as above: `title` (templated) excludes the brand suffix;
+  // `ogTitle` (used verbatim, not templated) keeps it.
+  const title = `Home Chefs in ${area.name}, ${CITY_NAME}`;
+  const ogTitle = `Home Chefs in ${area.name}, ${CITY_NAME} | CookOnCall`;
   const description = `Browse verified home chefs in ${area.name}, ${CITY_NAME}. Book a personal chef for daily meals, dinner parties, or events. Starting ₹600.`;
   return {
     title,
     description,
     alternates: { canonical },
     openGraph: {
-      title,
+      title: ogTitle,
       description,
       url: canonical,
       images: [{ url: "/og-default.png", width: 1200, height: 630 }],
@@ -234,16 +242,16 @@ export default async function ChefsAreaPage({
 
       {/* Hero */}
       <section className="pt-[140px] pb-16 px-6 md:px-12 text-center max-w-[800px] mx-auto">
-        <nav className="text-sm text-gray-400 mb-6 flex items-center justify-center gap-1.5">
-          <Link href="/" className="hover:text-orange-500">Home</Link>
+        <nav className="text-sm text-[var(--text-muted)] mb-6 flex items-center justify-center gap-1.5">
+          <Link href="/" className="hover:text-[var(--orange-500)]">Home</Link>
           <span>/</span>
           {isCity ? (
-            <span className="text-gray-600">Home Chefs in Ahmedabad</span>
+            <span className="text-[var(--text-muted)]">Home Chefs in Ahmedabad</span>
           ) : (
             <>
-              <Link href={`/chefs/${CITY_SLUG}`} className="hover:text-orange-500">Home Chefs in Ahmedabad</Link>
+              <Link href={`/chefs/${CITY_SLUG}`} className="hover:text-[var(--orange-500)]">Home Chefs in Ahmedabad</Link>
               <span>/</span>
-              <span className="text-gray-600">{areaName}</span>
+              <span className="text-[var(--text-muted)]">{areaName}</span>
             </>
           )}
         </nav>
@@ -323,7 +331,7 @@ export default async function ChefsAreaPage({
                     <div>
                       <h3 className="font-bold text-[var(--brown-800)] text-[1rem]">{name}</h3>
                       {rating > 0 && (
-                        <p className="text-sm text-orange-500 font-semibold">
+                        <p className="text-sm text-[var(--orange-500)] font-semibold">
                           {rating.toFixed(1)} ★ ({reviews} reviews)
                         </p>
                       )}
@@ -332,7 +340,7 @@ export default async function ChefsAreaPage({
                   {cuisines.length > 0 && (
                     <div className="flex gap-2 flex-wrap">
                       {cuisines.slice(0, 3).map((c) => (
-                        <span key={c} className="bg-orange-50 text-orange-700 text-xs font-medium px-3 py-1 rounded-full border border-orange-100">
+                        <span key={c} className="bg-[rgba(212,114,26,0.06)] text-[var(--orange-500)] text-xs font-medium px-3 py-1 rounded-full border border-[rgba(212,114,26,0.12)]">
                           {c}
                         </span>
                       ))}

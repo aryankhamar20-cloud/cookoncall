@@ -49,19 +49,22 @@ export function evaluatePassword(pwd: string): {
 }
 
 const SCORE_LABEL = ["Too short", "Weak", "Fair", "Good", "Strong"];
+// "Fair" uses --amber-warn (not --orange-500) — orange-500 is the brand CTA
+// color used on every "Book"/"Pay"/"Sign up" button; reusing it here would
+// have this hint read as an action prompt instead of a caution signal.
 const SCORE_COLOR = [
-  "bg-[var(--red-err,#dc2626)]",
-  "bg-[var(--red-err,#dc2626)]",
-  "bg-[var(--orange-500,#ea580c)]",
-  "bg-[var(--green-ok,#16a34a)]",
-  "bg-[var(--green-ok,#16a34a)]",
+  "bg-[var(--red-err)]",
+  "bg-[var(--red-err)]",
+  "bg-[var(--amber-warn)]",
+  "bg-[var(--green-ok)]",
+  "bg-[var(--green-ok)]",
 ];
 const TEXT_COLOR = [
-  "text-[var(--red-err,#dc2626)]",
-  "text-[var(--red-err,#dc2626)]",
-  "text-[var(--orange-500,#ea580c)]",
-  "text-[var(--green-ok,#16a34a)]",
-  "text-[var(--green-ok,#16a34a)]",
+  "text-[var(--red-err)]",
+  "text-[var(--red-err)]",
+  "text-[var(--amber-warn)]",
+  "text-[var(--green-ok)]",
+  "text-[var(--green-ok)]",
 ];
 
 export default function PasswordStrength({ value, className = "" }: PasswordStrengthProps) {
@@ -77,7 +80,7 @@ export default function PasswordStrength({ value, className = "" }: PasswordStre
           <div
             key={i}
             className={`h-1.5 flex-1 rounded-full transition-colors ${
-              i < filledBars ? SCORE_COLOR[score] : "bg-[var(--cream-300,#e5e0d8)]"
+              i < filledBars ? SCORE_COLOR[score] : "bg-[var(--cream-300)]"
             }`}
           />
         ))}
@@ -92,7 +95,7 @@ export default function PasswordStrength({ value, className = "" }: PasswordStre
             .map((r) => (
               <li
                 key={r.label}
-                className="text-[0.72rem] text-[var(--text-muted,#6b7280)]"
+                className="text-[0.72rem] text-[var(--text-muted)]"
               >
                 · {r.label}
               </li>

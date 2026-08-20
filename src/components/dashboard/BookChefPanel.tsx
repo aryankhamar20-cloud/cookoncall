@@ -527,7 +527,7 @@ export default function BookChefPanel() {
                   onChange={(e) => setVegOnly(e.target.checked)}
                   className="w-4 h-4 accent-[var(--orange-500)]"
                 />
-                <Leaf className="w-3.5 h-3.5 text-green-600" />
+                <Leaf className="w-3.5 h-3.5 text-[var(--green-ok)]" />
                 Pure Veg only
               </label>
             </div>
@@ -537,9 +537,9 @@ export default function BookChefPanel() {
 
       {/* Error state */}
       {error && !loading && (
-        <div className="bg-white rounded-[16px] p-6 border border-red-100 text-center">
-          <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-2" />
-          <p className="text-[0.9rem] text-red-500">{error}</p>
+        <div className="bg-white rounded-[16px] p-6 border border-[rgba(217,48,37,0.15)] text-center">
+          <AlertCircle className="w-8 h-8 text-[var(--red-err)] mx-auto mb-2" />
+          <p className="text-[0.9rem] text-[var(--red-err)]">{error}</p>
           <button
             onClick={fetchChefs}
             className="mt-3 px-5 py-2 rounded-full bg-[var(--orange-500)] text-white text-[0.82rem] font-semibold border-none cursor-pointer"
@@ -629,12 +629,12 @@ export default function BookChefPanel() {
                       </span>
                     )}
                     {(chef.is_veg_only || chef.isVegOnly) && (
-                      <span className="absolute top-3 left-3 bg-white/90 text-[0.7rem] font-semibold px-2.5 py-1 rounded-full text-green-600 flex items-center gap-1">
+                      <span className="absolute top-3 left-3 bg-white/90 text-[0.7rem] font-semibold px-2.5 py-1 rounded-full text-[var(--green-ok)] flex items-center gap-1">
                         <Leaf className="w-3.5 h-3.5" /> Pure Veg
                       </span>
                     )}
                     {hasFssai && (
-                      <span className="absolute bottom-3 right-3 bg-white/90 text-[0.65rem] font-semibold px-2 py-0.5 rounded-full text-amber-600 flex items-center gap-1">
+                      <span className="absolute bottom-3 right-3 bg-white/90 text-[0.65rem] font-semibold px-2 py-0.5 rounded-full text-[var(--amber-warn)] flex items-center gap-1">
                         <Award className="w-3 h-3" /> FSSAI
                       </span>
                     )}
@@ -659,7 +659,7 @@ export default function BookChefPanel() {
                     </div>
                     {rating > 0 && (
                       <div className="flex items-center gap-1 text-[0.82rem] mb-3">
-                        <Star className="w-3.5 h-3.5 fill-[#F5A623] text-[#F5A623]" />
+                        <Star className="w-3.5 h-3.5 fill-[var(--star-gold)] text-[var(--star-gold)]" />
                         <span className="font-semibold">{rating.toFixed(1)}</span>
                         {chef.total_bookings != null && (
                           <span className="text-[var(--text-muted)]">
@@ -691,13 +691,13 @@ export default function BookChefPanel() {
                                 <div
                                   className={cn(
                                     "w-3 h-3 border-[1.5px] rounded-sm flex items-center justify-center shrink-0",
-                                   item.type === "veg" ? "border-green-600" : "border-red-600"
+                                   item.type === "veg" ? "border-[var(--green-ok)]" : "border-[var(--red-err)]"
                                   )}
                                 >
                                   <div
                                     className={cn(
                                       "w-1.5 h-1.5 rounded-full",
-                                      item.type === "veg" ? "bg-green-600" : "bg-red-600"
+                                      item.type === "veg" ? "bg-[var(--green-ok)]" : "bg-[var(--red-err)]"
                                    )}
                                   />
                                 </div>
@@ -760,8 +760,8 @@ export default function BookChefPanel() {
             className="bg-white rounded-[16px] max-w-md w-full p-6 text-center"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-16 h-16 rounded-full bg-amber-100 mx-auto mb-4 flex items-center justify-center">
-              <Clock className="w-8 h-8 text-amber-600" />
+            <div className="w-16 h-16 rounded-full bg-[var(--amber-warn-bg)] mx-auto mb-4 flex items-center justify-center">
+              <Clock className="w-8 h-8 text-[var(--amber-warn)]" />
             </div>
             <h3 className="font-bold text-[1.1rem] mb-1">Request sent to chef!</h3>
             <p className="text-[0.85rem] text-[var(--text-muted)] mb-1">

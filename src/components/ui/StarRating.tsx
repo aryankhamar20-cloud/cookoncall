@@ -22,7 +22,7 @@ export default function StarRating({
           <span
             key={i}
             className={cn(
-              i < Math.round(rating) ? "text-[#F5A623]" : "text-[var(--cream-300)]"
+              i < Math.round(rating) ? "text-[var(--star-gold)]" : "text-[var(--cream-300)]"
             )}
           >
             ★

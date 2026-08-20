@@ -159,10 +159,11 @@ export default function CancelModal({
 
       {/* Reason */}
       <div className="mb-5">
-        <label className="block font-semibold text-[0.88rem] mb-2">
+        <label htmlFor="cancel-reason" className="block font-semibold text-[0.88rem] mb-2">
           Reason for cancellation
         </label>
         <select
+          id="cancel-reason"
           value={reason}
           onChange={(e) => setReason(e.target.value)}
           className="w-full px-4 py-3 border-[1.5px] border-[var(--cream-300)] rounded-[12px] text-[0.95rem] bg-white outline-none focus:border-[var(--orange-500)]"
@@ -177,7 +178,7 @@ export default function CancelModal({
       <button
         onClick={handleConfirm}
         disabled={confirming || loadingEstimate}
-        className="w-full py-3.5 border-none rounded-[12px] bg-[var(--red-err)] text-white font-bold text-[0.95rem] cursor-pointer transition-all hover:bg-[#B91C1C] disabled:opacity-60"
+        className="w-full py-3.5 border-none rounded-[12px] bg-[var(--red-err)] text-white font-bold text-[0.95rem] cursor-pointer transition-all hover:brightness-90 disabled:opacity-60"
         style={{ fontFamily: "var(--font-body)" }}
       >
         {confirming ? "Cancelling..." : "Confirm Cancellation"}

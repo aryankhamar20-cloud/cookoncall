@@ -37,33 +37,33 @@ export default function AddressCard({
         onClick={onSelect}
         className={`w-full text-left rounded-lg border-2 p-3 transition ${
           selected
-            ? "border-orange-500 bg-orange-50 ring-2 ring-orange-200"
-            : "border-gray-200 bg-white hover:border-gray-300"
+            ? "border-[var(--orange-500)] bg-[rgba(212,114,26,0.06)] ring-2 ring-[rgba(212,114,26,0.2)]"
+            : "border-[var(--cream-300)] bg-white hover:border-[var(--text-muted)]"
         }`}
       >
         <div className="flex items-start gap-3">
           <div
             className={`mt-0.5 w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
-              selected ? "border-orange-600 bg-orange-600" : "border-gray-300 bg-white"
+              selected ? "border-[var(--orange-500)] bg-[var(--orange-500)]" : "border-[var(--cream-300)] bg-white"
             }`}
           >
             {selected && <div className="w-2 h-2 rounded-full bg-white" />}
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <Icon className="w-3.5 h-3.5 text-gray-600" />
-              <span className="text-sm font-semibold text-gray-900">{labelText}</span>
+              <Icon className="w-3.5 h-3.5 text-[var(--text-muted)]" />
+              <span className="text-sm font-semibold text-[var(--text-dark)]">{labelText}</span>
               {address.is_default && (
-                <span className="text-[10px] font-bold uppercase bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                <span className="text-[10px] font-bold uppercase bg-[rgba(29,122,90,0.12)] text-[var(--green-ok)] px-1.5 py-0.5 rounded">
                   Default
                 </span>
               )}
             </div>
-            <p className="text-xs text-gray-600 leading-relaxed line-clamp-2">
+            <p className="text-xs text-[var(--text-muted)] leading-relaxed line-clamp-2">
               {formatAddressLine(address)}
             </p>
             {address.contact_phone && (
-              <p className="text-xs text-gray-500 mt-1">📞 {address.contact_phone}</p>
+              <p className="text-xs text-[var(--text-muted)] mt-1">📞 {address.contact_phone}</p>
             )}
           </div>
         </div>
@@ -73,14 +73,14 @@ export default function AddressCard({
 
   // manage mode
   return (
-    <div className="rounded-lg border-2 border-gray-200 bg-white p-4 hover:border-gray-300 transition">
+    <div className="rounded-lg border-2 border-[var(--cream-300)] bg-white p-4 hover:border-[var(--text-muted)] transition">
       <div className="flex items-start justify-between gap-3 mb-2">
         <div className="flex items-center gap-2">
-          <Icon className="w-4 h-4 text-orange-600" />
-          <span className="text-sm font-bold text-gray-900">{labelText}</span>
+          <Icon className="w-4 h-4 text-[var(--orange-500)]" />
+          <span className="text-sm font-bold text-[var(--text-dark)]">{labelText}</span>
           {address.is_default && (
-            <span className="text-[10px] font-bold uppercase bg-green-100 text-green-700 px-1.5 py-0.5 rounded flex items-center gap-0.5">
-              <Star className="w-2.5 h-2.5 fill-green-700" />
+            <span className="text-[10px] font-bold uppercase bg-[rgba(29,122,90,0.12)] text-[var(--green-ok)] px-1.5 py-0.5 rounded flex items-center gap-0.5">
+              <Star className="w-2.5 h-2.5 fill-[var(--green-ok)]" />
               Default
             </span>
           )}
@@ -89,7 +89,7 @@ export default function AddressCard({
           {onEdit && (
             <button
               onClick={onEdit}
-              className="p-1.5 hover:bg-gray-100 rounded text-gray-600"
+              className="p-1.5 hover:bg-[var(--cream-200)] rounded text-[var(--text-muted)]"
               title="Edit"
               aria-label="Edit address"
             >
@@ -99,7 +99,7 @@ export default function AddressCard({
           {onDelete && (
             <button
               onClick={onDelete}
-              className="p-1.5 hover:bg-red-50 rounded text-red-600"
+              className="p-1.5 hover:bg-[rgba(217,48,37,0.08)] rounded text-[var(--red-err)]"
               title="Delete"
               aria-label="Delete address"
             >
@@ -109,12 +109,12 @@ export default function AddressCard({
         </div>
       </div>
 
-      <p className="text-sm text-gray-700 leading-relaxed">
+      <p className="text-sm text-[var(--text-muted)] leading-relaxed">
         {formatAddressLine(address)}
       </p>
 
       {address.contact_name && (
-        <p className="text-xs text-gray-500 mt-2">
+        <p className="text-xs text-[var(--text-muted)] mt-2">
           Contact: <span className="font-medium">{address.contact_name}</span>
           {address.contact_phone && ` · ${address.contact_phone}`}
         </p>
@@ -123,7 +123,7 @@ export default function AddressCard({
       {!address.is_default && onSetDefault && (
         <button
           onClick={onSetDefault}
-          className="mt-3 text-xs font-semibold text-orange-600 hover:text-orange-700"
+          className="mt-3 text-xs font-semibold text-[var(--orange-500)] hover:text-[var(--orange-400)]"
         >
           Set as default
         </button>

@@ -145,12 +145,12 @@ export default async function ChefDetailPage({ params }: { params: { slug: strin
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
       <main className="min-h-screen bg-[var(--cream-100)]">
         <div className="pt-[88px] pb-16 px-5 max-w-[800px] mx-auto">
-          <nav className="text-sm text-gray-400 mb-5 flex items-center gap-1.5">
-            <Link href="/" className="hover:text-orange-500">Home</Link>
+          <nav className="text-sm text-[var(--text-muted)] mb-5 flex items-center gap-1.5">
+            <Link href="/" className="hover:text-[var(--orange-500)]">Home</Link>
             <span>/</span>
-            <Link href="/chef" className="hover:text-orange-500">Chefs</Link>
+            <Link href="/chef" className="hover:text-[var(--orange-500)]">Chefs</Link>
             <span>/</span>
-            <span className="text-gray-600">{name}</span>
+            <span className="text-[var(--text-muted)]">{name}</span>
           </nav>
           <div className="bg-white rounded-[20px] overflow-hidden border border-[rgba(212,114,26,0.06)] mb-6">
             <div className="h-[100px] bg-gradient-to-br from-[#FFE4B5] to-[#FFB347] relative">
@@ -165,12 +165,12 @@ export default async function ChefDetailPage({ params }: { params: { slug: strin
             <div className="pt-14 pb-6 px-6">
               <h1 className="font-display text-[1.4rem] font-[900] text-[var(--brown-800)]">{name}</h1>
               {cuisines.length > 0 && <p className="text-[0.88rem] text-[var(--text-muted)] mt-1">{cuisines.join(", ")}</p>}
-              {rating > 0 && <p className="text-sm font-semibold text-orange-500 mt-2">{rating.toFixed(1)} ({reviews} reviews)</p>}
+              {rating > 0 && <p className="text-sm font-semibold text-[var(--orange-500)] mt-2">{rating.toFixed(1)} ({reviews} reviews)</p>}
               {chef.bio && <p className="text-[0.9rem] text-[var(--text-muted)] mt-4 leading-relaxed">{chef.bio}</p>}
               {cuisines.length > 0 && (
                 <div className="flex gap-2 flex-wrap mt-4">
                   {cuisines.map((c) => (
-                    <span key={c} className="bg-orange-50 text-orange-700 text-xs font-medium px-3 py-1 rounded-full border border-orange-200">{c}</span>
+                    <span key={c} className="bg-[rgba(212,114,26,0.06)] text-[var(--orange-500)] text-xs font-medium px-3 py-1 rounded-full border border-[rgba(212,114,26,0.2)]">{c}</span>
                   ))}
                 </div>
               )}

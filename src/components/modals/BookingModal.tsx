@@ -517,7 +517,7 @@ if (isPackageMode && preselectedPackage) {
           <div className="flex items-center justify-between mb-2">
             <label className="flex items-center gap-1.5 font-semibold text-[0.88rem]">
               <MapPin className="w-4 h-4 text-[var(--orange-500)]" /> Delivery Address{" "}
-              <span className="text-red-400">*</span>
+              <span className="text-[var(--red-err)]">*</span>
             </label>
           </div>
 
@@ -543,14 +543,14 @@ if (isPackageMode && preselectedPackage) {
           ) : !showAllAddresses ? (
             <div className="border border-[var(--cream-300)] rounded-[12px] p-3.5 bg-[rgba(212,114,26,0.02)]">
               <div className="flex items-start gap-3">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
+                <CheckCircle2 className="w-5 h-5 text-[var(--green-ok)] shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
                     <span className="font-semibold text-[0.88rem]">
                       {selectedAddress?.label ? selectedAddress.label.charAt(0).toUpperCase() + selectedAddress.label.slice(1) : "Home"}
                     </span>
                     {selectedAddress?.is_default && (
-                      <span className="text-[0.7rem] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">Default</span>
+                      <span className="text-[0.7rem] px-2 py-0.5 rounded-full bg-[rgba(29,122,90,0.12)] text-[var(--green-ok)] font-semibold">Default</span>
                     )}
                   </div>
                   <div className="text-[0.82rem] text-[var(--text-muted)] leading-relaxed">
@@ -600,9 +600,9 @@ if (isPackageMode && preselectedPackage) {
 
         {/* P1.6 — Soft warning when chef doesn't list customer's area */}
         {showAreaWarning && (
-          <div className="mb-4 p-3 rounded-[12px] border border-amber-300 bg-amber-50 flex items-start gap-2">
-            <span className="text-amber-600 text-[1rem] leading-none mt-0.5">⚠️</span>
-            <div className="text-[0.82rem] text-amber-900 leading-relaxed">
+          <div className="mb-4 p-3 rounded-[12px] border border-[var(--amber-warn-bg)] bg-[rgba(156,87,0,0.06)] flex items-start gap-2">
+            <span className="text-[var(--amber-warn)] text-[1rem] leading-none mt-0.5">⚠️</span>
+            <div className="text-[0.82rem] text-[var(--amber-warn)] leading-relaxed">
               <span className="font-semibold">Heads up:</span> {chef?.user?.name || "This chef"} hasn&apos;t
               listed <span className="font-semibold">{selectedAddress?.area || "your area"}</span> as
               one of their service areas. The booking will go through and the chef will see your full
@@ -726,8 +726,8 @@ if (isPackageMode && preselectedPackage) {
                               <div key={item.id}
                                 className={`flex items-center gap-3 px-3 py-2.5 border-b border-[var(--cream-200)] cursor-pointer transition-colors ${isSelected ? "bg-[rgba(212,114,26,0.06)]" : "hover:bg-[var(--cream-50)]"}`}
                                 onClick={() => !isSelected && toggleDish(item)}>
-                                <div className={`w-4 h-4 border-2 rounded-sm flex items-center justify-center flex-shrink-0 ${item.type === "veg" ? "border-green-600" : "border-red-600"}`}>
-                                  <div className={`w-2 h-2 rounded-full ${item.type === "veg" ? "bg-green-600" : "bg-red-600"}`} />
+                                <div className={`w-4 h-4 border-2 rounded-sm flex items-center justify-center flex-shrink-0 ${item.type === "veg" ? "border-[var(--green-ok)]" : "border-[var(--red-err)]"}`}>
+                                  <div className={`w-2 h-2 rounded-full ${item.type === "veg" ? "bg-[var(--green-ok)]" : "bg-[var(--red-err)]"}`} />
                                 </div>
                                 {item.image && (
                                   <img src={item.image} alt={item.name} className="w-10 h-10 rounded-lg object-cover flex-shrink-0" />
@@ -844,7 +844,7 @@ if (isPackageMode && preselectedPackage) {
                       />
                       {appliedPromo ? (
                         <button type="button" onClick={removePromo}
-                          className="px-3 py-2 rounded-[8px] text-[0.8rem] font-semibold text-[#ba1a1a]">
+                          className="px-3 py-2 rounded-[8px] text-[0.8rem] font-semibold text-[var(--red-err)]">
                           Remove
                         </button>
                       ) : (
@@ -854,7 +854,7 @@ if (isPackageMode && preselectedPackage) {
                         </button>
                       )}
                     </div>
-                    {promoErr && <div className="text-[0.75rem] text-[#ba1a1a] mt-1">{promoErr}</div>}
+                    {promoErr && <div className="text-[0.75rem] text-[var(--red-err)] mt-1">{promoErr}</div>}
                     {promoMsg && <div className="text-[0.75rem] text-[var(--green-ok)] mt-1">{promoMsg}</div>}
                   </div>
                   {discount > 0 && (

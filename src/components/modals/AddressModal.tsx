@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { X, MapPin, Loader2, CheckCircle2, Navigation } from "lucide-react";
 import toast from "react-hot-toast";
 import type { Address, AddressFormData, AddressLabel } from "@/types";
@@ -42,6 +42,51 @@ export default function AddressModal({
   const [pincodeVerified, setPincodeVerified] = useState(false);
   const [detectingLocation, setDetectingLocation] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // ─── Accessibility: focus trap + Escape-to-close ──────────────────
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const titleId = "address-modal-title";
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const previouslyFocused = document.activeElement as HTMLElement | null;
+    const node = dialogRef.current;
+    // Focus the first focusable element (or the dialog itself) on open.
+    const focusable = node?.querySelectorAll<HTMLElement>(
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+    );
+    (focusable?.[0] ?? node)?.focus();
+
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        onClose();
+        return;
+      }
+      if (e.key !== "Tab" || !node) return;
+      const items = Array.from(
+        node.querySelectorAll<HTMLElement>(
+          'button:not(:disabled), [href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
+        ),
+      ).filter((el) => el.offsetParent !== null);
+      if (items.length === 0) return;
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+      previouslyFocused?.focus();
+    };
+  }, [isOpen]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // P1.6 — Service areas
   const [areas, setAreas] = useState<ServiceAreaDto[]>([]);
@@ -264,19 +309,30 @@ export default function AddressModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4">
-      <div className="bg-white w-full sm:max-w-xl rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[92vh] flex flex-col">
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-0 sm:p-4"
+      onClick={onClose}
+    >
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white w-full sm:max-w-xl rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[92vh] flex flex-col outline-none"
+      >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b">
           <div className="flex items-center gap-2">
-            <MapPin className="w-5 h-5 text-orange-600" />
-            <h2 className="text-lg font-bold text-gray-900">
+            <MapPin className="w-5 h-5 text-[var(--orange-500)]" />
+            <h2 id={titleId} className="text-lg font-bold text-[var(--text-dark)]">
               {existingAddress ? "Edit Address" : "Add New Address"}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition"
+            className="p-2 hover:bg-[var(--cream-200)] rounded-lg transition"
             aria-label="Close"
           >
             <X className="w-5 h-5" />
@@ -287,7 +343,7 @@ export default function AddressModal({
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4">
           {/* Label chips */}
           <div>
-            <label className="text-sm font-semibold text-gray-800 mb-2 block">
+            <label className="text-sm font-semibold text-[var(--text-dark)] mb-2 block">
               Save as
             </label>
             <div className="flex gap-2">
@@ -298,8 +354,8 @@ export default function AddressModal({
                   onClick={() => setForm({ ...form, label: l.value })}
                   className={`flex-1 px-3 py-2 rounded-lg border-2 text-sm font-medium transition ${
                     form.label === l.value
-                      ? "border-orange-500 bg-orange-50 text-orange-700"
-                      : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+                      ? "border-[var(--orange-500)] bg-[rgba(212,114,26,0.06)] text-[var(--orange-500)]"
+                      : "border-[var(--cream-300)] bg-white text-[var(--text-muted)] hover:border-[var(--cream-300)]"
                   }`}
                 >
                   <span className="mr-1">{l.emoji}</span>
@@ -314,7 +370,7 @@ export default function AddressModal({
             type="button"
             onClick={useCurrentLocation}
             disabled={detectingLocation}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed border-orange-300 bg-orange-50 text-orange-700 font-medium text-sm hover:bg-orange-100 transition disabled:opacity-60"
+            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border-2 border-dashed border-[var(--orange-300)] bg-[rgba(212,114,26,0.06)] text-[var(--orange-500)] font-medium text-sm hover:bg-[rgba(212,114,26,0.12)] transition disabled:opacity-60"
           >
             {detectingLocation ? (
               <Loader2 className="w-4 h-4 animate-spin" />
@@ -354,7 +410,7 @@ export default function AddressModal({
 
           {/* Area / Locality — P1.6: dropdown + 'Other' request flow */}
           <div>
-            <label className="text-sm font-semibold text-gray-800 mb-1 block">
+            <label className="text-sm font-semibold text-[var(--text-dark)] mb-1 block">
               Area / Locality *
             </label>
             {!requestMode ? (
@@ -377,8 +433,8 @@ export default function AddressModal({
                     }));
                     setErrors((er) => ({ ...er, area: "" }));
                   }}
-                  className={`w-full px-3 py-2.5 rounded-lg border-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-orange-300 ${
-                    errors.area ? "border-red-400" : "border-gray-200"
+                  className={`w-full px-3 py-2.5 rounded-lg border-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-[rgba(212,114,26,0.35)] ${
+                    errors.area ? "border-[var(--red-err)]" : "border-[var(--cream-300)]"
                   }`}
                   disabled={areasLoading}
                 >
@@ -393,18 +449,18 @@ export default function AddressModal({
                   <option value="__OTHER__">Other (request to add)</option>
                 </select>
                 {errors.area && (
-                  <p className="text-xs text-red-600 mt-1">{errors.area}</p>
+                  <p className="text-xs text-[var(--red-err)] mt-1">{errors.area}</p>
                 )}
                 {form.area && !form.area_slug && (
-                  <p className="text-xs text-amber-700 mt-1">
+                  <p className="text-xs text-[var(--amber-warn)] mt-1">
                     Saved area: <span className="font-semibold">{form.area}</span>
                     {" — "}awaiting admin approval. You can still book.
                   </p>
                 )}
               </>
             ) : (
-              <div className="space-y-2 p-3 bg-orange-50 border-2 border-orange-200 rounded-lg">
-                <p className="text-xs text-gray-700">
+              <div className="space-y-2 p-3 bg-[rgba(212,114,26,0.06)] border-2 border-[rgba(212,114,26,0.2)] rounded-lg">
+                <p className="text-xs text-[var(--text-muted)]">
                   Type your area name below. We&apos;ll review and add it within 24 hours.
                   You can still save this address and book chefs in the meantime.
                 </p>
@@ -414,7 +470,7 @@ export default function AddressModal({
                   onChange={(e) => setRequestName(e.target.value)}
                   placeholder="e.g. Memnagar"
                   maxLength={100}
-                  className="w-full px-3 py-2.5 rounded-lg border-2 border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300"
+                  className="w-full px-3 py-2.5 rounded-lg border-2 border-[var(--cream-300)] text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(212,114,26,0.35)]"
                 />
                 <div className="flex gap-2 flex-wrap">
                   <button
@@ -458,7 +514,7 @@ export default function AddressModal({
                       }
                     }}
                     disabled={requestSubmitting}
-                    className="px-4 py-2 rounded-lg bg-orange-600 text-white text-sm font-semibold hover:bg-orange-700 disabled:opacity-50"
+                    className="px-4 py-2 rounded-lg bg-[var(--orange-500)] text-white text-sm font-semibold hover:bg-[var(--orange-400)] disabled:opacity-50"
                   >
                     {requestSubmitting ? "Submitting…" : "Request & save name"}
                   </button>
@@ -469,7 +525,7 @@ export default function AddressModal({
                       setRequestName("");
                     }}
                     disabled={requestSubmitting}
-                    className="px-4 py-2 rounded-lg border-2 border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+                    className="px-4 py-2 rounded-lg border-2 border-[var(--cream-300)] text-sm font-semibold text-[var(--text-muted)] hover:bg-[var(--cream-100)] disabled:opacity-50"
                   >
                     Cancel
                   </button>
@@ -480,7 +536,7 @@ export default function AddressModal({
 
           {/* Pincode with autofill */}
           <div>
-            <label className="text-sm font-semibold text-gray-800 mb-1 block">
+            <label className="text-sm font-semibold text-[var(--text-dark)] mb-1 block">
               Pincode *
             </label>
             <div className="relative">
@@ -493,23 +549,23 @@ export default function AddressModal({
                   setForm({ ...form, pincode: e.target.value.replace(/\D/g, "") })
                 }
                 placeholder="380015"
-                className={`w-full px-3 py-2.5 pr-10 rounded-lg border-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 ${
-                  errors.pincode ? "border-red-400" : "border-gray-200"
+                className={`w-full px-3 py-2.5 pr-10 rounded-lg border-2 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(212,114,26,0.35)] ${
+                  errors.pincode ? "border-[var(--red-err)]" : "border-[var(--cream-300)]"
                 }`}
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2">
                 {pincodeLoading && (
-                  <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
+                  <Loader2 className="w-4 h-4 text-[var(--text-muted)] animate-spin" />
                 )}
                 {!pincodeLoading && pincodeVerified && form.pincode.length === 6 && (
-                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                  <CheckCircle2 className="w-4 h-4 text-[var(--green-ok)]" />
                 )}
               </div>
             </div>
             {errors.pincode && (
-              <p className="text-xs text-red-600 mt-1">{errors.pincode}</p>
+              <p className="text-xs text-[var(--red-err)] mt-1">{errors.pincode}</p>
             )}
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-[var(--text-muted)] mt-1">
               City and state will auto-fill from pincode.
             </p>
           </div>
@@ -532,7 +588,7 @@ export default function AddressModal({
 
           {/* Contact (optional override) */}
           <div className="pt-2 border-t">
-            <p className="text-xs font-semibold text-gray-600 mb-2">
+            <p className="text-xs font-semibold text-[var(--text-muted)] mb-2">
               Contact at this address (optional — defaults to your account)
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -562,21 +618,21 @@ export default function AddressModal({
               type="checkbox"
               checked={form.is_default || false}
               onChange={(e) => setForm({ ...form, is_default: e.target.checked })}
-              className="w-4 h-4 accent-orange-600"
+              className="w-4 h-4 accent-[var(--orange-500)]"
             />
-            <span className="text-sm text-gray-700">
+            <span className="text-sm text-[var(--text-muted)]">
               Make this my default address
             </span>
           </label>
         </div>
 
         {/* Footer */}
-        <div className="px-5 py-4 border-t bg-gray-50 flex gap-3">
+        <div className="px-5 py-4 border-t bg-[var(--cream-100)] flex gap-3">
           <button
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="flex-1 px-4 py-2.5 rounded-lg border-2 border-gray-200 bg-white text-gray-700 font-medium text-sm hover:bg-gray-100 transition disabled:opacity-60"
+            className="flex-1 px-4 py-2.5 rounded-lg border-2 border-[var(--cream-300)] bg-white text-[var(--text-muted)] font-medium text-sm hover:bg-[var(--cream-200)] transition disabled:opacity-60"
           >
             Cancel
           </button>
@@ -584,7 +640,7 @@ export default function AddressModal({
             type="button"
             onClick={handleSave}
             disabled={saving || pincodeLoading}
-            className="flex-1 px-4 py-2.5 rounded-lg bg-orange-600 text-white font-semibold text-sm hover:bg-orange-700 transition disabled:opacity-60 flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2.5 rounded-lg bg-[var(--orange-500)] text-white font-semibold text-sm hover:bg-[var(--orange-400)] transition disabled:opacity-60 flex items-center justify-center gap-2"
           >
             {saving && <Loader2 className="w-4 h-4 animate-spin" />}
             {existingAddress ? "Update Address" : "Save Address"}
@@ -615,7 +671,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="text-sm font-semibold text-gray-800 mb-1 block">
+      <label className="text-sm font-semibold text-[var(--text-dark)] mb-1 block">
         {label}
       </label>
       <input
@@ -624,11 +680,11 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         maxLength={maxLength}
-        className={`w-full px-3 py-2.5 rounded-lg border-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 ${
-          error ? "border-red-400" : "border-gray-200"
+        className={`w-full px-3 py-2.5 rounded-lg border-2 text-sm focus:outline-none focus:ring-2 focus:ring-[rgba(212,114,26,0.35)] ${
+          error ? "border-[var(--red-err)]" : "border-[var(--cream-300)]"
         }`}
       />
-      {error && <p className="text-xs text-red-600 mt-1">{error}</p>}
+      {error && <p className="text-xs text-[var(--red-err)] mt-1">{error}</p>}
     </div>
   );
 }
