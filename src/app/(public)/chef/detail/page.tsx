@@ -21,6 +21,7 @@ import api, { bookingsApi, mealPackagesApi } from "@/lib/api";
 import Navbar from "@/components/layout/Navbar";
 import { FooterSimple } from "@/components/layout/Footer";
 import StarRating from "@/components/ui/StarRating";
+import Skeleton from "@/components/ui/Skeleton";
 import PackageSelector from "@/components/dashboard/PackageSelector";
 import BookingModal from "@/components/modals/BookingModal";
 import type { BookingFormData } from "@/components/modals/BookingModal";
@@ -44,6 +45,9 @@ function ChefDetailContent() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [reviewPagination, setReviewPagination] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  // Distinct from "chef not found" — a real network/server failure, worth a
+  // retry affordance rather than the permanent "doesn't exist" message.
+  const [loadError, setLoadError] = useState(false);
 
   // Tabs: packages (default) | menu | reviews
   const [activeTab, setActiveTab] = useState<"packages" | "menu" | "reviews">("packages");
@@ -56,12 +60,19 @@ function ChefDetailContent() {
   const [pendingPackage, setPendingPackage] = useState<PackageSelectionPayload | null>(null);
 
   useEffect(() => {
-    if (!id) return;
+    if (!id) {
+      // No ?id= in the URL at all — this is a "not found" state, not a
+      // loading state. Without this branch `loading` never flips to
+      // false and the page spins forever.
+      setLoading(false);
+      return;
+    }
     loadChef();
   }, [id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   async function loadChef() {
     setLoading(true);
+    setLoadError(false);
     try {
       const [cookRes, menuRes, reviewsRes] = await Promise.all([
         cooksApi.getById(id!),
@@ -78,8 +89,13 @@ function ChefDetailContent() {
       const revData = reviewsRes.data?.data || reviewsRes.data;
       setReviews(revData?.reviews || (Array.isArray(revData) ? revData : []));
       setReviewPagination(revData?.pagination);
-    } catch {
+    } catch (err: any) {
       setCook(null);
+      // 404 means the chef genuinely doesn't exist — that's the existing
+      // "Chef Not Found" copy. Anything else (network down, 5xx) is a
+      // transient failure and deserves a retry, not a permanent-sounding
+      // "doesn't exist" message.
+      if (err?.response?.status !== 404) setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -160,8 +176,62 @@ function ChefDetailContent() {
     return (
       <div className="min-h-screen bg-[var(--cream-100)]">
         <Navbar />
-        <div className="pt-[100px] flex justify-center">
-          <div className="w-8 h-8 border-3 border-[var(--orange-500)] border-t-transparent rounded-full animate-spin" />
+        <div className="pt-[88px] pb-16 px-5 max-w-[800px] mx-auto" aria-busy="true" aria-label="Loading chef profile">
+          <Skeleton className="h-4 w-16 mb-5" />
+          {/* Profile header skeleton */}
+          <div className="bg-white rounded-[20px] overflow-hidden border border-[rgba(212,114,26,0.06)] mb-6">
+            <Skeleton className="h-[100px] rounded-none" />
+            <div className="pt-14 pb-6 px-6 space-y-3">
+              <Skeleton className="h-6 w-40" />
+              <Skeleton className="h-4 w-56" />
+              <div className="flex gap-6 pt-2">
+                <Skeleton className="h-5 w-24" />
+                <Skeleton className="h-5 w-28" />
+              </div>
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-3/4" />
+              <div className="flex gap-3 pt-2">
+                <Skeleton className="h-11 w-40 rounded-full" />
+                <Skeleton className="h-11 w-36 rounded-full" />
+              </div>
+            </div>
+          </div>
+          {/* Tabs skeleton */}
+          <Skeleton className="h-11 w-full max-w-[360px] rounded-full mb-6" />
+          {/* Content skeleton */}
+          <div className="space-y-3">
+            <Skeleton className="h-24 w-full rounded-[16px]" />
+            <Skeleton className="h-24 w-full rounded-[16px]" />
+            <Skeleton className="h-24 w-full rounded-[16px]" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-[var(--cream-100)]">
+        <Navbar />
+        <div className="pt-[120px] text-center px-5">
+          <ChefHat className="w-16 h-16 mx-auto mb-4 text-[var(--cream-300)]" />
+          <h1 className="font-display text-[1.5rem] font-[900] text-[var(--brown-800)] mb-2">
+            Couldn&apos;t Load This Chef
+          </h1>
+          <p className="text-[var(--text-muted)] mb-6">
+            Something went wrong reaching our servers. Please check your connection and try again.
+          </p>
+          <div className="flex items-center justify-center gap-3">
+            <button
+              onClick={() => loadChef()}
+              className="px-6 py-3 rounded-full bg-[var(--orange-500)] text-white font-semibold border-none cursor-pointer hover:bg-[var(--orange-400)] transition-colors"
+            >
+              Retry
+            </button>
+            <Link href="/chef" className="px-6 py-3 rounded-full border-2 border-[var(--orange-500)] text-[var(--orange-500)] font-semibold no-underline">
+              Browse Chefs
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -174,7 +244,9 @@ function ChefDetailContent() {
         <div className="pt-[120px] text-center px-5">
           <ChefHat className="w-16 h-16 mx-auto mb-4 text-[var(--cream-300)]" />
           <h1 className="font-display text-[1.5rem] font-[900] text-[var(--brown-800)] mb-2">Chef Not Found</h1>
-          <p className="text-[var(--text-muted)] mb-6">This chef profile doesn&apos;t exist or has been removed.</p>
+          <p className="text-[var(--text-muted)] mb-6">
+            {id ? "This chef profile doesn't exist or has been removed." : "No chef was specified."}
+          </p>
           <Link href="/chef" className="px-6 py-3 rounded-full bg-[var(--orange-500)] text-white font-semibold no-underline">
             Browse Chefs
           </Link>
@@ -233,7 +305,7 @@ function ChefDetailContent() {
                   <h1 className="font-display text-[1.4rem] font-[900] text-[var(--brown-800)]">{chefName}</h1>
                   {isVerified && <BadgeCheck className="w-5 h-5 text-[var(--orange-500)]" />}
                   {isVeg && (
-                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-[0.7rem] font-semibold border border-green-200">
+                    <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[rgba(29,122,90,0.08)] text-[var(--green-ok)] text-[0.7rem] font-semibold border border-[rgba(29,122,90,0.2)]">
                       <Leaf className="w-3 h-3" /> Pure Veg
                     </span>
                   )}
@@ -242,7 +314,7 @@ function ChefDetailContent() {
                   <div className="text-[0.88rem] text-[var(--text-muted)] mt-1">{cuisines.join(", ")}</div>
                 )}
               </div>
-              <div className={`px-3 py-1.5 rounded-full text-[0.78rem] font-semibold ${isAvailable ? "bg-green-50 text-green-700 border border-green-200" : "bg-gray-100 text-gray-500 border border-gray-200"}`}>
+              <div className={`px-3 py-1.5 rounded-full text-[0.78rem] font-semibold ${isAvailable ? "bg-[rgba(29,122,90,0.08)] text-[var(--green-ok)] border border-[rgba(29,122,90,0.2)]" : "bg-[var(--cream-200)] text-[var(--text-muted)] border border-[var(--cream-300)]"}`}>
                 {isAvailable ? "Available" : "Offline"}
               </div>
             </div>
@@ -334,9 +406,9 @@ function ChefDetailContent() {
                           className="bg-white rounded-[14px] p-4 border border-[rgba(212,114,26,0.06)] flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <div className={`w-4 h-4 rounded-sm border-2 flex items-center justify-center shrink-0 ${
-                              item.type === "veg" ? "border-green-600" : "border-red-600"
+                              item.type === "veg" ? "border-[var(--green-ok)]" : "border-[var(--red-err)]"
                             }`}>
-                              <div className={`w-2 h-2 rounded-full ${item.type === "veg" ? "bg-green-600" : "bg-red-600"}`} />
+                              <div className={`w-2 h-2 rounded-full ${item.type === "veg" ? "bg-[var(--green-ok)]" : "bg-[var(--red-err)]"}`} />
                             </div>
                             <div>
                               <div className="font-semibold text-[0.92rem]">{item.name}</div>
@@ -346,14 +418,14 @@ function ChefDetailContent() {
                               {Array.isArray(item.dietary_tags) && item.dietary_tags.length > 0 && (
                                 <div className="flex flex-wrap gap-1 mt-1">
                                   {item.dietary_tags.map((t: string) => (
-                                    <span key={t} className="text-[0.64rem] font-semibold px-1.5 py-0.5 rounded-full bg-green-50 text-green-700 capitalize">
+                                    <span key={t} className="text-[0.64rem] font-semibold px-1.5 py-0.5 rounded-full bg-[rgba(29,122,90,0.08)] text-[var(--green-ok)] capitalize">
                                       {t.replace(/_/g, " ")}
                                     </span>
                                   ))}
                                 </div>
                               )}
                               {Array.isArray(item.allergens) && item.allergens.length > 0 && (
-                                <div className="text-[0.66rem] text-amber-700 mt-1 capitalize">
+                                <div className="text-[0.66rem] text-[var(--amber-warn)] mt-1 capitalize">
                                   Contains: {item.allergens.map((a: string) => a.replace(/_/g, " ")).join(", ")}
                                 </div>
                               )}
