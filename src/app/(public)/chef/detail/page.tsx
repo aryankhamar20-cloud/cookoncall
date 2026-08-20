@@ -250,7 +250,7 @@ function ChefDetailContent() {
             {/* Stats */}
             <div className="flex gap-6 mt-5 flex-wrap">
               <div className="flex items-center gap-1.5">
-                <Star className="w-4 h-4 text-[#F5A623]" />
+                <Star className="w-4 h-4 text-[var(--star-gold)]" />
                 <span className="font-bold text-[0.95rem]">{rating > 0 ? rating.toFixed(1) : "New"}</span>
                 <span className="text-[0.82rem] text-[var(--text-muted)]">({totalReviews} reviews)</span>
               </div>

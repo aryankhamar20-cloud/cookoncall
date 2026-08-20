@@ -94,7 +94,7 @@ export default function ReviewModal({
             onMouseLeave={() => setHoverRating(0)}
             className={cn(
               "text-[2rem] bg-transparent border-none cursor-pointer transition-colors duration-150",
-              star <= displayRating ? "text-[#F5A623]" : "text-[var(--cream-300)]"
+              star <= displayRating ? "text-[var(--star-gold)]" : "text-[var(--cream-300)]"
             )}
           >
             ★

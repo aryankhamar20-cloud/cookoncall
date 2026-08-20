@@ -135,7 +135,7 @@ export default function SavedChefsPanel() {
                 </div>
                 {rating > 0 && (
                   <div className="flex items-center gap-1 text-[0.8rem] mb-3">
-                    <Star className="w-3.5 h-3.5 fill-[#F5A623] text-[#F5A623]" />
+                    <Star className="w-3.5 h-3.5 fill-[var(--star-gold)] text-[var(--star-gold)]" />
                     <span className="font-semibold">{rating.toFixed(1)}</span>
                   </div>
                 )}
