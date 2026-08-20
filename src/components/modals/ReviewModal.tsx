@@ -85,13 +85,17 @@ export default function ReviewModal({
       </div>
 
       {/* Stars */}
-      <div className="flex justify-center gap-2 mb-5">
+      <div className="flex justify-center gap-2 mb-5" role="radiogroup" aria-label="Star rating">
         {[1, 2, 3, 4, 5].map((star) => (
           <button
             key={star}
+            type="button"
             onClick={() => setRating(star)}
             onMouseEnter={() => setHoverRating(star)}
             onMouseLeave={() => setHoverRating(0)}
+            role="radio"
+            aria-checked={rating === star}
+            aria-label={`${star} star${star > 1 ? "s" : ""}${ratingLabels[star] ? ` — ${ratingLabels[star]}` : ""}`}
             className={cn(
               "text-[2rem] bg-transparent border-none cursor-pointer transition-colors duration-150",
               star <= displayRating ? "text-[var(--star-gold)]" : "text-[var(--cream-300)]"
@@ -109,10 +113,11 @@ export default function ReviewModal({
 
       {/* Review text */}
       <div className="mb-5">
-        <label className="block font-semibold text-[0.88rem] mb-2">
+        <label htmlFor="review-comment" className="block font-semibold text-[0.88rem] mb-2">
           Write a review (optional)
         </label>
         <textarea
+          id="review-comment"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           rows={3}

@@ -113,10 +113,11 @@ export default function ContactPage() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-[0.82rem] font-semibold text-[var(--brown-800)] mb-1.5">
+                  <label htmlFor="contact-name" className="block text-[0.82rem] font-semibold text-[var(--brown-800)] mb-1.5">
                     Your name
                   </label>
                   <input
+                    id="contact-name"
                     type="text"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -126,10 +127,11 @@ export default function ContactPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[0.82rem] font-semibold text-[var(--brown-800)] mb-1.5">
+                  <label htmlFor="contact-email" className="block text-[0.82rem] font-semibold text-[var(--brown-800)] mb-1.5">
                     Your email
                   </label>
                   <input
+                    id="contact-email"
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
@@ -139,10 +141,11 @@ export default function ContactPage() {
                 </div>
 
                 <div>
-                  <label className="block text-[0.82rem] font-semibold text-[var(--brown-800)] mb-1.5">
+                  <label htmlFor="contact-message" className="block text-[0.82rem] font-semibold text-[var(--brown-800)] mb-1.5">
                     Message
                   </label>
                   <textarea
+                    id="contact-message"
                     value={message}
                     onChange={(e) => setMessage(e.target.value)}
                     rows={5}

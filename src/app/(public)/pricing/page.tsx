@@ -140,6 +140,9 @@ export default function PricingPage() {
                 <div key={i} className="py-3">
                   <button
                     onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                    aria-expanded={openFaq === i}
+                    aria-controls={`pricing-faq-panel-${i}`}
+                    id={`pricing-faq-trigger-${i}`}
                     className="w-full flex items-center justify-between text-left gap-4"
                   >
                     <span className="text-[0.95rem] font-semibold text-[var(--brown-800)]">
@@ -153,7 +156,12 @@ export default function PricingPage() {
                     />
                   </button>
                   {openFaq === i && (
-                    <p className="mt-2 text-[0.9rem] text-[var(--text-muted)] leading-relaxed">
+                    <p
+                      id={`pricing-faq-panel-${i}`}
+                      role="region"
+                      aria-labelledby={`pricing-faq-trigger-${i}`}
+                      className="mt-2 text-[0.9rem] text-[var(--text-muted)] leading-relaxed"
+                    >
                       {faq.a}
                     </p>
                   )}
