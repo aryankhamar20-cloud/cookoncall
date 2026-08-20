@@ -1,5 +1,5 @@
 /* THIS must be line 1 — before everything */
-@import url("https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800;900&family=DM+Sans:wght@400;500;600;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -10,7 +10,9 @@
 /* ═══ Design Tokens ═══
  *
  * CANONICAL PALETTE — must stay in sync with the Flutter app's
- * lib/core/theme/app_colors.dart. See docs/16_PRODUCT_DESIGN_BIBLE.md.
+ * lib/core/theme/app_colors.dart (as corrected by
+ * cookoncall-flutter/docs/design/01_color_typography_plan.md, the
+ * post-redesign source of truth). See docs/16_PRODUCT_DESIGN_BIBLE.md.
  *
  * Why these values changed (July 2026)
  * ------------------------------------
@@ -29,6 +31,20 @@
  *
  * #d4721a is not deleted — it is demoted to the hover/accent tint, which
  * is the only role it is legible enough to hold.
+ *
+ * Second sync (Aug 2026) — the app's design pass (docs/design/
+ * 01_color_typography_plan.md) found and fixed 3 colours that failed WCAG
+ * AA at their actual computed contrast despite an inline comment claiming
+ * otherwise: secondary #2d8c6e → white text was 4.13:1 (needs 4.5:1);
+ * warning #b26a00 → white text was 4.24:1. Both are corrected here to the
+ * same hex the app now ships, so the two products stop drifting again.
+ * Also: web's headings were set via a `font-display` Tailwind class that
+ * tailwind.config.ts never registered, so it silently no-op'd — headings
+ * were rendering in the body font the whole time, not the imported
+ * Playfair Display. Fixed by registering the utility AND retargeting both
+ * families to match the app's type system (Plus Jakarta Sans / Be Vietnam
+ * Pro) instead of the web-only Playfair Display / DM Sans pairing, so web
+ * and app read as the same brand rather than two different ones.
  */
 :root {
   --brown-900: #1a0f0a;
@@ -44,16 +60,21 @@
   --white: #ffffff;
   --text-dark: #1a0f0a;
   --text-muted: #6b5b50;
-  --green-ok: #2d8c6e; /* matches app AppColors.secondary */
+  --green-ok: #1d7a5a; /* Cardamom Green — matches app AppColors.secondary (corrected, was #2d8c6e / 4.13:1 fail) */
   --red-err: #d93025;
   /* Warning — distinct from primary (which means "act") and error (which
    * means "failed"). For states that are neither: booking about to expire,
-   * verification incomplete, low wallet balance. */
-  --amber-warn: #b26a00;
+   * verification incomplete, low wallet balance. Corrected to match the
+   * app's Turmeric Amber (was #b26a00 / 4.24:1 fail on white text). */
+  --amber-warn: #9c5700;
   --amber-warn-bg: #ffddb0;
+  /* Info — matches app AppColors.info; new token, wasn't defined on web
+   * before (informational banners/toasts had no dedicated non-brand blue). */
+  --info-500: #1d4ed8;
+  --info-bg: #dbeafe;
   --whatsapp: #25d366;
-  --font-display: "Playfair Display", serif;
-  --font-body: "DM Sans", sans-serif;
+  --font-display: "Plus Jakarta Sans", sans-serif;
+  --font-body: "Be Vietnam Pro", sans-serif;
   --nav-height: 72px;
 }
 

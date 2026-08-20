@@ -855,12 +855,12 @@ if (isPackageMode && preselectedPackage) {
                       )}
                     </div>
                     {promoErr && <div className="text-[0.75rem] text-[#ba1a1a] mt-1">{promoErr}</div>}
-                    {promoMsg && <div className="text-[0.75rem] text-[#2d8c6e] mt-1">{promoMsg}</div>}
+                    {promoMsg && <div className="text-[0.75rem] text-[var(--green-ok)] mt-1">{promoMsg}</div>}
                   </div>
                   {discount > 0 && (
                     <div className="flex justify-between text-[0.88rem] mb-1.5 mt-2">
-                      <span className="text-[#2d8c6e]">Promo ({appliedPromo})</span>
-                      <span className="text-[#2d8c6e]">-{formatCurrency(discount)}</span>
+                      <span className="text-[var(--green-ok)]">Promo ({appliedPromo})</span>
+                      <span className="text-[var(--green-ok)]">-{formatCurrency(discount)}</span>
                     </div>
                   )}
                   <div className="flex justify-between text-[1rem] font-bold border-t border-[rgba(212,114,26,0.12)] pt-2 mt-2">

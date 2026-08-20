@@ -300,7 +300,7 @@ export default function RootLayout({
               padding: "12px 28px",
               fontSize: "0.9rem",
               fontWeight: 500,
-              fontFamily: '"DM Sans", sans-serif',
+              fontFamily: '"Be Vietnam Pro", sans-serif',
               boxShadow: "0 8px 30px rgba(0,0,0,0.2)",
             },
           }}
