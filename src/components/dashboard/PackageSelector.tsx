@@ -203,7 +203,7 @@ export default function PackageSelector({
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center py-16 gap-3 text-center px-4">
-        <AlertCircle className="w-10 h-10 text-red-400" />
+        <AlertCircle className="w-10 h-10 text-[var(--red-err)]" />
         <p className="text-[0.9rem] text-[var(--text-muted)]">{error}</p>
         <button
           onClick={() => window.location.reload()}
@@ -294,10 +294,12 @@ export default function PackageSelector({
             const isSelected = selectedPkg?.id === pkg.id;
 
             return (
-              <div
+              <button
+                type="button"
                 key={pkg.id}
                 onClick={() => setSelectedPkg(isSelected ? null : pkg)}
-                className={`rounded-[16px] border-2 p-4 cursor-pointer transition-all ${
+                aria-pressed={isSelected}
+                className={`w-full text-left rounded-[16px] border-2 p-4 cursor-pointer transition-all ${
                   isSelected
                     ? "border-[var(--orange-500)] bg-[rgba(212,114,26,0.04)]"
                     : "border-[rgba(212,114,26,0.12)] bg-white hover:border-[var(--orange-500)]"
@@ -346,7 +348,7 @@ export default function PackageSelector({
                     )}
                   </div>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -386,7 +388,7 @@ export default function PackageSelector({
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     {isComplete ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-[var(--green-ok)] shrink-0" />
                     ) : (
                       <div className="w-4 h-4 rounded-full border-2 border-[var(--cream-300)] shrink-0" />
                     )}
@@ -403,7 +405,7 @@ export default function PackageSelector({
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     {!isComplete && (
-                      <span className="text-[0.72rem] text-amber-600 font-semibold bg-amber-50 px-2 py-0.5 rounded-full">
+                      <span className="text-[0.72rem] text-[var(--amber-warn)] font-semibold bg-[var(--amber-warn-bg)] px-2 py-0.5 rounded-full">
                         {catErr}
                       </span>
                     )}
@@ -429,10 +431,13 @@ export default function PackageSelector({
                           !isChecked && catSel.size >= cat.max_selections && cat.max_selections > 1;
 
                         return (
-                          <div
+                          <button
+                            type="button"
                             key={dish.id}
                             onClick={() => !isDisabled && toggleDish(cat.id, dish.id, cat)}
-                            className={`flex items-center gap-3 p-3 rounded-[10px] border transition-all ${
+                            disabled={isDisabled}
+                            aria-pressed={isChecked}
+                            className={`w-full flex items-center gap-3 p-3 rounded-[10px] border text-left transition-all ${
                               isChecked
                                 ? "border-[var(--orange-500)] bg-[rgba(212,114,26,0.05)]"
                                 : isDisabled
@@ -443,12 +448,12 @@ export default function PackageSelector({
                             {/* veg/nonveg indicator */}
                             <div
                               className={`w-4 h-4 border-2 rounded-sm flex items-center justify-center shrink-0 ${
-                                dish.type === "veg" ? "border-green-600" : "border-red-600"
+                                dish.type === "veg" ? "border-[var(--green-ok)]" : "border-[var(--red-err)]"
                               }`}
                             >
                               <div
                                 className={`w-2 h-2 rounded-full ${
-                                  dish.type === "veg" ? "bg-green-600" : "bg-red-600"
+                                  dish.type === "veg" ? "bg-[var(--green-ok)]" : "bg-[var(--red-err)]"
                                 }`}
                               />
                             </div>
@@ -476,7 +481,7 @@ export default function PackageSelector({
                                 </svg>
                               )}
                             </div>
-                          </div>
+                          </button>
                         );
                       })
                     )}
@@ -500,10 +505,12 @@ export default function PackageSelector({
               .map((addon) => {
                 const isChecked = selectedAddonIds.has(addon.id);
                 return (
-                  <div
+                  <button
+                    type="button"
                     key={addon.id}
                     onClick={() => toggleAddon(addon.id)}
-                    className={`flex items-center gap-3 p-3 rounded-[10px] border cursor-pointer transition-all ${
+                    aria-pressed={isChecked}
+                    className={`w-full flex items-center gap-3 p-3 rounded-[10px] border text-left cursor-pointer transition-all ${
                       isChecked
                         ? "border-[var(--orange-500)] bg-[rgba(212,114,26,0.05)]"
                         : "border-[var(--cream-200)] bg-white hover:border-[var(--orange-400)]"
@@ -511,10 +518,10 @@ export default function PackageSelector({
                   >
                     <div
                       className={`w-4 h-4 border-2 rounded-sm flex items-center justify-center shrink-0 ${
-                        addon.type === "veg" ? "border-green-600" : "border-red-600"
+                        addon.type === "veg" ? "border-[var(--green-ok)]" : "border-[var(--red-err)]"
                       }`}
                     >
-                      <div className={`w-2 h-2 rounded-full ${addon.type === "veg" ? "bg-green-600" : "bg-red-600"}`} />
+                      <div className={`w-2 h-2 rounded-full ${addon.type === "veg" ? "bg-[var(--green-ok)]" : "bg-[var(--red-err)]"}`} />
                     </div>
 
                     <span className="flex-1 min-w-0 font-medium text-[0.88rem]">{addon.name}</span>
@@ -536,7 +543,7 @@ export default function PackageSelector({
                         </svg>
                       )}
                     </div>
-                  </div>
+                  </button>
                 );
               })}
           </div>
@@ -595,9 +602,9 @@ export default function PackageSelector({
 
           {/* Validation warning */}
           {!allCatsValid && (
-            <div className="mt-3 flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-[10px]">
-              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <p className="text-[0.78rem] text-amber-800">
+            <div className="mt-3 flex items-start gap-2 p-3 bg-[var(--amber-warn-bg)] border border-[rgba(156,87,0,0.25)] rounded-[10px]">
+              <AlertCircle className="w-4 h-4 text-[var(--amber-warn)] shrink-0 mt-0.5" />
+              <p className="text-[0.78rem] text-[var(--amber-warn)]">
                 Please complete all dish selections above before proceeding.
               </p>
             </div>
