@@ -220,7 +220,7 @@ export default function ProfilePanel() {
                 {emailVerified ? (
                   <ShieldCheck className="w-4 h-4 text-[var(--green-ok)] ml-1" />
                 ) : (
-                  <ShieldAlert className="w-4 h-4 text-[var(--amber-warn-bg)]0 ml-1" />
+                  <ShieldAlert className="w-4 h-4 text-[var(--amber-warn)] ml-1" />
                 )}
               </div>
               {user.phone && (
@@ -232,7 +232,7 @@ export default function ProfilePanel() {
 
               <div className="flex gap-2 justify-center mt-4">
                 {emailVerified ? (
-                  <span className="px-3 py-1 rounded-full text-[0.72rem] font-semibold bg-[var(--green-ok)] text-[var(--green-ok)] border border-[var(--green-ok)]">
+                  <span className="px-3 py-1 rounded-full text-[0.72rem] font-semibold bg-[var(--green-ok)]/10 text-[var(--green-ok)] border border-[var(--green-ok)]/25">
                     Email verified
                   </span>
                 ) : (
@@ -317,7 +317,7 @@ export default function ProfilePanel() {
           ))}
 
           <button onClick={handleLogout}
-            className="mt-6 w-full py-2.5 rounded-full border border-[var(--red-err)] text-[var(--red-err)] text-[0.85rem] font-semibold cursor-pointer hover:bg-[var(--red-err)] transition-all bg-transparent">
+            className="mt-6 w-full py-2.5 rounded-full border border-[var(--red-err)] text-[var(--red-err)] text-[0.85rem] font-semibold cursor-pointer hover:bg-[var(--red-err)]/10 transition-all bg-transparent">
             Sign Out
           </button>
         </div>

@@ -13,14 +13,17 @@ import type { MealPackage, PackageCategory, PackageAddon, PackageCategoryDish } 
 
 // ─── STYLE CONSTANTS ─────────────────────────────────────────────────────────
 const inputClass =
-  "w-full px-3.5 py-2.5 rounded-[10px] border border-[var(--cream-300)] bg-white text-[0.88rem] text-[var(--text-primary)] focus:outline-none focus:border-[var(--orange-500)] focus:ring-1 focus:ring-[rgba(212,114,26,0.15)] transition-all placeholder:text-[var(--text-muted)]";
+  "w-full px-3.5 py-2.5 rounded-[10px] border border-[var(--cream-300)] bg-white text-[0.88rem] text-[var(--text-dark)] focus:outline-none focus:border-[var(--orange-500)] focus:ring-1 focus:ring-[rgba(212,114,26,0.15)] transition-all placeholder:text-[var(--text-muted)]";
 const labelClass = "block text-[0.78rem] font-semibold text-[var(--text-muted)] mb-1 uppercase tracking-wide";
 const btnPrimary =
-  "flex items-center gap-2 px-4 py-2 bg-[var(--orange-500)] text-white rounded-[10px] text-[0.85rem] font-semibold hover:bg-[var(--orange-600)] transition-all disabled:opacity-50 disabled:cursor-not-allowed";
+  // --orange-600 doesn't exist in globals.css :root (was a stray Tailwind
+  // shade reference); --orange-400 is the token globals.css's own comment
+  // documents as "hover / pressed tint ONLY", which is exactly this case.
+  "flex items-center gap-2 px-4 py-2 bg-[var(--orange-500)] text-white rounded-[10px] text-[0.85rem] font-semibold hover:bg-[var(--orange-400)] transition-all disabled:opacity-50 disabled:cursor-not-allowed";
 const btnSecondary =
-  "flex items-center gap-2 px-4 py-2 bg-white border border-[var(--cream-300)] text-[var(--text-primary)] rounded-[10px] text-[0.85rem] font-semibold hover:border-[var(--orange-500)] transition-all";
+  "flex items-center gap-2 px-4 py-2 bg-white border border-[var(--cream-300)] text-[var(--text-dark)] rounded-[10px] text-[0.85rem] font-semibold hover:border-[var(--orange-500)] transition-all";
 const btnDanger =
-  "flex items-center gap-2 px-3 py-1.5 bg-[var(--red-err)] text-[var(--red-err)] border border-[var(--red-err)] rounded-[8px] text-[0.8rem] font-medium hover:bg-[var(--red-err)] transition-all";
+  "flex items-center gap-2 px-3 py-1.5 bg-[var(--red-err)]/10 text-[var(--red-err)] border border-[var(--red-err)]/25 rounded-[8px] text-[0.8rem] font-medium hover:bg-[var(--red-err)]/20 transition-all";
 const cardClass =
   "bg-white rounded-[16px] border border-[rgba(212,114,26,0.08)] shadow-sm";
 
@@ -188,7 +191,7 @@ export default function MealPackagesPanel() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-[1.1rem] font-bold text-[var(--text-primary)]">Meal Packages</h2>
+          <h2 className="text-[1.1rem] font-bold text-[var(--text-dark)]">Meal Packages</h2>
           <p className="text-[0.82rem] text-[var(--text-muted)] mt-0.5">
             Create pre-priced combos. Customers pick dishes from each category you define.
           </p>
@@ -211,10 +214,10 @@ export default function MealPackagesPanel() {
       {showForm && (
         <div className={cn(cardClass, "p-5 border-[var(--orange-300)]")}>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-[0.95rem] font-bold text-[var(--text-primary)]">
+            <h3 className="text-[0.95rem] font-bold text-[var(--text-dark)]">
               {editingPkg ? "Edit Package" : "Create Package"}
             </h3>
-            <button onClick={() => setShowForm(false)} className="text-[var(--text-muted)] hover:text-[var(--text-primary)]">
+            <button onClick={() => setShowForm(false)} className="text-[var(--text-muted)] hover:text-[var(--text-dark)]">
               <X className="w-5 h-5" />
             </button>
           </div>
@@ -393,13 +396,13 @@ function PackageCard({
       <div className="p-4 flex items-start justify-between gap-3">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <h3 className="text-[0.95rem] font-bold text-[var(--text-primary)] truncate">{pkg.name}</h3>
+            <h3 className="text-[0.95rem] font-bold text-[var(--text-dark)] truncate">{pkg.name}</h3>
             {pkg.is_veg ? (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--green-ok)] text-[var(--green-ok)] text-[0.7rem] font-semibold border border-[var(--green-ok)] shrink-0">
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--green-ok)]/10 text-[var(--green-ok)] text-[0.7rem] font-semibold border border-[var(--green-ok)]/25 shrink-0">
                 <Leaf className="w-3 h-3" /> Veg
               </span>
             ) : (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--red-err)] text-[var(--red-err)] text-[0.7rem] font-semibold border border-[var(--red-err)] shrink-0">
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--red-err)]/10 text-[var(--red-err)] text-[0.7rem] font-semibold border border-[var(--red-err)]/25 shrink-0">
                 <Utensils className="w-3 h-3" /> Non-Veg
               </span>
             )}
@@ -419,7 +422,7 @@ function PackageCard({
                 key={t.key}
                 className="text-[0.75rem] text-[var(--text-muted)] bg-[var(--cream-100)] px-2 py-0.5 rounded-full"
               >
-                {t.label}: <span className="font-semibold text-[var(--text-primary)]">₹{pkg[t.key as PriceKey]}</span>
+                {t.label}: <span className="font-semibold text-[var(--text-dark)]">₹{pkg[t.key as PriceKey]}</span>
               </span>
             ))}
             <span className="text-[0.75rem] text-[var(--text-muted)] bg-[var(--cream-100)] px-2 py-0.5 rounded-full">
@@ -433,19 +436,20 @@ function PackageCard({
           <button
             onClick={onToggleActive}
             title={pkg.is_active ? "Hide from customers" : "Show to customers"}
+            aria-label={pkg.is_active ? "Hide package from customers" : "Show package to customers"}
             className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center border transition-all text-[0.7rem]",
               pkg.is_active
-                ? "bg-[var(--green-ok)] border-[var(--green-ok)] text-[var(--green-ok)] hover:bg-[var(--green-ok)]"
+                ? "bg-[var(--green-ok)]/10 border-[var(--green-ok)]/25 text-[var(--green-ok)] hover:bg-[var(--green-ok)]/20"
                 : "bg-gray-50 border-gray-200 text-gray-400 hover:bg-gray-100"
             )}
           >
             <Check className="w-3.5 h-3.5" />
           </button>
-          <button onClick={onEdit} className="w-8 h-8 rounded-full flex items-center justify-center border border-[var(--cream-300)] bg-white hover:border-[var(--orange-500)] transition-all">
+          <button onClick={onEdit} title="Edit package" aria-label="Edit package" className="w-8 h-8 rounded-full flex items-center justify-center border border-[var(--cream-300)] bg-white hover:border-[var(--orange-500)] transition-all">
             <Pencil className="w-3.5 h-3.5 text-[var(--text-muted)]" />
           </button>
-          <button onClick={onDelete} className="w-8 h-8 rounded-full flex items-center justify-center border border-[var(--red-err)] bg-[var(--red-err)] hover:bg-[var(--red-err)] transition-all">
+          <button onClick={onDelete} title="Delete package" aria-label="Delete package" className="w-8 h-8 rounded-full flex items-center justify-center border border-[var(--red-err)]/25 bg-[var(--red-err)]/10 hover:bg-[var(--red-err)]/20 transition-all">
             <Trash2 className="w-3.5 h-3.5 text-[var(--red-err)]" />
           </button>
           <button
@@ -519,7 +523,7 @@ function CategoriesSection({ pkg, onRefresh }: { pkg: MealPackage; onRefresh: ()
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-[0.85rem] font-bold text-[var(--text-primary)] flex items-center gap-1.5">
+        <h4 className="text-[0.85rem] font-bold text-[var(--text-dark)] flex items-center gap-1.5">
           <Users className="w-4 h-4 text-[var(--orange-500)]" />
           Categories ({pkg.categories?.length ?? 0})
         </h4>
@@ -529,7 +533,7 @@ function CategoriesSection({ pkg, onRefresh }: { pkg: MealPackage; onRefresh: ()
       </div>
 
       {showCatForm && (
-        <div className="p-3.5 rounded-[12px] border border-[var(--cream-300)] bg-[var(--cream-50)] mb-3 space-y-3">
+        <div className="p-3.5 rounded-[12px] border border-[var(--cream-300)] bg-[var(--cream-100)] mb-3 space-y-3">
           <div>
             <label className={labelClass}>Category Name</label>
             <input type="text" value={catName} onChange={(e) => setCatName(e.target.value)}
@@ -549,7 +553,7 @@ function CategoriesSection({ pkg, onRefresh }: { pkg: MealPackage; onRefresh: ()
             <input type="checkbox" id={`req-${pkg.id}`} checked={catRequired}
               onChange={(e) => setCatRequired(e.target.checked)}
               className="w-4 h-4 accent-[var(--orange-500)]" />
-            <label htmlFor={`req-${pkg.id}`} className="text-[0.82rem] text-[var(--text-primary)]">
+            <label htmlFor={`req-${pkg.id}`} className="text-[0.82rem] text-[var(--text-dark)]">
               Required (customer must select)
             </label>
           </div>
@@ -572,9 +576,9 @@ function CategoriesSection({ pkg, onRefresh }: { pkg: MealPackage; onRefresh: ()
       <div className="space-y-2">
         {(pkg.categories ?? []).map((cat) => (
           <div key={cat.id} className="rounded-[12px] border border-[var(--cream-300)] overflow-hidden">
-            <div className="flex items-center justify-between px-3.5 py-2.5 bg-[var(--cream-50)]">
+            <div className="flex items-center justify-between px-3.5 py-2.5 bg-[var(--cream-100)]">
               <div>
-                <span className="text-[0.85rem] font-semibold text-[var(--text-primary)]">{cat.name}</span>
+                <span className="text-[0.85rem] font-semibold text-[var(--text-dark)]">{cat.name}</span>
                 <span className="text-[0.75rem] text-[var(--text-muted)] ml-2">
                   Pick {cat.min_selections === cat.max_selections ? cat.min_selections : `${cat.min_selections}–${cat.max_selections}`}
                   {cat.is_required ? " · required" : " · optional"}
@@ -658,7 +662,7 @@ function DishesSection({
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--red-err)]" />
               </span>
             )}
-            <span className="text-[var(--text-primary)] font-medium">{dish.name}</span>
+            <span className="text-[var(--text-dark)] font-medium">{dish.name}</span>
             {dish.description && <span className="text-[var(--text-muted)] truncate max-w-[200px]">— {dish.description}</span>}
           </div>
           <button onClick={() => handleDelete(dish.id)} className="text-[var(--red-err)] hover:text-[var(--red-err)] ml-2">
@@ -735,7 +739,7 @@ function AddonsSection({ pkg, onRefresh }: { pkg: MealPackage; onRefresh: () => 
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h4 className="text-[0.85rem] font-bold text-[var(--text-primary)] flex items-center gap-1.5">
+        <h4 className="text-[0.85rem] font-bold text-[var(--text-dark)] flex items-center gap-1.5">
           <Tag className="w-4 h-4 text-[var(--orange-500)]" />
           Add-ons ({pkg.addons?.length ?? 0})
         </h4>
@@ -762,7 +766,7 @@ function AddonsSection({ pkg, onRefresh }: { pkg: MealPackage; onRefresh: () => 
                 <span className="w-1.5 h-1.5 rounded-full bg-[var(--red-err)]" />
               </span>
             )}
-            <span className="font-medium text-[var(--text-primary)]">{addon.name}</span>
+            <span className="font-medium text-[var(--text-dark)]">{addon.name}</span>
             <span className="text-[var(--text-muted)]">₹{addon.price}</span>
             <button onClick={() => handleDelete(addon.id)} className="text-[var(--red-err)] hover:text-[var(--red-err)] ml-0.5">
               <X className="w-3 h-3" />
@@ -772,7 +776,7 @@ function AddonsSection({ pkg, onRefresh }: { pkg: MealPackage; onRefresh: () => 
       </div>
 
       {showForm && (
-        <div className="p-3.5 rounded-[12px] border border-[var(--cream-300)] bg-[var(--cream-50)] space-y-3">
+        <div className="p-3.5 rounded-[12px] border border-[var(--cream-300)] bg-[var(--cream-100)] space-y-3">
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className={labelClass}>Name</label>

@@ -73,11 +73,11 @@ const STATUS_LABEL: Record<PaymentStatus, string> = {
 };
 
 const STATUS_PILL: Record<PaymentStatus, string> = {
-  created: "bg-[var(--amber-warn)] text-[var(--amber-warn)]",
-  authorized: "bg-[var(--info-500)] text-[var(--info-500)]",
-  captured: "bg-[var(--green-ok)] text-[var(--green-ok)]",
-  refunded: "bg-[var(--info-500)] text-[var(--info-500)]",
-  failed: "bg-[var(--red-err)] text-[var(--red-err)]",
+  created: "bg-[var(--amber-warn)]/15 text-[var(--amber-warn)]",
+  authorized: "bg-[var(--info-500)]/15 text-[var(--info-500)]",
+  captured: "bg-[var(--green-ok)]/15 text-[var(--green-ok)]",
+  refunded: "bg-[var(--info-500)]/15 text-[var(--info-500)]",
+  failed: "bg-[var(--red-err)]/15 text-[var(--red-err)]",
 };
 
 const fmtINR = (n: number) =>
@@ -242,7 +242,7 @@ export default function EarningsHistoryPanel() {
 
       {/* Errors */}
       {error && (
-        <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-[var(--red-err)] border border-[var(--red-err)] text-[var(--red-err)] text-[0.82rem]">
+        <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-[var(--red-err)]/10 border border-[var(--red-err)]/25 text-[var(--red-err)] text-[0.82rem]">
           <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <span>{error}</span>
         </div>
@@ -315,9 +315,9 @@ function SummaryTile({
   tone: "emerald" | "blue" | "amber";
 }) {
   const cls = {
-    emerald: "text-[var(--green-ok)] bg-[var(--green-ok)]",
-    blue: "text-[var(--info-500)] bg-[var(--info-500)]",
-    amber: "text-[var(--amber-warn)] bg-[var(--amber-warn)]",
+    emerald: "text-[var(--green-ok)] bg-[var(--green-ok)]/12",
+    blue: "text-[var(--info-500)] bg-[var(--info-500)]/12",
+    amber: "text-[var(--amber-warn)] bg-[var(--amber-warn)]/12",
   }[tone];
   return (
     <div className="bg-white rounded-[14px] border border-[rgba(0,0,0,0.06)] p-4 flex items-center gap-3">

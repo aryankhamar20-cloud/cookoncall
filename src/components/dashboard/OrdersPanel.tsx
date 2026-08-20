@@ -40,13 +40,13 @@ const statusStyles: Record<string, string> = {
   // Legacy rows in awaiting_payment now visually match the post-accept
   // 'Confirmed' state — they're effectively confirmed bookings whose
   // payment hasn't landed yet.
-  awaiting_payment: "bg-[var(--green-ok)] text-[var(--green-ok)] border-[var(--green-ok)]",
-  pending: "bg-[var(--amber-warn-bg)] text-[var(--amber-warn)] border-[var(--amber-warn)]", // legacy
-  confirmed: "bg-[var(--green-ok)] text-[var(--green-ok)] border-[var(--green-ok)]",
-  in_progress: "bg-[var(--info-bg)] text-[var(--info-500)] border-[var(--info-500)]",
-  completed: "bg-[var(--green-ok)] text-[var(--green-ok)] border-[var(--green-ok)]",
-  cancelled_by_user: "bg-[var(--red-err)] text-[var(--red-err)] border-[var(--red-err)]",
-  cancelled_by_cook: "bg-[var(--red-err)] text-[var(--red-err)] border-[var(--red-err)]",
+  awaiting_payment: "bg-[var(--green-ok)]/10 text-[var(--green-ok)] border-[var(--green-ok)]/25",
+  pending: "bg-[var(--amber-warn-bg)] text-[var(--amber-warn)] border-[var(--amber-warn)]/40", // legacy
+  confirmed: "bg-[var(--green-ok)]/10 text-[var(--green-ok)] border-[var(--green-ok)]/25",
+  in_progress: "bg-[var(--info-bg)] text-[var(--info-500)] border-[var(--info-500)]/40",
+  completed: "bg-[var(--green-ok)]/10 text-[var(--green-ok)] border-[var(--green-ok)]/25",
+  cancelled_by_user: "bg-[var(--red-err)]/10 text-[var(--red-err)] border-[var(--red-err)]/25",
+  cancelled_by_cook: "bg-[var(--red-err)]/10 text-[var(--red-err)] border-[var(--red-err)]/25",
   expired: "bg-gray-50 text-gray-500 border-gray-200",
 };
 
@@ -600,7 +600,7 @@ export default function OrdersPanel() {
                   </div>
                 )}
                 {isConfirmed && (
-                  <div className="flex items-center gap-2 mb-3 bg-[var(--green-ok)] border border-[var(--green-ok)] rounded-[10px] px-3 py-2">
+                  <div className="flex items-center gap-2 mb-3 bg-[var(--green-ok)]/10 border border-[var(--green-ok)]/25 rounded-[10px] px-3 py-2">
                     <BadgeCheck className="w-3.5 h-3.5 shrink-0 text-[var(--green-ok)]" />
                     <span className="text-[0.82rem] text-[var(--green-ok)]">
                       <span className="font-semibold">Booking confirmed.</span>{" "}
@@ -646,7 +646,7 @@ export default function OrdersPanel() {
 
                 {/* Apr 21 NEW FLOW — Rejection banner with 2 options */}
                 {isRejectedByChef && (
-                  <div className="mt-3 mb-3 bg-[var(--red-err)] border border-[var(--red-err)] rounded-[12px] p-4">
+                  <div className="mt-3 mb-3 bg-[var(--red-err)]/10 border border-[var(--red-err)]/25 rounded-[12px] p-4">
                     <div className="flex items-start gap-2 mb-3">
                       <AlertCircle className="w-4 h-4 text-[var(--red-err)] shrink-0 mt-0.5" />
                       <div className="text-[0.85rem] text-[var(--red-err)]">
@@ -784,7 +784,7 @@ export default function OrdersPanel() {
                   <div>
                     {canCancel && (
                       <button onClick={() => handleCancel(b.id)} disabled={cancellingId === b.id}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.82rem] font-semibold text-[var(--red-err)] bg-[var(--red-err)] border border-[var(--red-err)] cursor-pointer transition-all hover:bg-[var(--red-err)] disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.82rem] font-semibold text-[var(--red-err)] bg-[var(--red-err)]/10 border border-[var(--red-err)]/25 cursor-pointer transition-all hover:bg-[var(--red-err)]/20 disabled:opacity-50"
                         style={{ fontFamily: "var(--font-body)" }}>
                         <XCircle className="w-3.5 h-3.5" />
                         {cancellingId === b.id ? "Cancelling..." : "Cancel"}

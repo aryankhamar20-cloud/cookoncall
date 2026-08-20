@@ -181,7 +181,7 @@ function Tile({
   const cls = {
     emerald: "text-[var(--green-ok)] bg-[var(--green-ok)]/10",
     orange: "text-[var(--orange-500)] bg-[var(--orange-500)]/10",
-    blue: "text-[var(--info-500)] bg-[var(--info-bg)]0/10",
+    blue: "text-[var(--info-500)] bg-[var(--info-500)]/10",
     purple: "text-[var(--info-500)] bg-[var(--info-500)]/10",
   }[tone];
 

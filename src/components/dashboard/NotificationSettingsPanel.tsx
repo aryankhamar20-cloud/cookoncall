@@ -169,7 +169,7 @@ export default function NotificationSettingsPanel({
         </p>
 
         {error && (
-          <div className="flex items-start gap-2 px-3 py-2 mb-4 rounded-[10px] bg-[var(--red-err)] border border-[var(--red-err)] text-[var(--red-err)] text-[0.82rem]">
+          <div className="flex items-start gap-2 px-3 py-2 mb-4 rounded-[10px] bg-[var(--red-err)]/10 border border-[var(--red-err)]/25 text-[var(--red-err)] text-[0.82rem]">
             <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <span>{error}</span>
           </div>

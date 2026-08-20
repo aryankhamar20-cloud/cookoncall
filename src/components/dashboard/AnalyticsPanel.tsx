@@ -753,7 +753,7 @@ export default function AnalyticsPanel() {
                 </div>
                 <div className="flex items-center gap-3 shrink-0 text-[0.8rem]">
                   <span className="text-[var(--amber-warn)] font-bold">★ {Number(c.rating ?? 0).toFixed(1)}</span>
-                  <span className="text-teal-400 font-bold">
+                  <span className="text-[var(--green-ok)] font-bold">
                     {c.avg_nps_score != null ? `NPS ${Number(c.avg_nps_score).toFixed(1)}` : "NPS —"}
                   </span>
                 </div>

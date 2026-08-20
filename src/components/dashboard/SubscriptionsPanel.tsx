@@ -123,7 +123,7 @@ export default function SubscriptionsPanel() {
           const days = [...s.days_of_week].sort().map((d) => DAY_LABELS[d]).join(", ");
           const cadence = s.cadence.charAt(0).toUpperCase() + s.cadence.slice(1);
           const statusColor =
-            s.status === "active" ? "text-[var(--green-ok)] bg-[var(--green-ok)]" :
+            s.status === "active" ? "text-[var(--green-ok)] bg-[var(--green-ok)]/10" :
             s.status === "paused" ? "text-[var(--amber-warn)] bg-[var(--amber-warn-bg)]" :
             "text-[var(--text-muted)] bg-[rgba(0,0,0,0.04)]";
           return (
@@ -151,12 +151,12 @@ export default function SubscriptionsPanel() {
                 </div>
                 <div className="flex items-center gap-2">
                   {s.status === "active" && (
-                    <button onClick={() => act(s.id, "pause")} disabled={busyId === s.id} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[0.8rem] font-semibold text-[var(--amber-warn)] bg-[var(--amber-warn-bg)] border-none cursor-pointer hover:bg-[var(--amber-warn)] disabled:opacity-60">
+                    <button onClick={() => act(s.id, "pause")} disabled={busyId === s.id} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[0.8rem] font-semibold text-[var(--amber-warn)] bg-[var(--amber-warn-bg)] border-none cursor-pointer hover:opacity-80 disabled:opacity-60">
                       <Pause className="w-3.5 h-3.5" /> Pause
                     </button>
                   )}
                   {s.status === "paused" && (
-                    <button onClick={() => act(s.id, "resume")} disabled={busyId === s.id} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[0.8rem] font-semibold text-[var(--green-ok)] bg-[var(--green-ok)] border-none cursor-pointer hover:bg-[var(--green-ok)] disabled:opacity-60">
+                    <button onClick={() => act(s.id, "resume")} disabled={busyId === s.id} className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[0.8rem] font-semibold text-[var(--green-ok)] bg-[var(--green-ok)]/10 border-none cursor-pointer hover:bg-[var(--green-ok)]/20 disabled:opacity-60">
                       <Play className="w-3.5 h-3.5" /> Resume
                     </button>
                   )}

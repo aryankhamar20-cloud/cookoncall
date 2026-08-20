@@ -243,7 +243,7 @@ export default function AvailabilityPanel() {
 
   if (error) {
     return (
-      <div className="bg-[var(--red-err)] border border-[var(--red-err)] rounded-[12px] p-4 flex items-center gap-2">
+      <div className="bg-[var(--red-err)]/10 border border-[var(--red-err)]/25 rounded-[12px] p-4 flex items-center gap-2">
         <AlertCircle className="w-5 h-5 text-[var(--red-err)] shrink-0" />
         <span className="text-[0.88rem] text-[var(--red-err)]">{error}</span>
       </div>
@@ -414,8 +414,9 @@ export default function AvailabilityPanel() {
                 </div>
                 <button
                   onClick={() => deleteOverride(o.id)}
-                  className="ml-2 p-1.5 rounded-full hover:bg-[var(--red-err)] text-[var(--text-muted)] hover:text-[var(--red-err)]"
+                  className="ml-2 p-1.5 rounded-full hover:bg-[var(--red-err)]/10 text-[var(--text-muted)] hover:text-[var(--red-err)]"
                   title="Remove"
+                  aria-label="Remove override"
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -444,7 +445,7 @@ export default function AvailabilityPanel() {
                   className={cn(
                     "flex-1 px-3 py-2 rounded-[10px] text-[0.85rem] font-semibold border transition-all",
                     ovClosed
-                      ? "bg-[var(--red-err)] text-[var(--red-err)] border-[var(--red-err)]"
+                      ? "bg-[var(--red-err)]/10 text-[var(--red-err)] border-[var(--red-err)]/40"
                       : "bg-white text-[var(--text-muted)] border-[var(--cream-300)]",
                   )}
                 >
@@ -455,7 +456,7 @@ export default function AvailabilityPanel() {
                   className={cn(
                     "flex-1 px-3 py-2 rounded-[10px] text-[0.85rem] font-semibold border transition-all",
                     !ovClosed
-                      ? "bg-[var(--green-ok)] text-[var(--green-ok)] border-[var(--green-ok)]"
+                      ? "bg-[var(--green-ok)]/10 text-[var(--green-ok)] border-[var(--green-ok)]/40"
                       : "bg-white text-[var(--text-muted)] border-[var(--cream-300)]",
                   )}
                 >

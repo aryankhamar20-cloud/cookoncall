@@ -727,7 +727,7 @@ export default function CookDashboardPage() {
   const headerRight = (
     <div className="flex items-center gap-2.5">
       {verStatus === "approved" && (
-        <span className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--green-ok)] text-[var(--green-ok)] text-[0.72rem] font-semibold border border-[var(--green-ok)]">
+        <span className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--green-ok)]/10 text-[var(--green-ok)] text-[0.72rem] font-semibold border border-[var(--green-ok)]/25">
           <BadgeCheck className="w-3 h-3" /> Verified
         </span>
       )}
@@ -791,7 +791,7 @@ export default function CookDashboardPage() {
             {phoneS?.phone ? (
               <a
                 href={`tel:${phoneS.phone}`}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[10px] bg-[var(--green-ok)] border border-[var(--green-ok)] text-[var(--green-ok)] font-semibold text-[0.82rem] hover:bg-[var(--green-ok)] transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[10px] bg-[var(--green-ok)]/10 border border-[var(--green-ok)]/25 text-[var(--green-ok)] font-semibold text-[0.82rem] hover:bg-[var(--green-ok)]/20 transition-colors"
               >
                 <Phone className="w-3.5 h-3.5" />
                 Call customer · {phoneS.phone}
@@ -819,7 +819,7 @@ export default function CookDashboardPage() {
 
         {/* Duration tracking for completed bookings */}
         {status === "completed" && b.actual_duration_minutes && (
-          <div className="text-[0.82rem] text-[var(--green-ok)] mb-3 bg-[var(--green-ok)] rounded-[8px] px-3 py-2 flex items-center gap-1.5">
+          <div className="text-[0.82rem] text-[var(--green-ok)] mb-3 bg-[var(--green-ok)]/10 rounded-[8px] px-3 py-2 flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5" />
             Session duration: {Math.floor(b.actual_duration_minutes / 60)}h {b.actual_duration_minutes % 60}m
           </div>
@@ -833,13 +833,13 @@ export default function CookDashboardPage() {
                 Reject → opens modal with reason textarea → POST /bookings/:id/reject */}
             {(status === "pending_chef_approval" || status === "pending") && (<>
               <button onClick={() => handleAccept(b.id)} disabled={actionId === b.id} className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-[var(--green-ok)] border-none cursor-pointer hover:opacity-90 disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}><CheckCircle2 className="w-4 h-4" />{actionId === b.id ? "..." : "Accept"}</button>
-              <button onClick={() => openRejectModal(b.id, customerName)} disabled={actionId === b.id} className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-[var(--red-err)] bg-[var(--red-err)] border border-[var(--red-err)] cursor-pointer hover:bg-[var(--red-err)] disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}><XCircle className="w-4 h-4" />Reject</button>
+              <button onClick={() => openRejectModal(b.id, customerName)} disabled={actionId === b.id} className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-[var(--red-err)] bg-[var(--red-err)]/10 border border-[var(--red-err)]/20 cursor-pointer hover:bg-[var(--red-err)]/20 disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}><XCircle className="w-4 h-4" />Reject</button>
             </>)}
 
             {/* CONFIRMED: Start Cooking OTP */}
             {status === "confirmed" && !otpS && (
               <button onClick={() => handleSendStartOtp(b.id)} disabled={actionId === b.id}
-                className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-[var(--info-bg)]0 border-none cursor-pointer hover:bg-[var(--info-500)] disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}>
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-[var(--info-500)] border-none cursor-pointer hover:bg-[var(--info-500)] disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}>
                 <KeyRound className="w-4 h-4" /> Start Cooking (Send OTP)
               </button>
             )}
@@ -847,10 +847,10 @@ export default function CookDashboardPage() {
               <div className="flex items-center gap-2 w-full">
                 <input type="text" maxLength={6} placeholder="Enter customer's OTP"
                   value={otpS.otp} onChange={(e) => setOtpState((s) => ({ ...s, [b.id]: { ...s[b.id], otp: e.target.value } }))}
-                  className="flex-1 px-4 py-2.5 rounded-[12px] border border-[var(--info-500)] text-[0.88rem] outline-none focus:border-[var(--info-bg)]0 max-w-[200px]"
+                  className="flex-1 px-4 py-2.5 rounded-[12px] border border-[var(--info-500)] text-[0.88rem] outline-none focus:border-[var(--info-500)] max-w-[200px]"
                   style={{ fontFamily: "var(--font-body)" }} />
                 <button onClick={() => handleVerifyStartOtp(b.id)} disabled={otpS.loading}
-                  className="px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-[var(--info-bg)]0 border-none cursor-pointer hover:bg-[var(--info-500)] disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}>
+                  className="px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-[var(--info-500)] border-none cursor-pointer hover:bg-[var(--info-500)] disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}>
                   {otpS.loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify & Start"}
                 </button>
               </div>
@@ -900,13 +900,13 @@ export default function CookDashboardPage() {
       {verChecked && verStatus !== "approved" && activePanel !== "verification" && (
         <div className={cn(
           "rounded-[16px] p-5 mb-6 border flex items-start gap-3",
-          verStatus === "rejected" ? "bg-[var(--red-err)] border-[var(--red-err)]" :
+          verStatus === "rejected" ? "bg-[var(--red-err)]/10 border-[var(--red-err)]/25" :
           verStatus === "pending" ? "bg-[var(--amber-warn-bg)] border-[var(--amber-warn)]" :
           "bg-[var(--info-bg)] border-[var(--info-500)]"
         )}>
           {verStatus === "rejected" ? <ShieldAlert className="w-5 h-5 text-[var(--red-err)] shrink-0 mt-0.5" /> :
            verStatus === "pending" ? <Loader2 className="w-5 h-5 text-[var(--amber-warn)] shrink-0 mt-0.5 animate-spin" /> :
-           <ShieldAlert className="w-5 h-5 text-[var(--info-bg)]0 shrink-0 mt-0.5" />}
+           <ShieldAlert className="w-5 h-5 text-[var(--info-500)] shrink-0 mt-0.5" />}
           <div className="flex-1">
             <div className="font-semibold text-[0.9rem]">
               {verStatus === "rejected" ? "Verification Rejected" :
@@ -1031,7 +1031,7 @@ export default function CookDashboardPage() {
                       return (
                         <button key={t.v} type="button"
                           onClick={() => setMenuForm((f) => ({ ...f, dietary_tags: on ? f.dietary_tags.filter((x) => x !== t.v) : [...f.dietary_tags, t.v] }))}
-                          className={cn("px-3 py-1.5 rounded-full border-[1.5px] text-[0.8rem] font-medium cursor-pointer", on ? "border-[var(--green-ok)] bg-[var(--green-ok)] text-[var(--green-ok)]" : "border-[var(--cream-300)] bg-white text-[var(--text-muted)] hover:border-[var(--green-ok)]")}>
+                          className={cn("px-3 py-1.5 rounded-full border-[1.5px] text-[0.8rem] font-medium cursor-pointer", on ? "border-[var(--green-ok)]/40 bg-[var(--green-ok)]/10 text-[var(--green-ok)]" : "border-[var(--cream-300)] bg-white text-[var(--text-muted)] hover:border-[var(--green-ok)]")}>
                           {t.l}
                         </button>
                       );
@@ -1051,7 +1051,7 @@ export default function CookDashboardPage() {
                       return (
                         <button key={a.v} type="button"
                           onClick={() => setMenuForm((f) => ({ ...f, allergens: on ? f.allergens.filter((x) => x !== a.v) : [...f.allergens, a.v] }))}
-                          className={cn("px-3 py-1.5 rounded-full border-[1.5px] text-[0.8rem] font-medium cursor-pointer", on ? "border-[var(--amber-warn)] bg-[var(--amber-warn-bg)] text-[var(--amber-warn)]" : "border-[var(--cream-300)] bg-white text-[var(--text-muted)] hover:border-[var(--amber-warn-bg)]0")}>
+                          className={cn("px-3 py-1.5 rounded-full border-[1.5px] text-[0.8rem] font-medium cursor-pointer", on ? "border-[var(--amber-warn)] bg-[var(--amber-warn-bg)] text-[var(--amber-warn)]" : "border-[var(--cream-300)] bg-white text-[var(--text-muted)] hover:border-[var(--amber-warn)]")}>
                           {a.l}
                         </button>
                       );
@@ -1128,7 +1128,7 @@ export default function CookDashboardPage() {
                     </div>
                     <div className="flex gap-2 mt-4 pt-3 border-t border-[rgba(212,114,26,0.06)]">
                       <button onClick={() => openEditMenu(item)} className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.78rem] font-semibold text-[var(--orange-500)] bg-[rgba(212,114,26,0.06)] border-none cursor-pointer hover:bg-[rgba(212,114,26,0.12)]" style={{ fontFamily: "var(--font-body)" }}><Pencil className="w-3.5 h-3.5" /> Edit</button>
-                      <button onClick={() => handleDeleteMenuItem(item.id)} className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.78rem] font-semibold text-[var(--red-err)] bg-[var(--red-err)] border-none cursor-pointer hover:bg-[var(--red-err)]" style={{ fontFamily: "var(--font-body)" }}><Trash2 className="w-3.5 h-3.5" /> Delete</button>
+                      <button onClick={() => handleDeleteMenuItem(item.id)} className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.78rem] font-semibold text-[var(--red-err)] bg-[var(--red-err)]/10 border-none cursor-pointer hover:bg-[var(--red-err)]/20" style={{ fontFamily: "var(--font-body)" }}><Trash2 className="w-3.5 h-3.5" /> Delete</button>
                     </div>
                   </div>
                 </div>
@@ -1224,7 +1224,7 @@ export default function CookDashboardPage() {
                   {profileForm.latitude != null && profileForm.longitude != null ? (
                     <div className="flex items-center justify-between gap-3 flex-wrap">
                       <div className="text-[0.82rem] text-[var(--brown-800)]">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--green-ok)] text-[var(--green-ok)] border border-[var(--green-ok)] font-semibold">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--green-ok)]/10 text-[var(--green-ok)] border border-[var(--green-ok)]/25 font-semibold">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Location set
                         </span>
                         <span className="ml-2 text-[var(--text-muted)] font-mono text-[0.74rem]">
@@ -1336,8 +1336,8 @@ export default function CookDashboardPage() {
                                           className={cn(
                                             "px-2.5 py-1.5 text-[0.74rem] font-bold border-[1.5px] border-l-0 rounded-r-full cursor-pointer transition-all",
                                             fee === 79
-                                              ? "bg-[var(--amber-warn)] text-[var(--amber-warn)] border-[var(--amber-warn)]"
-                                              : "bg-[var(--green-ok)] text-[var(--green-ok)] border-[var(--green-ok)]"
+                                              ? "bg-[var(--amber-warn-bg)] text-[var(--amber-warn)] border-[var(--amber-warn)]/40"
+                                              : "bg-[var(--green-ok)]/10 text-[var(--green-ok)] border-[var(--green-ok)]/40"
                                           )}
                                           style={{ fontFamily: "var(--font-body)" }}
                                         >
@@ -1432,7 +1432,7 @@ export default function CookDashboardPage() {
 
           {/* Status banner */}
           {verStatus === "approved" && (
-            <div className="bg-[var(--green-ok)] border border-[var(--green-ok)] rounded-[16px] p-5 mb-6 flex items-center gap-3">
+            <div className="bg-[var(--green-ok)]/10 border border-[var(--green-ok)]/25 rounded-[16px] p-5 mb-6 flex items-center gap-3">
               <BadgeCheck className="w-6 h-6 text-[var(--green-ok)]" />
               <div>
                 <div className="font-semibold text-[var(--green-ok)]">Verified</div>
@@ -1450,7 +1450,7 @@ export default function CookDashboardPage() {
             </div>
           )}
           {verStatus === "rejected" && (
-            <div className="bg-[var(--red-err)] border border-[var(--red-err)] rounded-[16px] p-5 mb-6 flex items-center gap-3">
+            <div className="bg-[var(--red-err)]/10 border border-[var(--red-err)]/25 rounded-[16px] p-5 mb-6 flex items-center gap-3">
               <ShieldAlert className="w-6 h-6 text-[var(--red-err)]" />
               <div>
                 <div className="font-semibold text-[var(--red-err)]">Rejected</div>
@@ -1552,7 +1552,7 @@ export default function CookDashboardPage() {
               <div className="h-24 bg-gray-100 rounded" />
             </div>
           ) : reviewsError ? (
-            <div className="bg-[var(--red-err)] border border-[var(--red-err)] rounded-[16px] p-5 text-[var(--red-err)] text-[0.88rem]">
+            <div className="bg-[var(--red-err)]/10 border border-[var(--red-err)]/25 rounded-[16px] p-5 text-[var(--red-err)] text-[0.88rem]">
               {reviewsError}
             </div>
           ) : (
@@ -1678,7 +1678,7 @@ export default function CookDashboardPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-[var(--red-err)] flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-full bg-[var(--red-err)]/10 flex items-center justify-center shrink-0">
                 <XCircle className="w-5 h-5 text-[var(--red-err)]" />
               </div>
               <div>

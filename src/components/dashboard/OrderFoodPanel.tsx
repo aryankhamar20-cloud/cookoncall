@@ -93,7 +93,7 @@ function ChefMenuCard({
             <div className="flex items-center gap-2 flex-wrap">
               <span className="font-bold text-[1rem]">{chefName}</span>
               {chef.is_veg_only && (
-                <span className="text-[0.7rem] font-semibold px-2 py-0.5 rounded-full bg-[var(--green-ok)] text-[var(--green-ok)] flex items-center gap-1">
+                <span className="text-[0.7rem] font-semibold px-2 py-0.5 rounded-full bg-[var(--green-ok)]/10 text-[var(--green-ok)] flex items-center gap-1">
                   <Leaf className="w-3 h-3" /> Pure Veg
                 </span>
               )}
@@ -102,7 +102,7 @@ function ChefMenuCard({
               {chef.cuisines?.join(", ") || "Home Cooking"}
             </div>
             {rating > 0 ? (
-              <div className="flex items-center gap-1 text-[0.78rem] text-[var(--amber-warn-bg)]0 mt-0.5">
+              <div className="flex items-center gap-1 text-[0.78rem] text-[var(--amber-warn)] mt-0.5">
                 <Star className="w-3.5 h-3.5 fill-[var(--amber-warn)]" />
                 <span>{rating.toFixed(1)}</span>
                 <span className="text-[var(--text-muted)]">({chef.total_reviews ?? 0})</span>
