@@ -150,8 +150,8 @@ export default function CartDrawer() {
               </button>
             </div>
             <div className="flex-1 flex flex-col items-center justify-center px-6 text-center">
-              <div className="w-16 h-16 rounded-full bg-amber-100 flex items-center justify-center mb-4">
-                <Clock className="w-8 h-8 text-amber-600" />
+              <div className="w-16 h-16 rounded-full bg-[var(--amber-warn)] flex items-center justify-center mb-4">
+                <Clock className="w-8 h-8 text-[var(--amber-warn)]" />
               </div>
               <h4 className="font-bold text-[1.1rem] mb-2">Request sent to chef!</h4>
               <p className="text-[0.85rem] text-[var(--text-muted)] mb-1">
@@ -302,7 +302,7 @@ export default function CartDrawer() {
                 </button>
 
                 {!selectedAddress && !addressesLoading && addresses.length === 0 && (
-                  <p className="text-[0.75rem] text-red-400 text-center mt-2">
+                  <p className="text-[0.75rem] text-[var(--red-err)] text-center mt-2">
                     Add a delivery address in Settings first.
                   </p>
                 )}

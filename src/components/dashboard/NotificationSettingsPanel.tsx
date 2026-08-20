@@ -169,7 +169,7 @@ export default function NotificationSettingsPanel({
         </p>
 
         {error && (
-          <div className="flex items-start gap-2 px-3 py-2 mb-4 rounded-[10px] bg-red-50 border border-red-200 text-red-800 text-[0.82rem]">
+          <div className="flex items-start gap-2 px-3 py-2 mb-4 rounded-[10px] bg-[var(--red-err)] border border-[var(--red-err)] text-[var(--red-err)] text-[0.82rem]">
             <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
             <span>{error}</span>
           </div>
@@ -213,7 +213,7 @@ export default function NotificationSettingsPanel({
               <Loader2 className="w-3.5 h-3.5 animate-spin" /> Saving…
             </span>
           ) : savedFlash ? (
-            <span className="flex items-center gap-1.5 text-emerald-600">
+            <span className="flex items-center gap-1.5 text-[var(--green-ok)]">
               <CheckCircle2 className="w-3.5 h-3.5" /> Saved
             </span>
           ) : null}

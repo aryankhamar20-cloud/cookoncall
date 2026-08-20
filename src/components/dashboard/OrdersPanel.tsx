@@ -36,17 +36,17 @@ const filters = [
 ];
 
 const statusStyles: Record<string, string> = {
-  pending_chef_approval: "bg-amber-50 text-amber-700 border-amber-200",
+  pending_chef_approval: "bg-[var(--amber-warn-bg)] text-[var(--amber-warn)] border-[var(--amber-warn)]",
   // Legacy rows in awaiting_payment now visually match the post-accept
   // 'Confirmed' state — they're effectively confirmed bookings whose
   // payment hasn't landed yet.
-  awaiting_payment: "bg-green-50 text-green-700 border-green-200",
-  pending: "bg-yellow-50 text-yellow-700 border-yellow-200", // legacy
-  confirmed: "bg-green-50 text-green-700 border-green-200",
-  in_progress: "bg-blue-50 text-blue-700 border-blue-200",
-  completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  cancelled_by_user: "bg-red-50 text-red-600 border-red-200",
-  cancelled_by_cook: "bg-red-50 text-red-600 border-red-200",
+  awaiting_payment: "bg-[var(--green-ok)] text-[var(--green-ok)] border-[var(--green-ok)]",
+  pending: "bg-[var(--amber-warn-bg)] text-[var(--amber-warn)] border-[var(--amber-warn)]", // legacy
+  confirmed: "bg-[var(--green-ok)] text-[var(--green-ok)] border-[var(--green-ok)]",
+  in_progress: "bg-[var(--info-bg)] text-[var(--info-500)] border-[var(--info-500)]",
+  completed: "bg-[var(--green-ok)] text-[var(--green-ok)] border-[var(--green-ok)]",
+  cancelled_by_user: "bg-[var(--red-err)] text-[var(--red-err)] border-[var(--red-err)]",
+  cancelled_by_cook: "bg-[var(--red-err)] text-[var(--red-err)] border-[var(--red-err)]",
   expired: "bg-gray-50 text-gray-500 border-gray-200",
 };
 
@@ -94,7 +94,7 @@ function priceColorClass(status: string): string {
     status === "cancelled_by_cook" ||
     status === "expired"
   ) {
-    return "text-red-500 line-through";
+    return "text-[var(--red-err)] line-through";
   }
   if (status === "completed") {
     return "text-[var(--brown-800)]";
@@ -130,7 +130,7 @@ function CountdownTimer({
   const msLeft = end - now;
   if (msLeft <= 0) {
     return (
-      <span className="inline-flex items-center gap-1 text-[0.78rem] font-semibold text-red-600">
+      <span className="inline-flex items-center gap-1 text-[0.78rem] font-semibold text-[var(--red-err)]">
         <Hourglass className="w-3 h-3" /> {expiredLabel}
       </span>
     );
@@ -146,7 +146,7 @@ function CountdownTimer({
     <span
       className={cn(
         "inline-flex items-center gap-1 text-[0.78rem] font-semibold",
-        critical ? "text-red-600" : "text-amber-700"
+        critical ? "text-[var(--red-err)]" : "text-[var(--amber-warn)]"
       )}
     >
       <Hourglass className="w-3 h-3" />
@@ -478,9 +478,9 @@ export default function OrdersPanel() {
       )}
 
       {error && (
-        <div className="bg-white rounded-[16px] p-12 border border-red-100 text-center">
-          <AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-3" />
-          <p className="text-[0.9rem] text-red-400">Could not load bookings.</p>
+        <div className="bg-white rounded-[16px] p-12 border border-[var(--red-err)] text-center">
+          <AlertCircle className="w-8 h-8 text-[var(--red-err)] mx-auto mb-3" />
+          <p className="text-[0.9rem] text-[var(--red-err)]">Could not load bookings.</p>
           <button onClick={fetchBookings}
             className="mt-3 px-5 py-2 rounded-full bg-[var(--orange-500)] text-white text-[0.82rem] font-semibold border-none cursor-pointer"
             style={{ fontFamily: "var(--font-body)" }}>
@@ -572,7 +572,7 @@ export default function OrdersPanel() {
                         {b.cook?.cuisines?.join(", ") || "Home Cooking"}
                       </div>
                       {b.booking_type === "food_delivery" && (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.66rem] font-semibold bg-blue-50 text-blue-700 border border-blue-200 mt-1">
+                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.66rem] font-semibold bg-[var(--info-bg)] text-[var(--info-500)] border border-[var(--info-500)] mt-1">
                           <Truck className="w-2.5 h-2.5" /> Delivery Order
                         </span>
                       )}
@@ -591,8 +591,8 @@ export default function OrdersPanel() {
                     countdown that used to live here was removed in #36
                     when the 3-hour payment window was retired. */}
                 {isAwaitingChef && chefDeadline && (
-                  <div className="flex items-center justify-between gap-2 mb-3 bg-amber-50 border border-amber-200 rounded-[10px] px-3 py-2">
-                    <div className="flex items-center gap-2 text-[0.82rem] text-amber-800">
+                  <div className="flex items-center justify-between gap-2 mb-3 bg-[var(--amber-warn-bg)] border border-[var(--amber-warn)] rounded-[10px] px-3 py-2">
+                    <div className="flex items-center gap-2 text-[0.82rem] text-[var(--amber-warn)]">
                       <Clock className="w-3.5 h-3.5 shrink-0" />
                       <span>Waiting for chef to accept</span>
                     </div>
@@ -600,9 +600,9 @@ export default function OrdersPanel() {
                   </div>
                 )}
                 {isConfirmed && (
-                  <div className="flex items-center gap-2 mb-3 bg-green-50 border border-green-200 rounded-[10px] px-3 py-2">
-                    <BadgeCheck className="w-3.5 h-3.5 shrink-0 text-green-600" />
-                    <span className="text-[0.82rem] text-green-800">
+                  <div className="flex items-center gap-2 mb-3 bg-[var(--green-ok)] border border-[var(--green-ok)] rounded-[10px] px-3 py-2">
+                    <BadgeCheck className="w-3.5 h-3.5 shrink-0 text-[var(--green-ok)]" />
+                    <span className="text-[0.82rem] text-[var(--green-ok)]">
                       <span className="font-semibold">Booking confirmed.</span>{" "}
                       {canPay
                         ? "Pay any time before your session ends."
@@ -646,12 +646,12 @@ export default function OrdersPanel() {
 
                 {/* Apr 21 NEW FLOW — Rejection banner with 2 options */}
                 {isRejectedByChef && (
-                  <div className="mt-3 mb-3 bg-red-50 border border-red-200 rounded-[12px] p-4">
+                  <div className="mt-3 mb-3 bg-[var(--red-err)] border border-[var(--red-err)] rounded-[12px] p-4">
                     <div className="flex items-start gap-2 mb-3">
-                      <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                      <div className="text-[0.85rem] text-red-700">
+                      <AlertCircle className="w-4 h-4 text-[var(--red-err)] shrink-0 mt-0.5" />
+                      <div className="text-[0.85rem] text-[var(--red-err)]">
                         <div className="font-semibold mb-0.5">Chef unavailable</div>
-                        <div className="text-[0.8rem] text-red-600">
+                        <div className="text-[0.8rem] text-[var(--red-err)]">
                           {chefName} couldn&apos;t take this booking. You have two options.
                         </div>
                       </div>
@@ -765,8 +765,8 @@ export default function OrdersPanel() {
                     )}
                     {canEditReview && (
                       <>
-                        <span className="flex items-center gap-1 text-[0.78rem] text-emerald-600 font-medium">
-                          <Star className="w-3.5 h-3.5 fill-emerald-500" />
+                        <span className="flex items-center gap-1 text-[0.78rem] text-[var(--green-ok)] font-medium">
+                          <Star className="w-3.5 h-3.5 fill-[var(--green-ok)]" />
                           Reviewed
                         </span>
                         <button
@@ -784,7 +784,7 @@ export default function OrdersPanel() {
                   <div>
                     {canCancel && (
                       <button onClick={() => handleCancel(b.id)} disabled={cancellingId === b.id}
-                        className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.82rem] font-semibold text-red-500 bg-red-50 border border-red-100 cursor-pointer transition-all hover:bg-red-100 disabled:opacity-50"
+                        className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.82rem] font-semibold text-[var(--red-err)] bg-[var(--red-err)] border border-[var(--red-err)] cursor-pointer transition-all hover:bg-[var(--red-err)] disabled:opacity-50"
                         style={{ fontFamily: "var(--font-body)" }}>
                         <XCircle className="w-3.5 h-3.5" />
                         {cancellingId === b.id ? "Cancelling..." : "Cancel"}
@@ -794,7 +794,7 @@ export default function OrdersPanel() {
                 </div>
 
                 {(status === "cancelled_by_user") && b.cancellation_reason && (
-                  <div className="mt-2 text-[0.78rem] text-red-400 italic">Reason: {b.cancellation_reason}</div>
+                  <div className="mt-2 text-[0.78rem] text-[var(--red-err)] italic">Reason: {b.cancellation_reason}</div>
                 )}
               </div>
             );
@@ -1097,10 +1097,10 @@ function RebookModal({
                               <BadgeCheck className="w-3.5 h-3.5 text-[var(--green-ok)] shrink-0" />
                             )}
                             {(chef.is_veg_only || chef.isVegOnly) && (
-                              <Leaf className="w-3.5 h-3.5 text-green-600 shrink-0" />
+                              <Leaf className="w-3.5 h-3.5 text-[var(--green-ok)] shrink-0" />
                             )}
                             {chef.fssai_url && (
-                              <Award className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                              <Award className="w-3.5 h-3.5 text-[var(--amber-warn)] shrink-0" />
                             )}
                           </div>
                           <div className="text-[0.78rem] text-[var(--text-muted)] truncate">
@@ -1190,13 +1190,13 @@ function RebookModal({
                               <div
                                 className={cn(
                                   "w-3 h-3 border-[1.5px] rounded-sm flex items-center justify-center shrink-0",
-                                  item.type === "veg" ? "border-green-600" : "border-red-600"
+                                  item.type === "veg" ? "border-[var(--green-ok)]" : "border-[var(--red-err)]"
                                 )}
                               >
                                 <div
                                   className={cn(
                                     "w-1.5 h-1.5 rounded-full",
-                                    item.type === "veg" ? "bg-green-600" : "bg-red-600"
+                                    item.type === "veg" ? "bg-[var(--green-ok)]" : "bg-[var(--red-err)]"
                                   )}
                                 />
                               </div>

@@ -45,15 +45,23 @@ const requestFilters = [
   { label: "Completed", value: "completed" },
 ];
 
+// Brand-token status colors (see globals.css :root) — every hue here
+// traces to a CSS custom property rather than a raw Tailwind palette
+// color, matching the same mapping used in the admin dashboard's
+// statusBadge(). confirmed/in_progress share info-500 ("in motion, not
+// done") and pending_chef_approval/legacy-pending share amber-warn
+// ("needs someone's action") since there are 7 statuses but only 5
+// distinct brand hues available — collapsing near-synonyms rather than
+// inventing a 6th/7th color.
 const statusStyles: Record<string, string> = {
-  pending_chef_approval: "bg-amber-50 text-amber-700 border-amber-200",
-  awaiting_payment: "bg-orange-50 text-orange-700 border-orange-200",
-  pending: "bg-yellow-50 text-yellow-700 border-yellow-200", // legacy
-  confirmed: "bg-green-50 text-green-700 border-green-200",
-  in_progress: "bg-blue-50 text-blue-700 border-blue-200",
-  completed: "bg-emerald-50 text-emerald-700 border-emerald-200",
-  cancelled_by_user: "bg-red-50 text-red-600 border-red-200",
-  cancelled_by_cook: "bg-red-50 text-red-600 border-red-200",
+  pending_chef_approval: "bg-[var(--amber-warn-bg)] text-[var(--amber-warn)] border-[var(--amber-warn)]/30",
+  awaiting_payment: "bg-[var(--orange-500)]/10 text-[var(--orange-500)] border-[var(--orange-500)]/25",
+  pending: "bg-[var(--amber-warn-bg)] text-[var(--amber-warn)] border-[var(--amber-warn)]/30", // legacy
+  confirmed: "bg-[var(--info-bg)] text-[var(--info-500)] border-[var(--info-500)]/25",
+  in_progress: "bg-[var(--info-bg)] text-[var(--info-500)] border-[var(--info-500)]/25",
+  completed: "bg-[var(--green-ok)]/10 text-[var(--green-ok)] border-[var(--green-ok)]/25",
+  cancelled_by_user: "bg-[var(--red-err)]/10 text-[var(--red-err)] border-[var(--red-err)]/25",
+  cancelled_by_cook: "bg-[var(--red-err)]/10 text-[var(--red-err)] border-[var(--red-err)]/25",
   expired: "bg-gray-50 text-gray-500 border-gray-200",
 };
 
@@ -719,7 +727,7 @@ export default function CookDashboardPage() {
   const headerRight = (
     <div className="flex items-center gap-2.5">
       {verStatus === "approved" && (
-        <span className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[0.72rem] font-semibold border border-emerald-200">
+        <span className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--green-ok)] text-[var(--green-ok)] text-[0.72rem] font-semibold border border-[var(--green-ok)]">
           <BadgeCheck className="w-3 h-3" /> Verified
         </span>
       )}
@@ -761,7 +769,7 @@ export default function CookDashboardPage() {
             <div className="font-bold text-[0.95rem]">{customerName}</div>
             <div className="text-[0.78rem] text-[var(--text-muted)]">{customer?.email || ""}</div>
             {b.booking_type === "food_delivery" && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.66rem] font-semibold bg-blue-50 text-blue-700 border border-blue-200 mt-1">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[0.66rem] font-semibold bg-[var(--info-bg)] text-[var(--info-500)] border border-[var(--info-500)] mt-1">
                 <Truck className="w-2.5 h-2.5" /> Delivery Order
               </span>
             )}
@@ -783,7 +791,7 @@ export default function CookDashboardPage() {
             {phoneS?.phone ? (
               <a
                 href={`tel:${phoneS.phone}`}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[10px] bg-emerald-50 border border-emerald-200 text-emerald-700 font-semibold text-[0.82rem] hover:bg-emerald-100 transition-colors"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[10px] bg-[var(--green-ok)] border border-[var(--green-ok)] text-[var(--green-ok)] font-semibold text-[0.82rem] hover:bg-[var(--green-ok)] transition-colors"
               >
                 <Phone className="w-3.5 h-3.5" />
                 Call customer · {phoneS.phone}
@@ -793,7 +801,7 @@ export default function CookDashboardPage() {
                 type="button"
                 onClick={() => handleRevealPhone(b.id)}
                 disabled={phoneS?.loading}
-                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[10px] bg-white border border-[rgba(0,0,0,0.08)] text-[var(--brown-800)] font-semibold text-[0.82rem] hover:border-emerald-400 hover:text-emerald-700 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-[10px] bg-white border border-[rgba(0,0,0,0.08)] text-[var(--brown-800)] font-semibold text-[0.82rem] hover:border-[var(--green-ok)] hover:text-[var(--green-ok)] disabled:opacity-50"
               >
                 {phoneS?.loading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -811,7 +819,7 @@ export default function CookDashboardPage() {
 
         {/* Duration tracking for completed bookings */}
         {status === "completed" && b.actual_duration_minutes && (
-          <div className="text-[0.82rem] text-emerald-600 mb-3 bg-emerald-50 rounded-[8px] px-3 py-2 flex items-center gap-1.5">
+          <div className="text-[0.82rem] text-[var(--green-ok)] mb-3 bg-[var(--green-ok)] rounded-[8px] px-3 py-2 flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5" />
             Session duration: {Math.floor(b.actual_duration_minutes / 60)}h {b.actual_duration_minutes % 60}m
           </div>
@@ -825,13 +833,13 @@ export default function CookDashboardPage() {
                 Reject → opens modal with reason textarea → POST /bookings/:id/reject */}
             {(status === "pending_chef_approval" || status === "pending") && (<>
               <button onClick={() => handleAccept(b.id)} disabled={actionId === b.id} className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-[var(--green-ok)] border-none cursor-pointer hover:opacity-90 disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}><CheckCircle2 className="w-4 h-4" />{actionId === b.id ? "..." : "Accept"}</button>
-              <button onClick={() => openRejectModal(b.id, customerName)} disabled={actionId === b.id} className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-red-500 bg-red-50 border border-red-100 cursor-pointer hover:bg-red-100 disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}><XCircle className="w-4 h-4" />Reject</button>
+              <button onClick={() => openRejectModal(b.id, customerName)} disabled={actionId === b.id} className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-[var(--red-err)] bg-[var(--red-err)] border border-[var(--red-err)] cursor-pointer hover:bg-[var(--red-err)] disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}><XCircle className="w-4 h-4" />Reject</button>
             </>)}
 
             {/* CONFIRMED: Start Cooking OTP */}
             {status === "confirmed" && !otpS && (
               <button onClick={() => handleSendStartOtp(b.id)} disabled={actionId === b.id}
-                className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-blue-500 border-none cursor-pointer hover:bg-blue-600 disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}>
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-[var(--info-bg)]0 border-none cursor-pointer hover:bg-[var(--info-500)] disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}>
                 <KeyRound className="w-4 h-4" /> Start Cooking (Send OTP)
               </button>
             )}
@@ -839,10 +847,10 @@ export default function CookDashboardPage() {
               <div className="flex items-center gap-2 w-full">
                 <input type="text" maxLength={6} placeholder="Enter customer's OTP"
                   value={otpS.otp} onChange={(e) => setOtpState((s) => ({ ...s, [b.id]: { ...s[b.id], otp: e.target.value } }))}
-                  className="flex-1 px-4 py-2.5 rounded-[12px] border border-blue-200 text-[0.88rem] outline-none focus:border-blue-500 max-w-[200px]"
+                  className="flex-1 px-4 py-2.5 rounded-[12px] border border-[var(--info-500)] text-[0.88rem] outline-none focus:border-[var(--info-bg)]0 max-w-[200px]"
                   style={{ fontFamily: "var(--font-body)" }} />
                 <button onClick={() => handleVerifyStartOtp(b.id)} disabled={otpS.loading}
-                  className="px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-blue-500 border-none cursor-pointer hover:bg-blue-600 disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}>
+                  className="px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-[var(--info-bg)]0 border-none cursor-pointer hover:bg-[var(--info-500)] disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}>
                   {otpS.loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify & Start"}
                 </button>
               </div>
@@ -851,7 +859,7 @@ export default function CookDashboardPage() {
             {/* IN PROGRESS: End Session OTP */}
             {status === "in_progress" && !otpS && (
               <button onClick={() => handleSendEndOtp(b.id)} disabled={actionId === b.id}
-                className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-emerald-500 border-none cursor-pointer hover:bg-emerald-600 disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}>
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-[var(--green-ok)] border-none cursor-pointer hover:bg-[var(--green-ok)] disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}>
                 <KeyRound className="w-4 h-4" /> End Session (Send OTP)
               </button>
             )}
@@ -859,10 +867,10 @@ export default function CookDashboardPage() {
               <div className="flex items-center gap-2 w-full">
                 <input type="text" maxLength={6} placeholder="Enter customer's OTP"
                   value={otpS.otp} onChange={(e) => setOtpState((s) => ({ ...s, [b.id]: { ...s[b.id], otp: e.target.value } }))}
-                  className="flex-1 px-4 py-2.5 rounded-[12px] border border-emerald-200 text-[0.88rem] outline-none focus:border-emerald-500 max-w-[200px]"
+                  className="flex-1 px-4 py-2.5 rounded-[12px] border border-[var(--green-ok)] text-[0.88rem] outline-none focus:border-[var(--green-ok)] max-w-[200px]"
                   style={{ fontFamily: "var(--font-body)" }} />
                 <button onClick={() => handleVerifyEndOtp(b.id)} disabled={otpS.loading}
-                  className="px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-emerald-500 border-none cursor-pointer hover:bg-emerald-600 disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}>
+                  className="px-5 py-2.5 rounded-full text-[0.82rem] font-semibold text-white bg-[var(--green-ok)] border-none cursor-pointer hover:bg-[var(--green-ok)] disabled:opacity-50" style={{ fontFamily: "var(--font-body)" }}>
                   {otpS.loading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verify & Complete"}
                 </button>
               </div>
@@ -892,13 +900,13 @@ export default function CookDashboardPage() {
       {verChecked && verStatus !== "approved" && activePanel !== "verification" && (
         <div className={cn(
           "rounded-[16px] p-5 mb-6 border flex items-start gap-3",
-          verStatus === "rejected" ? "bg-red-50 border-red-200" :
-          verStatus === "pending" ? "bg-yellow-50 border-yellow-200" :
-          "bg-blue-50 border-blue-200"
+          verStatus === "rejected" ? "bg-[var(--red-err)] border-[var(--red-err)]" :
+          verStatus === "pending" ? "bg-[var(--amber-warn-bg)] border-[var(--amber-warn)]" :
+          "bg-[var(--info-bg)] border-[var(--info-500)]"
         )}>
-          {verStatus === "rejected" ? <ShieldAlert className="w-5 h-5 text-red-500 shrink-0 mt-0.5" /> :
-           verStatus === "pending" ? <Loader2 className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5 animate-spin" /> :
-           <ShieldAlert className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />}
+          {verStatus === "rejected" ? <ShieldAlert className="w-5 h-5 text-[var(--red-err)] shrink-0 mt-0.5" /> :
+           verStatus === "pending" ? <Loader2 className="w-5 h-5 text-[var(--amber-warn)] shrink-0 mt-0.5 animate-spin" /> :
+           <ShieldAlert className="w-5 h-5 text-[var(--info-bg)]0 shrink-0 mt-0.5" />}
           <div className="flex-1">
             <div className="font-semibold text-[0.9rem]">
               {verStatus === "rejected" ? "Verification Rejected" :
@@ -971,7 +979,7 @@ export default function CookDashboardPage() {
             ))}
           </div>
           {reqLoading && <div className="space-y-4">{[1,2,3].map((i) => <div key={i} className="bg-white rounded-[16px] p-5 border border-[rgba(212,114,26,0.06)] animate-pulse"><div className="h-5 bg-gray-100 rounded w-1/3 mb-3" /><div className="h-4 bg-gray-100 rounded w-2/3 mb-2" /><div className="h-4 bg-gray-100 rounded w-1/2" /></div>)}</div>}
-          {reqError && <div className="bg-white rounded-[16px] p-12 border border-red-100 text-center"><AlertCircle className="w-8 h-8 text-red-400 mx-auto mb-3" /><p className="text-[0.9rem] text-red-400">{reqError}</p><button onClick={() => fetchRequests(reqFilter || undefined)} className="mt-3 px-5 py-2 rounded-full bg-[var(--orange-500)] text-white text-[0.82rem] font-semibold border-none cursor-pointer" style={{ fontFamily: "var(--font-body)" }}>Retry</button></div>}
+          {reqError && <div className="bg-white rounded-[16px] p-12 border border-[var(--red-err)] text-center"><AlertCircle className="w-8 h-8 text-[var(--red-err)] mx-auto mb-3" /><p className="text-[0.9rem] text-[var(--red-err)]">{reqError}</p><button onClick={() => fetchRequests(reqFilter || undefined)} className="mt-3 px-5 py-2 rounded-full bg-[var(--orange-500)] text-white text-[0.82rem] font-semibold border-none cursor-pointer" style={{ fontFamily: "var(--font-body)" }}>Retry</button></div>}
           {!reqLoading && !reqError && requests.length === 0 && <div className="bg-white rounded-[16px] p-12 border border-[rgba(212,114,26,0.06)] text-center text-[var(--text-muted)]"><ChefHat className="w-10 h-10 mx-auto mb-3 opacity-30" /><p className="text-[0.9rem]">{reqFilter ? "No bookings with this status." : "No booking requests yet."}</p></div>}
           {!reqLoading && !reqError && requests.length > 0 && <div className="space-y-4">{requests.map((b) => renderBookingCard(b, true))}</div>}
         </div>
@@ -1023,7 +1031,7 @@ export default function CookDashboardPage() {
                       return (
                         <button key={t.v} type="button"
                           onClick={() => setMenuForm((f) => ({ ...f, dietary_tags: on ? f.dietary_tags.filter((x) => x !== t.v) : [...f.dietary_tags, t.v] }))}
-                          className={cn("px-3 py-1.5 rounded-full border-[1.5px] text-[0.8rem] font-medium cursor-pointer", on ? "border-green-600 bg-green-50 text-green-700" : "border-[var(--cream-300)] bg-white text-[var(--text-muted)] hover:border-green-500")}>
+                          className={cn("px-3 py-1.5 rounded-full border-[1.5px] text-[0.8rem] font-medium cursor-pointer", on ? "border-[var(--green-ok)] bg-[var(--green-ok)] text-[var(--green-ok)]" : "border-[var(--cream-300)] bg-white text-[var(--text-muted)] hover:border-[var(--green-ok)]")}>
                           {t.l}
                         </button>
                       );
@@ -1043,7 +1051,7 @@ export default function CookDashboardPage() {
                       return (
                         <button key={a.v} type="button"
                           onClick={() => setMenuForm((f) => ({ ...f, allergens: on ? f.allergens.filter((x) => x !== a.v) : [...f.allergens, a.v] }))}
-                          className={cn("px-3 py-1.5 rounded-full border-[1.5px] text-[0.8rem] font-medium cursor-pointer", on ? "border-amber-600 bg-amber-50 text-amber-700" : "border-[var(--cream-300)] bg-white text-[var(--text-muted)] hover:border-amber-500")}>
+                          className={cn("px-3 py-1.5 rounded-full border-[1.5px] text-[0.8rem] font-medium cursor-pointer", on ? "border-[var(--amber-warn)] bg-[var(--amber-warn-bg)] text-[var(--amber-warn)]" : "border-[var(--cream-300)] bg-white text-[var(--text-muted)] hover:border-[var(--amber-warn-bg)]0")}>
                           {a.l}
                         </button>
                       );
@@ -1110,7 +1118,7 @@ export default function CookDashboardPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", item.type === "veg" ? "bg-green-500" : "bg-red-500")} />
+                          <span className={cn("w-2.5 h-2.5 rounded-full shrink-0", item.type === "veg" ? "bg-[var(--green-ok)]" : "bg-[var(--red-err)]")} />
                           <span className="font-bold text-[0.95rem] capitalize">{item.name}</span>
                         </div>
                         <div className="text-[0.78rem] text-[var(--text-muted)] mt-1 capitalize">{(item.category || "main_course").replace(/_/g, " ")}</div>
@@ -1120,7 +1128,7 @@ export default function CookDashboardPage() {
                     </div>
                     <div className="flex gap-2 mt-4 pt-3 border-t border-[rgba(212,114,26,0.06)]">
                       <button onClick={() => openEditMenu(item)} className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.78rem] font-semibold text-[var(--orange-500)] bg-[rgba(212,114,26,0.06)] border-none cursor-pointer hover:bg-[rgba(212,114,26,0.12)]" style={{ fontFamily: "var(--font-body)" }}><Pencil className="w-3.5 h-3.5" /> Edit</button>
-                      <button onClick={() => handleDeleteMenuItem(item.id)} className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.78rem] font-semibold text-red-400 bg-red-50 border-none cursor-pointer hover:bg-red-100" style={{ fontFamily: "var(--font-body)" }}><Trash2 className="w-3.5 h-3.5" /> Delete</button>
+                      <button onClick={() => handleDeleteMenuItem(item.id)} className="flex items-center gap-1.5 px-4 py-2 rounded-full text-[0.78rem] font-semibold text-[var(--red-err)] bg-[var(--red-err)] border-none cursor-pointer hover:bg-[var(--red-err)]" style={{ fontFamily: "var(--font-body)" }}><Trash2 className="w-3.5 h-3.5" /> Delete</button>
                     </div>
                   </div>
                 </div>
@@ -1216,7 +1224,7 @@ export default function CookDashboardPage() {
                   {profileForm.latitude != null && profileForm.longitude != null ? (
                     <div className="flex items-center justify-between gap-3 flex-wrap">
                       <div className="text-[0.82rem] text-[var(--brown-800)]">
-                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-semibold">
+                        <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[var(--green-ok)] text-[var(--green-ok)] border border-[var(--green-ok)] font-semibold">
                           <CheckCircle2 className="w-3.5 h-3.5" /> Location set
                         </span>
                         <span className="ml-2 text-[var(--text-muted)] font-mono text-[0.74rem]">
@@ -1328,8 +1336,8 @@ export default function CookDashboardPage() {
                                           className={cn(
                                             "px-2.5 py-1.5 text-[0.74rem] font-bold border-[1.5px] border-l-0 rounded-r-full cursor-pointer transition-all",
                                             fee === 79
-                                              ? "bg-amber-100 text-amber-800 border-amber-300"
-                                              : "bg-emerald-50 text-emerald-700 border-emerald-300"
+                                              ? "bg-[var(--amber-warn)] text-[var(--amber-warn)] border-[var(--amber-warn)]"
+                                              : "bg-[var(--green-ok)] text-[var(--green-ok)] border-[var(--green-ok)]"
                                           )}
                                           style={{ fontFamily: "var(--font-body)" }}
                                         >
@@ -1356,7 +1364,7 @@ export default function CookDashboardPage() {
                               + My area isn&apos;t listed (request to add)
                             </button>
                           ) : (
-                            <div className="space-y-2 p-3 bg-orange-50 border border-orange-200 rounded-[12px]">
+                            <div className="space-y-2 p-3 bg-[var(--orange-500)] border border-[var(--orange-500)] rounded-[12px]">
                               <p className="text-[0.74rem] text-[var(--text-muted)]">
                                 Type your area name. Admin will review and add it within 24 hours.
                               </p>
@@ -1396,7 +1404,7 @@ export default function CookDashboardPage() {
                   </div>
 
                   {!profileForm.serves_all_city && profileForm.service_area_slugs.length === 0 && (
-                    <div className="mt-2 text-[0.74rem] text-amber-700">
+                    <div className="mt-2 text-[0.74rem] text-[var(--amber-warn)]">
                       ⚠️ Pick at least one area, or tick &quot;Serve all of Ahmedabad&quot;. Without this, customers can&apos;t see your profile.
                     </div>
                   )}
@@ -1404,7 +1412,7 @@ export default function CookDashboardPage() {
 
                 <div className="flex items-center gap-3 mt-4 sm:col-span-2">
                   <label className="relative inline-flex items-center cursor-pointer"><input type="checkbox" checked={profileForm.is_veg_only} onChange={(e) => setProfileForm((f) => ({ ...f, is_veg_only: e.target.checked }))} className="sr-only peer" /><div className="w-11 h-6 bg-[var(--cream-300)] peer-checked:bg-[var(--green-ok)] rounded-full peer after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" /></label>
-                  <div><span className="text-[0.88rem] font-semibold text-[var(--brown-800)] flex items-center gap-1.5"><Leaf className="w-4 h-4 text-green-500" /> Pure Vegetarian</span><p className="text-[0.75rem] text-[var(--text-muted)]">Only cook vegetarian dishes</p></div>
+                  <div><span className="text-[0.88rem] font-semibold text-[var(--brown-800)] flex items-center gap-1.5"><Leaf className="w-4 h-4 text-[var(--green-ok)]" /> Pure Vegetarian</span><p className="text-[0.75rem] text-[var(--text-muted)]">Only cook vegetarian dishes</p></div>
                 </div>
               </div>
               <div className="mt-6"><label className={labelClass}>Cuisines You Cook</label><div className="flex flex-wrap gap-2 mt-2">{CUISINE_OPTIONS.map((c) => <button key={c} onClick={() => toggleCuisine(c)} className={cn("px-4 py-2 rounded-full text-[0.82rem] font-semibold border cursor-pointer transition-all", profileForm.cuisines.includes(c) ? "bg-[var(--orange-500)] text-white border-[var(--orange-500)]" : "bg-white text-[var(--text-muted)] border-[var(--cream-300)] hover:border-[var(--orange-500)] hover:text-[var(--orange-500)]")} style={{ fontFamily: "var(--font-body)" }}>{c}</button>)}</div></div>
@@ -1424,29 +1432,29 @@ export default function CookDashboardPage() {
 
           {/* Status banner */}
           {verStatus === "approved" && (
-            <div className="bg-emerald-50 border border-emerald-200 rounded-[16px] p-5 mb-6 flex items-center gap-3">
-              <BadgeCheck className="w-6 h-6 text-emerald-500" />
+            <div className="bg-[var(--green-ok)] border border-[var(--green-ok)] rounded-[16px] p-5 mb-6 flex items-center gap-3">
+              <BadgeCheck className="w-6 h-6 text-[var(--green-ok)]" />
               <div>
-                <div className="font-semibold text-emerald-700">Verified</div>
-                <p className="text-[0.82rem] text-emerald-600">Your profile is verified. You can receive bookings.</p>
+                <div className="font-semibold text-[var(--green-ok)]">Verified</div>
+                <p className="text-[0.82rem] text-[var(--green-ok)]">Your profile is verified. You can receive bookings.</p>
               </div>
             </div>
           )}
           {verStatus === "pending" && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-[16px] p-5 mb-6 flex items-center gap-3">
-              <Loader2 className="w-6 h-6 text-yellow-600 animate-spin" />
+            <div className="bg-[var(--amber-warn-bg)] border border-[var(--amber-warn)] rounded-[16px] p-5 mb-6 flex items-center gap-3">
+              <Loader2 className="w-6 h-6 text-[var(--amber-warn)] animate-spin" />
               <div>
-                <div className="font-semibold text-yellow-700">Under Review</div>
-                <p className="text-[0.82rem] text-yellow-600">Your documents are being reviewed. We&apos;ll notify you once approved.</p>
+                <div className="font-semibold text-[var(--amber-warn)]">Under Review</div>
+                <p className="text-[0.82rem] text-[var(--amber-warn)]">Your documents are being reviewed. We&apos;ll notify you once approved.</p>
               </div>
             </div>
           )}
           {verStatus === "rejected" && (
-            <div className="bg-red-50 border border-red-200 rounded-[16px] p-5 mb-6 flex items-center gap-3">
-              <ShieldAlert className="w-6 h-6 text-red-500" />
+            <div className="bg-[var(--red-err)] border border-[var(--red-err)] rounded-[16px] p-5 mb-6 flex items-center gap-3">
+              <ShieldAlert className="w-6 h-6 text-[var(--red-err)]" />
               <div>
-                <div className="font-semibold text-red-700">Rejected</div>
-                <p className="text-[0.82rem] text-red-600">Reason: {verRejection || "Please re-submit correct documents."}</p>
+                <div className="font-semibold text-[var(--red-err)]">Rejected</div>
+                <p className="text-[0.82rem] text-[var(--red-err)]">Reason: {verRejection || "Please re-submit correct documents."}</p>
               </div>
             </div>
           )}
@@ -1466,7 +1474,7 @@ export default function CookDashboardPage() {
                     <label className={labelClass}>{doc.label}</label>
                     <div className="flex items-center gap-3">
                       {verForm[doc.field as keyof typeof verForm] && verForm[doc.field as keyof typeof verForm] !== "" && (
-                        <span className="text-[0.82rem] text-emerald-600 flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> Uploaded</span>
+                        <span className="text-[0.82rem] text-[var(--green-ok)] flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> Uploaded</span>
                       )}
                       <label className={cn(
                         "flex items-center gap-1.5 px-4 py-2.5 rounded-[12px] border border-dashed text-[0.82rem] font-semibold cursor-pointer transition-all",
@@ -1544,7 +1552,7 @@ export default function CookDashboardPage() {
               <div className="h-24 bg-gray-100 rounded" />
             </div>
           ) : reviewsError ? (
-            <div className="bg-red-50 border border-red-200 rounded-[16px] p-5 text-red-600 text-[0.88rem]">
+            <div className="bg-[var(--red-err)] border border-[var(--red-err)] rounded-[16px] p-5 text-[var(--red-err)] text-[0.88rem]">
               {reviewsError}
             </div>
           ) : (
@@ -1564,7 +1572,7 @@ export default function CookDashboardPage() {
                           className={cn(
                             "w-4 h-4",
                             n <= Math.round(reviewsStats.average_rating)
-                              ? "text-amber-400 fill-amber-400"
+                              ? "text-[var(--amber-warn)] fill-[var(--amber-warn)]"
                               : "text-gray-200 fill-gray-200",
                           )}
                         />
@@ -1585,11 +1593,11 @@ export default function CookDashboardPage() {
                       return (
                         <div key={star} className="flex items-center gap-3 text-[0.82rem]">
                           <span className="w-10 flex items-center gap-1 text-[var(--text-muted)]">
-                            {star} <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                            {star} <Star className="w-3 h-3 text-[var(--amber-warn)] fill-[var(--amber-warn)]" />
                           </span>
                           <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-amber-400 transition-all"
+                              className="h-full bg-[var(--amber-warn)] transition-all"
                               style={{ width: `${pct}%` }}
                             />
                           </div>
@@ -1631,7 +1639,7 @@ export default function CookDashboardPage() {
                                   className={cn(
                                     "w-3.5 h-3.5",
                                     n <= (Number(r.rating) || 0)
-                                      ? "text-amber-400 fill-amber-400"
+                                      ? "text-[var(--amber-warn)] fill-[var(--amber-warn)]"
                                       : "text-gray-200 fill-gray-200",
                                   )}
                                 />
@@ -1670,8 +1678,8 @@ export default function CookDashboardPage() {
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-start gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
-                <XCircle className="w-5 h-5 text-red-500" />
+              <div className="w-10 h-10 rounded-full bg-[var(--red-err)] flex items-center justify-center shrink-0">
+                <XCircle className="w-5 h-5 text-[var(--red-err)]" />
               </div>
               <div>
                 <h3 className="font-bold text-[1.05rem] mb-0.5">Reject this booking?</h3>
@@ -1682,7 +1690,7 @@ export default function CookDashboardPage() {
             </div>
 
             <label className="block text-[0.82rem] font-semibold text-[var(--brown-800)] mb-1.5">
-              Why are you rejecting? <span className="text-red-500">*</span>
+              Why are you rejecting? <span className="text-[var(--red-err)]">*</span>
             </label>
             <p className="text-[0.72rem] text-[var(--text-muted)] mb-2">
               This reason is for internal records only — the customer never sees it. Be honest so we can improve matching.
@@ -1713,7 +1721,7 @@ export default function CookDashboardPage() {
               <button
                 onClick={submitReject}
                 disabled={rejectModal.submitting || rejectModal.reason.trim().length < 5}
-                className="flex-1 py-2.5 rounded-full bg-red-500 text-white font-semibold text-[0.85rem] border-none cursor-pointer hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 py-2.5 rounded-full bg-[var(--red-err)] text-white font-semibold text-[0.85rem] border-none cursor-pointer hover:bg-[var(--red-err)] disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ fontFamily: "var(--font-body)" }}
               >
                 {rejectModal.submitting ? "Rejecting..." : "Confirm Reject"}
@@ -1727,12 +1735,12 @@ export default function CookDashboardPage() {
         <AvailabilityPanel />
       )}
       {activePanel === "availability" && verStatus !== "approved" && (
-        <div className="bg-amber-50 border border-amber-200 rounded-[12px] p-4 max-w-2xl">
+        <div className="bg-[var(--amber-warn-bg)] border border-[var(--amber-warn)] rounded-[12px] p-4 max-w-2xl">
           <div className="flex items-start gap-2">
-            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-[var(--amber-warn)] shrink-0 mt-0.5" />
             <div>
-              <div className="font-semibold text-[0.9rem] text-amber-800">Verification required</div>
-              <div className="text-[0.82rem] text-amber-700 mt-1">
+              <div className="font-semibold text-[0.9rem] text-[var(--amber-warn)]">Verification required</div>
+              <div className="text-[0.82rem] text-[var(--amber-warn)] mt-1">
                 Complete verification to set your availability schedule.
               </div>
             </div>
@@ -1835,9 +1843,9 @@ function BankDetailsPanel() {
   return (
     <form onSubmit={handleSave} className="max-w-[580px]">
       {/* Info notice */}
-      <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-[12px] p-4 mb-6">
-        <IndianRupee className="w-4 h-4 text-amber-600 mt-0.5 shrink-0" />
-        <p className="text-[0.85rem] text-amber-800 leading-relaxed">
+      <div className="flex items-start gap-3 bg-[var(--amber-warn-bg)] border border-[var(--amber-warn)] rounded-[12px] p-4 mb-6">
+        <IndianRupee className="w-4 h-4 text-[var(--amber-warn)] mt-0.5 shrink-0" />
+        <p className="text-[0.85rem] text-[var(--amber-warn)] leading-relaxed">
           Earnings are transferred to your bank or UPI within <strong>24 hours</strong> after each session is completed.
           Your payout is <strong>97.5%</strong> of dish revenue.
         </p>

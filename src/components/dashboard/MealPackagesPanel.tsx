@@ -20,7 +20,7 @@ const btnPrimary =
 const btnSecondary =
   "flex items-center gap-2 px-4 py-2 bg-white border border-[var(--cream-300)] text-[var(--text-primary)] rounded-[10px] text-[0.85rem] font-semibold hover:border-[var(--orange-500)] transition-all";
 const btnDanger =
-  "flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-600 border border-red-200 rounded-[8px] text-[0.8rem] font-medium hover:bg-red-100 transition-all";
+  "flex items-center gap-2 px-3 py-1.5 bg-[var(--red-err)] text-[var(--red-err)] border border-[var(--red-err)] rounded-[8px] text-[0.8rem] font-medium hover:bg-[var(--red-err)] transition-all";
 const cardClass =
   "bg-white rounded-[16px] border border-[rgba(212,114,26,0.08)] shadow-sm";
 
@@ -199,7 +199,7 @@ export default function MealPackagesPanel() {
       </div>
 
       {/* Info banner */}
-      <div className="flex items-start gap-3 p-3.5 rounded-[12px] bg-amber-50 border border-amber-200 text-[0.82rem] text-amber-800">
+      <div className="flex items-start gap-3 p-3.5 rounded-[12px] bg-[var(--amber-warn-bg)] border border-[var(--amber-warn)] text-[0.82rem] text-[var(--amber-warn)]">
         <Info className="w-4 h-4 mt-0.5 shrink-0" />
         <span>
           <strong>Hybrid model:</strong> You provide labor + travel. Customer sources ingredients.
@@ -395,11 +395,11 @@ function PackageCard({
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="text-[0.95rem] font-bold text-[var(--text-primary)] truncate">{pkg.name}</h3>
             {pkg.is_veg ? (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-50 text-green-700 text-[0.7rem] font-semibold border border-green-200 shrink-0">
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--green-ok)] text-[var(--green-ok)] text-[0.7rem] font-semibold border border-[var(--green-ok)] shrink-0">
                 <Leaf className="w-3 h-3" /> Veg
               </span>
             ) : (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-red-50 text-red-600 text-[0.7rem] font-semibold border border-red-200 shrink-0">
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-[var(--red-err)] text-[var(--red-err)] text-[0.7rem] font-semibold border border-[var(--red-err)] shrink-0">
                 <Utensils className="w-3 h-3" /> Non-Veg
               </span>
             )}
@@ -436,7 +436,7 @@ function PackageCard({
             className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center border transition-all text-[0.7rem]",
               pkg.is_active
-                ? "bg-green-50 border-green-200 text-green-600 hover:bg-green-100"
+                ? "bg-[var(--green-ok)] border-[var(--green-ok)] text-[var(--green-ok)] hover:bg-[var(--green-ok)]"
                 : "bg-gray-50 border-gray-200 text-gray-400 hover:bg-gray-100"
             )}
           >
@@ -445,8 +445,8 @@ function PackageCard({
           <button onClick={onEdit} className="w-8 h-8 rounded-full flex items-center justify-center border border-[var(--cream-300)] bg-white hover:border-[var(--orange-500)] transition-all">
             <Pencil className="w-3.5 h-3.5 text-[var(--text-muted)]" />
           </button>
-          <button onClick={onDelete} className="w-8 h-8 rounded-full flex items-center justify-center border border-red-200 bg-red-50 hover:bg-red-100 transition-all">
-            <Trash2 className="w-3.5 h-3.5 text-red-500" />
+          <button onClick={onDelete} className="w-8 h-8 rounded-full flex items-center justify-center border border-[var(--red-err)] bg-[var(--red-err)] hover:bg-[var(--red-err)] transition-all">
+            <Trash2 className="w-3.5 h-3.5 text-[var(--red-err)]" />
           </button>
           <button
             onClick={onToggleExpand}
@@ -463,9 +463,9 @@ function PackageCard({
           <CategoriesSection pkg={pkg} onRefresh={onRefresh} />
           <AddonsSection pkg={pkg} onRefresh={onRefresh} />
           {pkg.ingredient_note && (
-            <div className="p-3 rounded-[10px] bg-amber-50 border border-amber-200">
-              <p className="text-[0.75rem] font-semibold text-amber-700 mb-1">Ingredient Note (sent 2h before)</p>
-              <p className="text-[0.82rem] text-amber-800 whitespace-pre-wrap">{pkg.ingredient_note}</p>
+            <div className="p-3 rounded-[10px] bg-[var(--amber-warn-bg)] border border-[var(--amber-warn)]">
+              <p className="text-[0.75rem] font-semibold text-[var(--amber-warn)] mb-1">Ingredient Note (sent 2h before)</p>
+              <p className="text-[0.82rem] text-[var(--amber-warn)] whitespace-pre-wrap">{pkg.ingredient_note}</p>
             </div>
           )}
         </div>
@@ -584,7 +584,7 @@ function CategoriesSection({ pkg, onRefresh }: { pkg: MealPackage; onRefresh: ()
                 <button onClick={() => setExpandedCat((id) => (id === cat.id ? null : cat.id))} className="text-[0.75rem] text-[var(--orange-500)] font-medium hover:underline">
                   {expandedCat === cat.id ? "Hide dishes" : `${cat.dishes?.length ?? 0} dish${(cat.dishes?.length ?? 0) !== 1 ? "es" : ""}`}
                 </button>
-                <button onClick={() => handleDeleteCategory(cat.id)} className="text-red-400 hover:text-red-600">
+                <button onClick={() => handleDeleteCategory(cat.id)} className="text-[var(--red-err)] hover:text-[var(--red-err)]">
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -650,18 +650,18 @@ function DishesSection({
         <div key={dish.id} className="flex items-center justify-between text-[0.82rem]">
           <div className="flex items-center gap-2">
             {dish.type === "veg" ? (
-              <span className="w-3 h-3 rounded-sm border border-green-500 flex items-center justify-center shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="w-3 h-3 rounded-sm border border-[var(--green-ok)] flex items-center justify-center shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--green-ok)]" />
               </span>
             ) : (
-              <span className="w-3 h-3 rounded-sm border border-red-500 flex items-center justify-center shrink-0">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+              <span className="w-3 h-3 rounded-sm border border-[var(--red-err)] flex items-center justify-center shrink-0">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--red-err)]" />
               </span>
             )}
             <span className="text-[var(--text-primary)] font-medium">{dish.name}</span>
             {dish.description && <span className="text-[var(--text-muted)] truncate max-w-[200px]">— {dish.description}</span>}
           </div>
-          <button onClick={() => handleDelete(dish.id)} className="text-red-400 hover:text-red-600 ml-2">
+          <button onClick={() => handleDelete(dish.id)} className="text-[var(--red-err)] hover:text-[var(--red-err)] ml-2">
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -754,17 +754,17 @@ function AddonsSection({ pkg, onRefresh }: { pkg: MealPackage; onRefresh: () => 
         {(pkg.addons ?? []).map((addon) => (
           <div key={addon.id} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[var(--cream-100)] border border-[var(--cream-300)] text-[0.8rem]">
             {addon.type === "veg" ? (
-              <span className="w-2.5 h-2.5 rounded-sm border border-green-500 flex items-center justify-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
+              <span className="w-2.5 h-2.5 rounded-sm border border-[var(--green-ok)] flex items-center justify-center">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--green-ok)]" />
               </span>
             ) : (
-              <span className="w-2.5 h-2.5 rounded-sm border border-red-500 flex items-center justify-center">
-                <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
+              <span className="w-2.5 h-2.5 rounded-sm border border-[var(--red-err)] flex items-center justify-center">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--red-err)]" />
               </span>
             )}
             <span className="font-medium text-[var(--text-primary)]">{addon.name}</span>
             <span className="text-[var(--text-muted)]">₹{addon.price}</span>
-            <button onClick={() => handleDelete(addon.id)} className="text-red-400 hover:text-red-600 ml-0.5">
+            <button onClick={() => handleDelete(addon.id)} className="text-[var(--red-err)] hover:text-[var(--red-err)] ml-0.5">
               <X className="w-3 h-3" />
             </button>
           </div>

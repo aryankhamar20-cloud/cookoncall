@@ -84,7 +84,7 @@ export default function WalletPanel() {
         </button>
       </div>
 
-      {error && <div className="text-[0.85rem] text-red-600 mb-4">{error}</div>}
+      {error && <div className="text-[0.85rem] text-[var(--red-err)] mb-4">{error}</div>}
 
       {txns.length === 0 ? (
         <div className="text-center py-14">
@@ -105,14 +105,14 @@ export default function WalletPanel() {
             const credit = amt >= 0;
             return (
               <div key={t.id} className="bg-white rounded-[14px] p-3.5 border border-[rgba(212,114,26,0.06)] flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${credit ? "bg-emerald-50 text-emerald-600" : "bg-[rgba(0,0,0,0.04)] text-[var(--text-muted)]"}`}>
+                <div className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 ${credit ? "bg-[var(--green-ok)] text-[var(--green-ok)]" : "bg-[rgba(0,0,0,0.04)] text-[var(--text-muted)]"}`}>
                   {credit ? <ArrowDownLeft className="w-4 h-4" /> : <ArrowUpRight className="w-4 h-4" />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="font-semibold text-[0.88rem] text-[var(--brown-800)]">{TYPE_LABEL[t.type] || t.type}</div>
                   <div className="text-[0.75rem] text-[var(--text-muted)] truncate">{t.description || fmt(t.created_at)}</div>
                 </div>
-                <div className={`font-bold text-[0.92rem] shrink-0 ${credit ? "text-emerald-600" : "text-[var(--brown-800)]"}`}>
+                <div className={`font-bold text-[0.92rem] shrink-0 ${credit ? "text-[var(--green-ok)]" : "text-[var(--brown-800)]"}`}>
                   {credit ? "+" : "−"}{money(amt)}
                 </div>
               </div>

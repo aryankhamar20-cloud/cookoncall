@@ -178,13 +178,13 @@ export default function PrivacySecurityPanel({
           </button>
 
           {pwError && (
-            <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-red-50 border border-red-200 text-red-800 text-[0.82rem]">
+            <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-[var(--red-err)] border border-[var(--red-err)] text-[var(--red-err)] text-[0.82rem]">
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <span>{pwError}</span>
             </div>
           )}
           {pwSaved && (
-            <div className="flex items-center gap-2 px-3 py-2 rounded-[10px] bg-emerald-50 border border-emerald-200 text-emerald-700 text-[0.82rem]">
+            <div className="flex items-center gap-2 px-3 py-2 rounded-[10px] bg-[var(--green-ok)] border border-[var(--green-ok)] text-[var(--green-ok)] text-[0.82rem]">
               <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
               <span>Password updated.</span>
             </div>
@@ -202,7 +202,7 @@ export default function PrivacySecurityPanel({
 
         {/* ─── Danger zone ─────────────────────────────── */}
         <div className="mt-8 pt-6 border-t border-[rgba(212,114,26,0.1)]">
-          <div className="flex items-center gap-2 mb-2 text-red-700">
+          <div className="flex items-center gap-2 mb-2 text-[var(--red-err)]">
             <AlertTriangle className="w-4 h-4" />
             <h3 className="font-semibold text-[0.95rem]">Delete account</h3>
           </div>
@@ -215,13 +215,13 @@ export default function PrivacySecurityPanel({
           {!showDelete ? (
             <button
               onClick={() => setShowDelete(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[12px] border border-red-300 text-red-700 font-semibold text-[0.88rem] hover:bg-red-50 transition"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[12px] border border-[var(--red-err)] text-[var(--red-err)] font-semibold text-[0.88rem] hover:bg-[var(--red-err)] transition"
             >
               <Trash2 className="w-4 h-4" />
               Delete my account
             </button>
           ) : (
-            <div className="rounded-[14px] border border-red-200 bg-red-50/60 p-4 space-y-3">
+            <div className="rounded-[14px] border border-[var(--red-err)] bg-[var(--red-err)]/60 p-4 space-y-3">
               <PasswordField
                 label="Current password"
                 value={delPassword}
@@ -237,13 +237,13 @@ export default function PrivacySecurityPanel({
                 <input
                   value={delConfirmText}
                   onChange={(e) => setDelConfirmText(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-[10px] border border-red-200 bg-white text-[0.88rem] outline-none focus:border-red-400"
+                  className="w-full px-3 py-2.5 rounded-[10px] border border-[var(--red-err)] bg-white text-[0.88rem] outline-none focus:border-[var(--red-err)]"
                   placeholder="DELETE"
                 />
               </div>
 
               {delError && (
-                <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-red-100 border border-red-300 text-red-800 text-[0.82rem]">
+                <div className="flex items-start gap-2 px-3 py-2 rounded-[10px] bg-[var(--red-err)] border border-[var(--red-err)] text-[var(--red-err)] text-[0.82rem]">
                   <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
                   <span>{delError}</span>
                 </div>
@@ -253,7 +253,7 @@ export default function PrivacySecurityPanel({
                 <button
                   onClick={submitDelete}
                   disabled={deleting}
-                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[12px] bg-red-600 text-white font-semibold text-[0.88rem] hover:bg-red-700 disabled:opacity-60 transition"
+                  className="inline-flex items-center gap-2 px-4 py-2.5 rounded-[12px] bg-[var(--red-err)] text-white font-semibold text-[0.88rem] hover:bg-[var(--red-err)] disabled:opacity-60 transition"
                 >
                   {deleting && <Loader2 className="w-4 h-4 animate-spin" />}
                   {deleting ? "Deleting…" : "Permanently delete"}

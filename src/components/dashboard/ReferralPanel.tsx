@@ -221,7 +221,7 @@ function StatTile({
     tone === "green"
       ? "text-[var(--green-ok)]"
       : tone === "amber"
-        ? "text-amber-500"
+        ? "text-[var(--amber-warn-bg)]0"
         : "text-[var(--orange-500)]";
   return (
     <div className="bg-white rounded-[16px] p-4 border border-[rgba(212,114,26,0.06)] text-center">
