@@ -90,8 +90,13 @@ export async function generateMetadata({
   const canonical = `https://thecookoncall.com/chefs/${params.area}`;
 
   if (!isAreaResult(resolved)) {
+    // Root layout applies title.template "%s | CookOnCall" — the `title`
+    // field must NOT repeat the brand or the <title> tag renders
+    // "... | CookOnCall | CookOnCall" (see docs/30_GLOBAL_BRAND_AND_SEO_AUDIT.md).
+    // openGraph.title is set explicitly (not run through the template), so
+    // it keeps its own "| CookOnCall" suffix.
     return {
-      title: "Home Chefs in Ahmedabad | Book a Personal Chef | CookOnCall",
+      title: "Home Chefs in Ahmedabad | Book a Personal Chef",
       description:
         "Browse verified home chefs in Ahmedabad. Book a personal chef for daily meals, dinner parties, or events. Gujarati, Punjabi, South Indian cuisines. Starting ₹600.",
       alternates: { canonical },
@@ -106,14 +111,17 @@ export async function generateMetadata({
   }
 
   const { area } = resolved;
-  const title = `Home Chefs in ${area.name}, ${CITY_NAME} | CookOnCall`;
+  // Same rule as above: `title` (templated) excludes the brand suffix;
+  // `ogTitle` (used verbatim, not templated) keeps it.
+  const title = `Home Chefs in ${area.name}, ${CITY_NAME}`;
+  const ogTitle = `Home Chefs in ${area.name}, ${CITY_NAME} | CookOnCall`;
   const description = `Browse verified home chefs in ${area.name}, ${CITY_NAME}. Book a personal chef for daily meals, dinner parties, or events. Starting ₹600.`;
   return {
     title,
     description,
     alternates: { canonical },
     openGraph: {
-      title,
+      title: ogTitle,
       description,
       url: canonical,
       images: [{ url: "/og-default.png", width: 1200, height: 630 }],
