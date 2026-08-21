@@ -317,6 +317,7 @@ function LoginPage() {
         password: signupPass,
         role: role === "Chef" ? "cook" : "user",
         area_slugs: selectedAreas,
+        terms_accepted: termsAccepted,
       };
       if (role === "Chef") {
         // Combine checkbox selections + optional custom cuisine into one CSV string.
