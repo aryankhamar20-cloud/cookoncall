@@ -17,15 +17,14 @@ export default function HeroSection() {
 
         {/* Title */}
         <h1 className="animate-fade-in-up delay-100 font-display font-[900] text-[clamp(2.6rem,5vw,4.2rem)] leading-[1.08] text-[var(--brown-800)] mb-2">
-          FRESH HOME-COOKED MEALS,
+          VERIFIED HOME CHEFS.
           <br />
-          <span className="text-[var(--orange-500)]">STARTING AT ₹49.</span>
+          <span className="text-[var(--orange-500)]">FIXED PRICES. NO SURPRISES.</span>
         </h1>
 
         {/* Subtitle */}
         <p className="animate-fade-in-up delay-200 text-[1.08rem] text-[var(--text-muted)] my-6 max-w-[480px] leading-[1.7]">
-          Verified home chefs cook in your kitchen, You keep ingredients ready — chef brings skills and tools. Starting in Ahmedabad,
-          expanding across Gujarat city by city.
+          Every chef is Aadhaar, PAN and FSSAI verified before they ever get listed. One fixed price, shown upfront — no surge, no bidding, no haggling. They cook fresh in your kitchen; you keep ingredients ready. Starting in Ahmedabad, expanding across Gujarat city by city.
         </p>
 
         {/* CTA */}
@@ -54,8 +53,8 @@ export default function HeroSection() {
         </div>
 
         {/* Trust Badges */}
-        <div className="animate-fade-in-up delay-400 flex gap-5 flex-wrap mb-6">
-          {["Aadhaar verified chefs", "Secure UPI Payments", "Pay after chef accepts"].map(
+        <div className="animate-fade-in-up delay-400 flex gap-5 flex-wrap mb-2">
+          {["Aadhaar + FSSAI verified chefs", "Zero surge, zero bidding", "100% refund if a chef doesn't show"].map(
             (badge) => (
               <div
                 key={badge}
@@ -67,6 +66,14 @@ export default function HeroSection() {
             ),
           )}
         </div>
+
+        {/* No-show guarantee cross-link */}
+        <Link
+          href="/pricing#faq"
+          className="animate-fade-in-up delay-400 inline-block text-[0.85rem] text-[var(--orange-500)] font-semibold no-underline hover:underline underline-offset-2 mb-6"
+        >
+          100% refund if your chef doesn&apos;t show — see how →
+        </Link>
 
         {/* App coming soon mini-row */}
         <div className="animate-fade-in-up delay-400 flex items-center gap-3 flex-wrap">

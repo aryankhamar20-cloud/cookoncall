@@ -12,23 +12,18 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@hookform/resolvers": "^3.9.0",
     "@sentry/react": "^8.55.2",
     "axios": "^1.7.2",
     "clsx": "^2.1.1",
-    "date-fns": "^3.6.0",
-    "framer-motion": "^11.3.8",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.411.0",
     "next": "^14.2.35",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "react-hook-form": "^7.52.1",
     "react-hot-toast": "^2.4.1",
     "recharts": "^2.15.4",
     "socket.io-client": "^4.7.5",
     "tailwind-merge": "^2.4.0",
-    "zod": "^3.23.8",
     "zustand": "^4.5.4"
   },
   "devDependencies": {

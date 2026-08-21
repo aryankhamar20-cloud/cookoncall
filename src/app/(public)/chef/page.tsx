@@ -4,7 +4,7 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import { FooterSimple } from "@/components/layout/Footer";
 import WhatsAppFAB from "@/components/layout/WhatsAppFAB";
-import { IndianRupee, CalendarDays, TrendingUp, BadgeCheck, Wallet, Star } from "lucide-react";
+import { IndianRupee, CalendarDays, TrendingUp, BadgeCheck, Wallet, Users } from "lucide-react";
 
 const benefits = [
   {
@@ -33,9 +33,9 @@ const benefits = [
     icon: <Wallet className="w-7 h-7" />,
   },
   {
-    title: "More Bookings, Less Effort",
-    desc: "Fixed prices mean customers decide faster — no back-and-forth, no ghosting. You get consistent bookings without lifting a finger.",
-    icon: <Star className="w-7 h-7" />,
+    title: "Refer a Chef, Earn ₹500",
+    desc: "Know another home cook who'd be great on CookOnCall? Refer them — you earn ₹500 the moment they get verified. No limit on how many you refer.",
+    icon: <Users className="w-7 h-7" />,
   },
 ];
 

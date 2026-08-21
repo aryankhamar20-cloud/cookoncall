@@ -78,7 +78,7 @@ export default function StatsBar() {
           ))}
         </div>
         <p className="text-center text-[0.78rem] text-[rgba(255,255,255,0.5)] mt-6">
-          Expanding to more cities across Gujarat soon · Mobile app coming on Play Store &amp; App Store
+          Every chef is verified before listing — no exceptions. Expanding to more cities across Gujarat soon · Mobile app coming on Play Store &amp; App Store
         </p>
       </div>
     </section>

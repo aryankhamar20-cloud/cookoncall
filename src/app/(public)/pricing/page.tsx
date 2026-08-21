@@ -55,6 +55,18 @@ export default function PricingPage() {
             at actual market cost.
           </p>
 
+          {/* No-show guarantee */}
+          <section className="bg-[var(--brown-800)] rounded-[20px] p-7 md:p-9 mb-8 text-center">
+            <h2 className="font-display font-[900] text-[1.3rem] md:text-[1.5rem] text-white mb-2">
+              THE NO-SHOW GUARANTEE
+            </h2>
+            <p className="text-[0.95rem] text-[rgba(255,255,255,0.75)] max-w-[560px] mx-auto leading-relaxed">
+              If your chef doesn&apos;t show up, you get 100% of your money back — no
+              coupons, no store credit, just a real refund within 3–5 business days.
+              No exceptions, no fine print.
+            </p>
+          </section>
+
           {/* How pricing works */}
           <section className="bg-white rounded-[20px] p-7 md:p-9 border border-[rgba(212,114,26,0.06)] mb-8">
             <h2 className="font-display font-[800] text-[1.3rem] text-[var(--brown-800)] mb-5">

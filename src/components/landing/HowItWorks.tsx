@@ -57,7 +57,7 @@ export default function HowItWorks() {
         HOW COOKONCALL WORKS
       </h2>
       <p className="text-[1.05rem] text-[var(--text-muted)] max-w-[560px] mb-14 leading-[1.7]">
-        From booking to a beautiful home-cooked meal — in 4 simple steps.
+        From booking to a beautiful home-cooked meal — in 4 simple steps. One fixed price shown before you pay. No negotiating with the chef, ever.
       </p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-7 relative">
