@@ -36,7 +36,7 @@ export default function HomePage() {
         <CTASection />
       </main>
       <Footer />
-      <WhatsAppFAB />
+      <WhatsAppFAB context="home" />
       <ScrollToTop />
     </>
   );

@@ -197,7 +197,7 @@ export default function PricingPage() {
         </div>
       </main>
       <FooterSimple />
-      <WhatsAppFAB />
+      <WhatsAppFAB context="pricing" />
     </>
   );
 }

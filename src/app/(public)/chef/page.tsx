@@ -151,7 +151,7 @@ export default function ChefPage() {
       </section>
 
       <FooterSimple />
-      <WhatsAppFAB />
+      <WhatsAppFAB context="chef" />
     </>
   );
 }
