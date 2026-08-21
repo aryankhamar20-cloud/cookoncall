@@ -8,10 +8,9 @@ import {
   Phone, FileCheck, Camera, BadgeCheck, KeyRound, Utensils, Star, MessageSquare,
   CalendarClock, Package, Truck,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import DashboardLayout, { type SidebarSection } from "@/components/layout/DashboardLayout";
-import AvailabilityPanel from "@/components/dashboard/AvailabilityPanel";
-import MealPackagesPanel from "@/components/dashboard/MealPackagesPanel";
-import EarningsHistoryPanel from "@/components/dashboard/EarningsHistoryPanel";
+import Skeleton from "@/components/ui/Skeleton";
 import { useUIStore } from "@/stores/uiStore";
 import { useAuthStore } from "@/stores/authStore";
 import { useAuth } from "@/hooks/useAuth";
@@ -20,6 +19,24 @@ import api, { cooksApi, bookingsApi, uploadsApi } from "@/lib/api";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import type { VerificationStatus } from "@/types";
+
+// These three panels (earnings, packages, availability) are only ever
+// rendered once their tab is opened — same rationale as the admin and
+// customer dashboard lazy-load passes (commits c2afcba, and the
+// perf/lazy-load-customer-dashboard branch): defer them instead of
+// bundling all three into the cook dashboard's First Load JS up front.
+function PanelLoadingFallback() {
+  return (
+    <div role="status" aria-label="Loading panel" className="space-y-4">
+      <Skeleton className="h-8 w-1/3" />
+      <Skeleton className="h-32 w-full" />
+      <Skeleton className="h-32 w-full" />
+    </div>
+  );
+}
+const AvailabilityPanel = dynamic(() => import("@/components/dashboard/AvailabilityPanel"), { loading: PanelLoadingFallback, ssr: false });
+const MealPackagesPanel = dynamic(() => import("@/components/dashboard/MealPackagesPanel"), { loading: PanelLoadingFallback, ssr: false });
+const EarningsHistoryPanel = dynamic(() => import("@/components/dashboard/EarningsHistoryPanel"), { loading: PanelLoadingFallback, ssr: false });
 
 const titles: Record<string, string> = {
   overview: "Overview",
