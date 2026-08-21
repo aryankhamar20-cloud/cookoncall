@@ -16,6 +16,7 @@ export const dynamic = 'force-static';
 import { useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import nextDynamic from "next/dynamic";
 import { cooksApi, reviewsApi } from "@/lib/api";
 import api, { bookingsApi, mealPackagesApi } from "@/lib/api";
 import Navbar from "@/components/layout/Navbar";
@@ -23,7 +24,6 @@ import { FooterSimple } from "@/components/layout/Footer";
 import StarRating from "@/components/ui/StarRating";
 import Skeleton from "@/components/ui/Skeleton";
 import PackageSelector from "@/components/dashboard/PackageSelector";
-import BookingModal from "@/components/modals/BookingModal";
 import type { BookingFormData } from "@/components/modals/BookingModal";
 import type { PackageSelectionPayload } from "@/types";
 import { useAuthStore } from "@/stores/authStore";
@@ -32,6 +32,15 @@ import {
   Leaf, BadgeCheck, Users, Package,
 } from "lucide-react";
 import toast from "react-hot-toast";
+
+// BookingModal (+ the AddressModal/AddressCard it pulls in) is ~1000 lines
+// that not a single visitor sees on first paint — it's a hidden modal
+// (`isOpen={bookingModalOpen}`, initially false) that only mounts once
+// someone clicks "Build Your Own" or books a package. This was the
+// heaviest chunk in the largest public route's bundle (measured:
+// /chef/detail was 165 kB First Load JS, the biggest public page in the
+// app). Deferred the same way the dashboard panel passes did.
+const BookingModal = nextDynamic(() => import("@/components/modals/BookingModal"), { ssr: false });
 
 function ChefDetailContent() {
   const searchParams = useSearchParams();
