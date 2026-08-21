@@ -190,6 +190,9 @@ export const authApi = {
     // sent as checkbox pills on the signup form. Matches the backend's
     // RegisterDto.area_slugs exactly (see register.dto.ts).
     area_slugs?: string[];
+    // Required by RegisterDto (backend enforces @Equals(true)) — signup
+    // fails with a 400 if this is omitted or false.
+    terms_accepted?: boolean;
   }) => api.post("/auth/register", data),
 
   login: (data: { email: string; password: string }) =>
