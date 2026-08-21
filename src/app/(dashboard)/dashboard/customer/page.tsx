@@ -13,25 +13,46 @@ import {
   Repeat,
   Wallet,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import DashboardLayout, { type SidebarSection } from "@/components/layout/DashboardLayout";
 import { useUIStore } from "@/stores/uiStore";
 import { useCartStore } from "@/stores/cartStore";
 import { useAuth } from "@/hooks/useAuth";
+import Skeleton from "@/components/ui/Skeleton";
 import CustomerHome from "@/components/dashboard/CustomerHome";
-import BookChefPanel from "@/components/dashboard/BookChefPanel";
-import OrderFoodPanel from "@/components/dashboard/OrderFoodPanel";
-import OrdersPanel from "@/components/dashboard/OrdersPanel";
-import ProfilePanel from "@/components/dashboard/ProfilePanel";
-import SettingsPanel from "@/components/dashboard/SettingsPanel";
-import HelpSupportPanel from "@/components/dashboard/HelpSupportPanel";
-import ReferralPanel from "@/components/dashboard/ReferralPanel";
-import WalletPanel from "@/components/dashboard/WalletPanel";
-import SavedChefsPanel from "@/components/dashboard/SavedChefsPanel";
-import SubscriptionsPanel from "@/components/dashboard/SubscriptionsPanel";
 import CartDrawer from "@/components/dashboard/CartDrawer";
 import NotificationBell from "@/components/dashboard/NotificationBell";
 import BookingModal from "@/components/modals/BookingModal";
 import { useBookingStore } from "@/stores/bookingStore";
+
+// "home" (CustomerHome, above) is what nearly every session opens first, so
+// it stays a static import. Every other panel is a full, independent
+// component that a given session may never open — they were previously all
+// static imports, so all 11 were downloaded and parsed up front regardless
+// of which tab (if any) got clicked (measured: /dashboard/customer was the
+// heaviest route in the app, 208 kB First Load JS — see
+// docs/30_GLOBAL_BRAND_AND_SEO_AUDIT.md-adjacent perf audit). next/dynamic
+// defers each to when its tab is actually opened, mirroring the same fix
+// already applied to /dashboard/admin (297 kB -> 154 kB, commit c2afcba).
+function PanelLoadingFallback() {
+  return (
+    <div role="status" aria-label="Loading panel" className="space-y-4">
+      <Skeleton className="h-8 w-1/3" />
+      <Skeleton className="h-32 w-full" />
+      <Skeleton className="h-32 w-full" />
+    </div>
+  );
+}
+const BookChefPanel = dynamic(() => import("@/components/dashboard/BookChefPanel"), { loading: PanelLoadingFallback, ssr: false });
+const OrderFoodPanel = dynamic(() => import("@/components/dashboard/OrderFoodPanel"), { loading: PanelLoadingFallback, ssr: false });
+const OrdersPanel = dynamic(() => import("@/components/dashboard/OrdersPanel"), { loading: PanelLoadingFallback, ssr: false });
+const ProfilePanel = dynamic(() => import("@/components/dashboard/ProfilePanel"), { loading: PanelLoadingFallback, ssr: false });
+const SettingsPanel = dynamic(() => import("@/components/dashboard/SettingsPanel"), { loading: PanelLoadingFallback, ssr: false });
+const HelpSupportPanel = dynamic(() => import("@/components/dashboard/HelpSupportPanel"), { loading: PanelLoadingFallback, ssr: false });
+const ReferralPanel = dynamic(() => import("@/components/dashboard/ReferralPanel"), { loading: PanelLoadingFallback, ssr: false });
+const WalletPanel = dynamic(() => import("@/components/dashboard/WalletPanel"), { loading: PanelLoadingFallback, ssr: false });
+const SavedChefsPanel = dynamic(() => import("@/components/dashboard/SavedChefsPanel"), { loading: PanelLoadingFallback, ssr: false });
+const SubscriptionsPanel = dynamic(() => import("@/components/dashboard/SubscriptionsPanel"), { loading: PanelLoadingFallback, ssr: false });
 
 const titles: Record<string, string> = {
   home: "Home",
