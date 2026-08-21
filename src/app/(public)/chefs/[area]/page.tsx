@@ -256,7 +256,9 @@ export default async function ChefsAreaPage({
           )}
         </nav>
         <div className="inline-flex items-center gap-2 bg-gradient-to-br from-[rgba(212,114,26,0.1)] to-[rgba(212,114,26,0.05)] border border-[rgba(212,114,26,0.2)] px-5 py-2 rounded-full text-[0.82rem] font-semibold text-[var(--orange-500)] tracking-[1px] uppercase mb-8">
-          {badgeText}
+          {!isCity && chefs.length > 0
+            ? `${chefs.length} chef${chefs.length === 1 ? "" : "s"} serving ${areaName}`
+            : badgeText}
         </div>
         <h1 className="font-display font-[900] text-[clamp(2.2rem,5vw,3.4rem)] leading-[1.08] text-[var(--brown-800)] mb-6">
           {heading}
@@ -264,7 +266,9 @@ export default async function ChefsAreaPage({
         <p className="text-[1.05rem] text-[var(--text-muted)] max-w-[560px] mx-auto mb-8 leading-[1.7]">
           {isCity
             ? "Book a verified personal chef in Ahmedabad for daily meals, dinner parties, or special events. Gujarati, Punjabi, South Indian and more — starting at ₹600 per session."
-            : `Book a verified personal chef in ${areaName}, Ahmedabad for daily meals, dinner parties, or special events. Gujarati, Punjabi, South Indian and more — starting at ₹600 per session.`}
+            : chefs.length > 0
+              ? `${chefs.length} verified chef${chefs.length === 1 ? "" : "s"} already serve${chefs.length === 1 ? "s" : ""} ${areaName} — see who's cooking near you. Book a chef from your own neighborhood for daily meals, dinner parties, or special events. Gujarati, Punjabi, South Indian and more, starting at ₹600 per session.`
+              : `Book a verified personal chef in ${areaName}, Ahmedabad for daily meals, dinner parties, or special events. Gujarati, Punjabi, South Indian and more — starting at ₹600 per session.`}
         </p>
         <Link
           href="/login?tab=signup"
@@ -292,6 +296,11 @@ export default async function ChefsAreaPage({
                 ? "We're onboarding verified chefs in Ahmedabad right now — check back soon, or sign up to be notified the moment one's available near you."
                 : `No verified chef covers ${areaName} yet — we're onboarding across Ahmedabad every week. Sign up to be notified the moment one's available near you.`}
             </p>
+            {!isCity && (
+              <p className="text-sm text-[var(--text-muted)] mb-4 max-w-[520px] mx-auto">
+                Signing up also adds {areaName} to our launch list — the more requests an area gets, the sooner we prioritize verifying a chef there.
+              </p>
+            )}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/login?tab=signup" className="text-[var(--orange-500)] font-semibold hover:underline">
                 Sign up to get notified →

@@ -11,6 +11,7 @@ const footerLinks = {
     { href: "/pricing", label: "Pricing" },
     { href: "/chef", label: "Browse Chefs" },
     { href: "/login?tab=signup&role=chef", label: "Become a Chef" },
+    { href: "/dashboard/customer?panel=referrals", label: "Refer & Earn ₹100" },
   ],
   company: [
     { href: "/about", label: "About Us" },

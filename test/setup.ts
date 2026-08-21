@@ -7,9 +7,9 @@
  * `toHaveValue`, etc. without per-file imports.
  *
  * Also installs a no-op IntersectionObserver because some lucide
- * / framer-motion code paths touch it on mount and jsdom doesn't
- * implement it. Cheap insurance; can be removed once jsdom 26+
- * ships native support.
+ * code paths touch it on mount and jsdom doesn't implement it.
+ * Cheap insurance; can be removed once jsdom 26+ ships native
+ * support.
  */
 import "@testing-library/jest-dom/vitest";
 import { afterEach } from "vitest";
