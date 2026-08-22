@@ -307,10 +307,7 @@ export default function OrdersPanel() {
     if (!confirm("Are you sure you want to cancel this booking?")) return;
     try {
       setCancellingId(bookingId);
-      await api.patch(`/bookings/${bookingId}/status`, {
-        status: "cancelled_by_user",
-        cancellation_reason: "Cancelled by customer",
-      });
+      await bookingsApi.cancel(bookingId, "Cancelled by customer");
       toast.success("Booking cancelled.");
       fetchBookings();
     } catch (err: any) {

@@ -22,8 +22,6 @@ import Skeleton from "@/components/ui/Skeleton";
 import CustomerHome from "@/components/dashboard/CustomerHome";
 import CartDrawer from "@/components/dashboard/CartDrawer";
 import NotificationBell from "@/components/dashboard/NotificationBell";
-import BookingModal from "@/components/modals/BookingModal";
-import { useBookingStore } from "@/stores/bookingStore";
 
 // "home" (CustomerHome, above) is what nearly every session opens first, so
 // it stays a static import. Every other panel is a full, independent
@@ -72,12 +70,6 @@ export default function CustomerDashboardPage() {
   const { isLoading, authorized } = useAuth({ requiredRole: "user" });
   const { activePanel } = useUIStore();
   const cartStore = useCartStore();
-  const {
-    showBookingModal,
-    selectedChef,
-    closeAllModals,
-    openPaymentModal,
-  } = useBookingStore();
 
   const sections: SidebarSection[] = [
     {
@@ -158,15 +150,6 @@ export default function CustomerDashboardPage() {
       </DashboardLayout>
 
       <CartDrawer />
-
-      <BookingModal
-        isOpen={showBookingModal}
-        onClose={closeAllModals}
-        chef={selectedChef}
-        onProceedToPayment={(data) => {
-          openPaymentModal(data);
-        }}
-      />
     </>
   );
 }
