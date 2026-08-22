@@ -724,7 +724,7 @@ if (isPackageMode && preselectedPackage) {
                             const isSelected = !!sel;
                             return (
                               <div key={item.id}
-                                className={`flex items-center gap-3 px-3 py-2.5 border-b border-[var(--cream-200)] cursor-pointer transition-colors ${isSelected ? "bg-[rgba(212,114,26,0.06)]" : "hover:bg-[var(--cream-50)]"}`}
+                                className={`flex items-center gap-3 px-3 py-2.5 border-b border-[var(--cream-200)] cursor-pointer transition-colors ${isSelected ? "bg-[rgba(212,114,26,0.06)]" : "hover:bg-[var(--cream-100)]"}`}
                                 onClick={() => !isSelected && toggleDish(item)}>
                                 <div className={`w-4 h-4 border-2 rounded-sm flex items-center justify-center flex-shrink-0 ${item.type === "veg" ? "border-[var(--green-ok)]" : "border-[var(--red-err)]"}`}>
                                   <div className={`w-2 h-2 rounded-full ${item.type === "veg" ? "bg-[var(--green-ok)]" : "bg-[var(--red-err)]"}`} />

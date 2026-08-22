@@ -105,13 +105,13 @@ export default class ErrorBoundary extends Component<Props, State> {
             <div className="flex items-center justify-center gap-3">
               <button
                 onClick={this.handleReset}
-                className="px-5 py-2.5 rounded-full bg-[var(--orange-500)] text-white text-[0.85rem] font-semibold hover:bg-[var(--orange-600)] transition-colors cursor-pointer"
+                className="px-5 py-2.5 rounded-full bg-[var(--orange-500)] text-white text-[0.85rem] font-semibold hover:bg-[var(--orange-400)] transition-colors cursor-pointer"
               >
                 Try Again
               </button>
               <button
                 onClick={this.handleReload}
-                className="px-5 py-2.5 rounded-full border border-[var(--cream-300)] text-[var(--text-primary)] text-[0.85rem] font-semibold hover:bg-[var(--cream-100)] transition-colors cursor-pointer flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-full border border-[var(--cream-300)] text-[var(--text-dark)] text-[0.85rem] font-semibold hover:bg-[var(--cream-100)] transition-colors cursor-pointer flex items-center gap-1.5"
               >
                 <RefreshCw className="w-3.5 h-3.5" />
                 Reload

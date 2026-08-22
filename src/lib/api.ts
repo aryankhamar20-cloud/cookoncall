@@ -445,8 +445,7 @@ export const subscriptionsApi = {
   pause: (id: string) => api.patch(`/subscriptions/${id}/pause`),
   resume: (id: string) => api.patch(`/subscriptions/${id}/resume`),
   cancel: (id: string) => api.patch(`/subscriptions/${id}/cancel`),
-  // Chef view + admin
-  cookCommitments: () => api.get("/subscriptions/cook/me"),
+  // Admin
   adminList: (params?: { page?: number; limit?: number }) =>
     api.get("/subscriptions/admin", withAdminAuth({ params })),
 };
@@ -753,27 +752,22 @@ export const mealPackagesApi = {
   update: (id: string, data: Record<string, unknown>) => api.patch(`/meal-packages/${id}`, data),
   remove: (id: string) => api.delete(`/meal-packages/${id}`),
 
-  // Categories
+  // Categories — no in-app edit action, only add/remove (see
+  // MealPackagesPanel); "editing" a category is delete + re-add.
   addCategory: (pkgId: string, data: Record<string, unknown>) =>
     api.post(`/meal-packages/${pkgId}/categories`, data),
-  updateCategory: (pkgId: string, catId: string, data: Record<string, unknown>) =>
-    api.patch(`/meal-packages/${pkgId}/categories/${catId}`, data),
   deleteCategory: (pkgId: string, catId: string) =>
     api.delete(`/meal-packages/${pkgId}/categories/${catId}`),
 
-  // Dishes
+  // Dishes — same add/remove-only pattern as categories.
   addDish: (pkgId: string, catId: string, data: Record<string, unknown>) =>
     api.post(`/meal-packages/${pkgId}/categories/${catId}/dishes`, data),
-  updateDish: (pkgId: string, catId: string, dishId: string, data: Record<string, unknown>) =>
-    api.patch(`/meal-packages/${pkgId}/categories/${catId}/dishes/${dishId}`, data),
   deleteDish: (pkgId: string, catId: string, dishId: string) =>
     api.delete(`/meal-packages/${pkgId}/categories/${catId}/dishes/${dishId}`),
 
-  // Add-ons
+  // Add-ons — same add/remove-only pattern.
   addAddon: (pkgId: string, data: Record<string, unknown>) =>
     api.post(`/meal-packages/${pkgId}/addons`, data),
-  updateAddon: (pkgId: string, addonId: string, data: Record<string, unknown>) =>
-    api.patch(`/meal-packages/${pkgId}/addons/${addonId}`, data),
   deleteAddon: (pkgId: string, addonId: string) =>
     api.delete(`/meal-packages/${pkgId}/addons/${addonId}`),
 

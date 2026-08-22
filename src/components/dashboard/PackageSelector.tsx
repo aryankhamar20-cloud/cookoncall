@@ -441,7 +441,7 @@ export default function PackageSelector({
                               isChecked
                                 ? "border-[var(--orange-500)] bg-[rgba(212,114,26,0.05)]"
                                 : isDisabled
-                                ? "border-[var(--cream-200)] bg-[var(--cream-50)] opacity-50 cursor-not-allowed"
+                                ? "border-[var(--cream-200)] bg-[var(--cream-100)] opacity-50 cursor-not-allowed"
                                 : "border-[var(--cream-200)] bg-white hover:border-[var(--orange-400)] cursor-pointer"
                             }`}
                           >
